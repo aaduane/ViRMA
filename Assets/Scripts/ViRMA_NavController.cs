@@ -12,13 +12,14 @@ public class ViRMA_NavController : MonoBehaviour
 
     private Rigidbody rigidBody;
 
-    private float previousDistanceBetweenHands;
-    private Bounds maximumScrollBounds;
+    private float previousDistanceBetweenHands; 
+
     private Vector3 maxNodeScale = new Vector3(1.0f, 1.0f, 1.0f);
     private Vector3 minNodeScale = new Vector3(0.1f, 0.1f, 0.1f);
-    private float defaultNodeSize = 0.5f;
+    private float defaultNodeSize = 0.1f;
     private float defaultNodeSpacing = 1.5f;
 
+    private Bounds maximumScrollBounds;
     private GameObject boundingBox;
 
     private void Awake()
@@ -28,41 +29,43 @@ public class ViRMA_NavController : MonoBehaviour
 
     private void Start()
     {
-        string testURL1 = "cell?xAxis={\"AxisType\":\"Hierarchy\",\"TagsetId\":0,\"HierarchyNodeId\":7}";
-        string testURL2 = "&yAxis={\"AxisType\":\"Tagset\",\"TagsetId\":7,\"HierarchyNodeId\":0}";
-        StartCoroutine(ViRMA_APIController.CallAPI(testURL1 + testURL2, (response) => {
+        string testURL1 = "cell?xAxis={'AxisType': 'Hierarchy', 'HierarchyNodeId' :7}";
+        string testURL2 = "&yAxis={'AxisType': 'Tagset', 'TagsetId': 7}";
+        string testURL3 = "&zAxis={'AxisType': 'Tagset', 'TagsetId': 7}";
 
-            //Debug.Log(response.Count + " results");
+        StartCoroutine(ViRMA_APIController.CallAPI(testURL1 + testURL2 + testURL3, (response) => {
 
+            Debug.Log(response.Count + " results");
             foreach (var obj in response)
             {
                 Vector3 blueprint = new Vector3(obj.Value["x"], obj.Value["y"], obj.Value["z"]);
                 GenerateNode(blueprint);
             }
 
-            CenterGridOnNodes();
-            CalculateBoundingBox();
-            PlaceInFrontOfPlayer(5f);
-            NodeNavigationControls.Activate();
-
-
             
+
+            //CenterGridOnNodes();
+
+            CalculateBoundingBox();
+
+
+
             boundingBox = GameObject.CreatePrimitive(PrimitiveType.Cube);
             Destroy(boundingBox.GetComponent<Collider>());
-            boundingBox.GetComponent<Renderer>().material.color = Color.red;
+            boundingBox.GetComponent<Renderer>().material = Resources.Load("Materials/BasicTransparent") as Material;
+            boundingBox.GetComponent<Renderer>().material.color = new Color32(255, 0, 0, 130);
             boundingBox.name = "BoundingBox";
-            boundingBox.transform.localScale = new Vector3(maximumScrollBounds.size.x, maximumScrollBounds.size.y, maximumScrollBounds.size.z);
-            boundingBox.transform.SetParent(transform);
-            boundingBox.transform.localPosition = new Vector3(-0.35f, 0.35f, 0);
-            boundingBox.transform.localRotation = transform.GetChild(0).localRotation;
-            
+            boundingBox.transform.localScale = new Vector3(maximumScrollBounds.max.x, maximumScrollBounds.max.y, maximumScrollBounds.max.z);
+            boundingBox.transform.localPosition = maximumScrollBounds.center;
+            boundingBox.transform.SetParent(transform);        
 
+
+
+            //PlaceInFrontOfPlayer(5f);
+            NodeNavigationControls.Activate();
+
+            //StartCoroutine(LateStart());
         }));
-    }
-
-    private void Update()
-    {
-        Debug.Log("X: " + maximumScrollBounds.size.x + " Y: " + maximumScrollBounds.size.y + " Z: " + maximumScrollBounds.size.z);
     }
 
     private IEnumerator LateStart()
@@ -146,7 +149,7 @@ public class ViRMA_NavController : MonoBehaviour
                 Vector3 v = rigidBody.velocity;
                 float d = Vector3.Dot(v, normalisedDirection);
                 if (d > 0f) v -= normalisedDirection * d;
-                //rigidBody.velocity = v;
+                rigidBody.velocity = v;
             }
 
             // y max
@@ -241,6 +244,7 @@ public class ViRMA_NavController : MonoBehaviour
     }
     private void CalculateBoundingBox()
     {
+
         // calculate bounding box
         Renderer[] meshes = GetComponentsInChildren<Renderer>();
         Bounds bounds = new Bounds(transform.position, Vector3.zero);
@@ -249,6 +253,7 @@ public class ViRMA_NavController : MonoBehaviour
             bounds.Encapsulate(mesh.bounds);
         }
         maximumScrollBounds = bounds;
+
     }
     private void PlaceInFrontOfPlayer(float distance)
     {
