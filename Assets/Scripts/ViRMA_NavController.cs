@@ -1,5 +1,5 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System;
+using System.Collections;
 using System.IO;
 using UnityEngine;
 using Valve.VR;
@@ -16,7 +16,7 @@ public class ViRMA_NavController : MonoBehaviour
 
     private Vector3 maxNodeScale = new Vector3(1.0f, 1.0f, 1.0f);
     private Vector3 minNodeScale = new Vector3(0.1f, 0.1f, 0.1f);
-    private float defaultNodeSize = 0.1f;
+    private float defaultNodeSize = 0.2f;
     private float defaultNodeSpacing = 1.5f;
 
     private Bounds maximumScrollBounds;
@@ -29,42 +29,30 @@ public class ViRMA_NavController : MonoBehaviour
 
     private void Start()
     {
-        string testURL1 = "cell?xAxis={'AxisType': 'Hierarchy', 'HierarchyNodeId' :7}";
-        string testURL2 = "&yAxis={'AxisType': 'Tagset', 'TagsetId': 7}";
-        string testURL3 = "&zAxis={'AxisType': 'Tagset', 'TagsetId': 7}";
 
-        StartCoroutine(ViRMA_APIController.CallAPI(testURL1 + testURL2 + testURL3, (response) => {
+        // medium results
+        string url = "cell?xAxis={'AxisType': 'Tagset', 'TagsetId': 7}&yAxis={'AxisType': 'Tagset', 'TagsetId': 3}";
+
+        // large results
+        //string url = "cell?xAxis={'AxisType': 'Tagset', 'TagsetId': 7}&yAxis={'AxisType': 'Tagset', 'TagsetId': 7}&zAxis={'AxisType': 'Tagset', 'TagsetId': 7}"; 
+
+        StartCoroutine(ViRMA_APIController.CallAPI(url, (response) => {
 
             Debug.Log(response.Count + " results");
             foreach (var obj in response)
             {
-                Vector3 blueprint = new Vector3(obj.Value["x"], obj.Value["y"], obj.Value["z"]);
-                GenerateNode(blueprint);
-            }
+                /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// MOVE THIS TO API CONTROLLER
+                ViRMA_APIController.Cell newCell = new ViRMA_APIController.Cell();
+                newCell.Coordinates = new Vector3(obj.Value["x"], obj.Value["y"], obj.Value["z"]);
+                newCell.ImageName = obj.Value["CubeObjects"][0]["FileName"];
+                GenerateNode(newCell);
+            }       
 
-            
-
-            //CenterGridOnNodes();
-
+            CenterGridOnNodes();
             CalculateBoundingBox();
-
-
-
-            boundingBox = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            Destroy(boundingBox.GetComponent<Collider>());
-            boundingBox.GetComponent<Renderer>().material = Resources.Load("Materials/BasicTransparent") as Material;
-            boundingBox.GetComponent<Renderer>().material.color = new Color32(255, 0, 0, 130);
-            boundingBox.name = "BoundingBox";
-            boundingBox.transform.localScale = new Vector3(maximumScrollBounds.max.x, maximumScrollBounds.max.y, maximumScrollBounds.max.z);
-            boundingBox.transform.localPosition = maximumScrollBounds.center;
-            boundingBox.transform.SetParent(transform);        
-
-
-
-            //PlaceInFrontOfPlayer(5f);
+            //ToggleBoundingBox();
+            PlaceInFrontOfPlayer(8f);
             NodeNavigationControls.Activate();
-
-            //StartCoroutine(LateStart());
         }));
     }
 
@@ -79,20 +67,23 @@ public class ViRMA_NavController : MonoBehaviour
         NodeNavigationLimiter();
     }
 
-    public void GenerateNode(Vector3 blueprint)
+    public void GenerateNode(ViRMA_APIController.Cell newCell)
     {
-        Object[] imagesAsTextures = Resources.LoadAll("Test Images", typeof(Material)); // tesing
-
         GameObject node = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        node.transform.localScale = new Vector3(defaultNodeSize, defaultNodeSize, defaultNodeSize);
+        node.transform.localScale = new Vector3(defaultNodeSize * 1.5f, defaultNodeSize, defaultNodeSize);
         float spacingMultipler = defaultNodeSize + (defaultNodeSize * defaultNodeSpacing);
-        Vector3 nodePosition = new Vector3(blueprint.x, blueprint.y, blueprint.z) * spacingMultipler;
+        Vector3 nodePosition = new Vector3(newCell.Coordinates.x, newCell.Coordinates.y, newCell.Coordinates.z) * spacingMultipler;
         node.transform.position = nodePosition;
         node.transform.parent = transform;
 
-        // apply textures 
-        int imageId = Random.Range(0, imagesAsTextures.Length);
-        node.GetComponent<Renderer>().material = imagesAsTextures[imageId] as Material;
+
+        string projectRoot = System.IO.Directory.GetCurrentDirectory().ToString() + "/LaugavegurDataDDS/";
+        string imageNameDDS = newCell.ImageName.Substring(0, newCell.ImageName.Length - 4) + ".dds";
+
+        byte[] imageBytes = File.ReadAllBytes(projectRoot + imageNameDDS);
+        Texture2D imageTexture = ConvertImage(imageBytes);
+        node.GetComponent<Renderer>().material.mainTexture = imageTexture;
+        //node.GetComponent<Renderer>().material.SetTextureScale("_MainTex", new Vector2(1, -1));
     }
 
     
@@ -264,6 +255,17 @@ public class ViRMA_NavController : MonoBehaviour
         transform.position = spawnPos;
         transform.LookAt(Player.instance.hmdTransform.position);
     }
+    private void ToggleBoundingBox()
+    {
+        boundingBox = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        Destroy(boundingBox.GetComponent<Collider>());
+        boundingBox.GetComponent<Renderer>().material = Resources.Load("Materials/BasicTransparent") as Material;
+        boundingBox.GetComponent<Renderer>().material.color = new Color32(255, 0, 0, 130);
+        boundingBox.name = "BoundingBox";
+        boundingBox.transform.localScale = new Vector3(maximumScrollBounds.size.x, maximumScrollBounds.size.y, maximumScrollBounds.size.z);
+        boundingBox.transform.position = maximumScrollBounds.center;
+        boundingBox.transform.SetParent(transform);
+    }
 
     // testing
     private void TestRotationTechnique () {
@@ -299,7 +301,7 @@ public class ViRMA_NavController : MonoBehaviour
     }
     private void GenerateTestGrid(Vector3 blueprint)
     {
-        Object[] imagesAsTextures = Resources.LoadAll("Test Images", typeof(Material));
+        UnityEngine.Object[] imagesAsTextures = Resources.LoadAll("Test Images", typeof(Material));
 
         // x
         for (int x = 0; x < blueprint.x; x++)
@@ -319,7 +321,7 @@ public class ViRMA_NavController : MonoBehaviour
                     node.transform.parent = transform;
 
                     // apply textures 
-                    int imageId = Random.Range(0, imagesAsTextures.Length);
+                    int imageId = UnityEngine.Random.Range(0, imagesAsTextures.Length);
                     node.GetComponent<Renderer>().material = imagesAsTextures[imageId] as Material;
                 }
             }
@@ -342,5 +344,24 @@ public class ViRMA_NavController : MonoBehaviour
             child.gameObject.SetActive(false);
         }
         parent.gameObject.SetActive(true);
+    }
+    public static Texture2D ConvertImage(byte[] ddsBytes)
+    {
+        byte ddsSizeCheck = ddsBytes[4];
+        if (ddsSizeCheck != 124)
+        {
+            throw new Exception("Invalid DDS DXTn texture size! (not 124)");
+        }
+        int height = ddsBytes[13] * 256 + ddsBytes[12];
+        int width = ddsBytes[17] * 256 + ddsBytes[16];
+
+        int ddsHeaderSize = 128;
+        byte[] dxtBytes = new byte[ddsBytes.Length - ddsHeaderSize];
+        Buffer.BlockCopy(ddsBytes, ddsHeaderSize, dxtBytes, 0, ddsBytes.Length - ddsHeaderSize);
+        Texture2D texture = new Texture2D(width, height, TextureFormat.DXT1, false);
+
+        texture.LoadRawTextureData(dxtBytes);
+        texture.Apply();
+        return (texture);
     }
 }

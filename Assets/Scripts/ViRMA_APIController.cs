@@ -10,12 +10,7 @@ using System;
 public class ViRMA_APIController : MonoBehaviour
 {
 
-    // cell
-    // xAxis={"AxisType":"Hierarchy","TagsetId":0,"HierarchyNodeId":7}
-    // yAxis={"AxisType":"Tagset","TagsetId":7,"HierarchyNodeId":0}
-    // filters=[{"type":"tag","tagId":20},{"type":"tag","tagId":22}
-
-    public class ViRMAParamHandler
+    public class ParamHandler
     {
         public string Api { get; set; }
         public int Id { get; set; }
@@ -24,10 +19,16 @@ public class ViRMA_APIController : MonoBehaviour
         public int HierarchyNodeId { get; set; }
     }
 
+    public class Cell
+    {
+        public Vector3 Coordinates { get; set; }
+        public string ImageName { get; set; }
+    }
+
 
     public static IEnumerator CallAPI(string apiCall, Action<JSONNode> returnResponse)
     {
-        string baseURL = "https://localhost:5001/api/";
+        string baseURL = "https://localhost:44317/api/";
         string getRequest = baseURL + apiCall;
 
         Debug.Log(getRequest);
