@@ -91,7 +91,7 @@
       "requirement": "optional"
     },
     {
-      "name": "/actions/NodeNavigation/in/Toggle",
+      "name": "/actions/CellNavigation/in/Toggle",
       "type": "boolean",
       "requirement": "optional"
     }
@@ -114,7 +114,7 @@
       "usage": "single"
     },
     {
-      "name": "/actions/NodeNavigation",
+      "name": "/actions/CellNavigation",
       "usage": "single"
     }
   ],

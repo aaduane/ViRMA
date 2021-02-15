@@ -225,10 +225,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 18b82cf16e565274d814291219a00ac0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  NodeNavigationControls:
-    actionSetPath: /actions/NodeNavigation
-  NodeNavigationToggle:
-    actionPath: /actions/NodeNavigation/in/Toggle
+  CellNavigationControls:
+    actionSetPath: /actions/CellNavigation
+  CellNavigationToggle:
+    actionPath: /actions/CellNavigation/in/Toggle
     needsReinit: 0
 --- !u!1001 &1715758422
 PrefabInstance:

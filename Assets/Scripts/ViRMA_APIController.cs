@@ -9,45 +9,67 @@ using System;
 
 public class ViRMA_APIController : MonoBehaviour
 {
+    // public
+    public static string serverAddress = "https://localhost:44317/api/";
 
-    public class ParamHandler
-    {
-        public string Api { get; set; }
-        public int Id { get; set; }
-        public string Axis { get; set; }
-        public int TagsetId { get; set; }
-        public int HierarchyNodeId { get; set; }
-    }
-
+    // cell API methods
     public class Cell
     {
         public Vector3 Coordinates { get; set; }
         public string ImageName { get; set; }
     }
-
-
-    public static IEnumerator CallAPI(string apiCall, Action<JSONNode> returnResponse)
+    public class CellParamHandler
     {
-        string baseURL = "https://localhost:44317/api/";
-        string getRequest = baseURL + apiCall;
+        public string Call { get; set; }
+        public int Id { get; set; }
+        public string Axis { get; set; }
+        public string Type { get; set; }
+    }  
+    private static string CallHandler(List<CellParamHandler> paramHandlers)
+    {
+        string url = "cell?";
+        foreach (CellParamHandler paramHandler in paramHandlers)
+        {
+            string typeId = paramHandler.Type == "Tagset" ? paramHandler.Type + "Id" : paramHandler.Type + "NodeId";
+            url += paramHandler.Axis + "Axis={'AxisType': '" + paramHandler.Type + "', '" + typeId + "': " + paramHandler.Id + "}&";
+        }
+        url = url.Substring(0, url.Length - 1);
+        return url;
+    }
+    private static List<Cell> ResponseHandler(JSONNode response)
+    {
+        List<Cell> cells = new List<Cell>();
+        foreach (var obj in response)
+        {
+            Cell newCell = new Cell();
+            newCell.Coordinates = new Vector3(obj.Value["x"], obj.Value["y"], obj.Value["z"]);
+            newCell.ImageName = obj.Value["CubeObjects"][0]["FileName"];
+            cells.Add(newCell);
+        }
+        return cells;
+    }
+    public static IEnumerator GetCells(List<CellParamHandler> paramHandlers, Action<List<Cell>> returnResponse)
+    {
+        string paramsURL = CallHandler(paramHandlers);
+        string getRequest = serverAddress + paramsURL;
 
-        Debug.Log(getRequest);
+        Debug.Log(getRequest); // testing
 
         UnityWebRequest request = UnityWebRequest.Get(getRequest);
         yield return request.SendWebRequest();
-
         if (request.isNetworkError || request.isHttpError)
         {
             Debug.LogError(request.error);
             yield break;
         }
-
         JSONNode response = JSON.Parse(request.downloadHandler.text);
+        List<Cell> cells = ResponseHandler(response);
         yield return null;
-        returnResponse(response);
+        returnResponse(cells);
     }
 
-    public static IEnumerator PeterAPI(int Id)
+    // test methods
+    public static IEnumerator TestAPI(int Id)
     {
         string baseURL = "https://localhost:5001/api/";
         string tagURL = baseURL + "tag/" + Id.ToString();
@@ -69,8 +91,7 @@ public class ViRMA_APIController : MonoBehaviour
         int tagsetId = tag["TagsetId"];
         print("Id: " + tagId.ToString() + " Name: " + tagName.ToString() + " tagsetId: " + tagsetId);
     }
-
-    static void GenericPOST()
+    static void TestGenericPOST()
     {
         var url = "https://reqbin.com/echo/post/json";
 
@@ -100,5 +121,4 @@ public class ViRMA_APIController : MonoBehaviour
 
         Debug.Log(httpResponse.StatusCode);
     }
-
 }

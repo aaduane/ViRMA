@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using Valve.VR;
@@ -7,52 +8,48 @@ using Valve.VR.InteractionSystem;
 
 public class ViRMA_NavController : MonoBehaviour
 {
-    public SteamVR_ActionSet NodeNavigationControls;
-    public SteamVR_Action_Boolean NodeNavigationToggle;
+    // public 
+    public SteamVR_ActionSet CellNavigationControls;
+    public SteamVR_Action_Boolean CellNavigationToggle;
 
+    // private
     private Rigidbody rigidBody;
-
     private float previousDistanceBetweenHands; 
-
     private Vector3 maxNodeScale = new Vector3(1.0f, 1.0f, 1.0f);
     private Vector3 minNodeScale = new Vector3(0.1f, 0.1f, 0.1f);
     private float defaultNodeSize = 0.2f;
     private float defaultNodeSpacing = 1.5f;
-
     private Bounds maximumScrollBounds;
     private GameObject boundingBox;
 
     private void Awake()
     {
+        // assign globals
         rigidBody = GetComponent<Rigidbody>();
     }
 
     private void Start()
     {
+        // test dummy data
+        List<ViRMA_APIController.CellParamHandler> paramHandlers = GenerateDummyData(); 
 
-        // medium results
-        string url = "cell?xAxis={'AxisType': 'Tagset', 'TagsetId': 7}&yAxis={'AxisType': 'Tagset', 'TagsetId': 3}";
+        // get an initial call too test
+        StartCoroutine(ViRMA_APIController.GetCells(paramHandlers, (response) => {
 
-        // large results
-        //string url = "cell?xAxis={'AxisType': 'Tagset', 'TagsetId': 7}&yAxis={'AxisType': 'Tagset', 'TagsetId': 7}&zAxis={'AxisType': 'Tagset', 'TagsetId': 7}"; 
+            // retriece handled data from server
+            List<ViRMA_APIController.Cell> cells = response;
 
-        StartCoroutine(ViRMA_APIController.CallAPI(url, (response) => {
+            // generate cells and their posiitons, centered on a parent
+            GenerateCells(cells);
 
-            Debug.Log(response.Count + " results");
-            foreach (var obj in response)
-            {
-                /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// MOVE THIS TO API CONTROLLER
-                ViRMA_APIController.Cell newCell = new ViRMA_APIController.Cell();
-                newCell.Coordinates = new Vector3(obj.Value["x"], obj.Value["y"], obj.Value["z"]);
-                newCell.ImageName = obj.Value["CubeObjects"][0]["FileName"];
-                GenerateNode(newCell);
-            }       
+            // calculate bounding box to set cells positional limits
+            CalculateBoundingBox();      
 
-            CenterGridOnNodes();
-            CalculateBoundingBox();
-            //ToggleBoundingBox();
+            // place cells in front of player
             PlaceInFrontOfPlayer(8f);
-            NodeNavigationControls.Activate();
+
+            // activate navigation action controls
+            CellNavigationControls.Activate();
         }));
     }
 
@@ -63,105 +60,119 @@ public class ViRMA_NavController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        NodeNavigationController();
-        NodeNavigationLimiter();
+        // control call navigation and spatial limitations each fixed frame
+        CellNavigationController();
+        CellNavigationLimiter();
     }
 
-    public void GenerateNode(ViRMA_APIController.Cell newCell)
+    // cell generation
+    public void GenerateCells(List<ViRMA_APIController.Cell> cells)
     {
-        GameObject node = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        node.transform.localScale = new Vector3(defaultNodeSize * 1.5f, defaultNodeSize, defaultNodeSize);
-        float spacingMultipler = defaultNodeSize + (defaultNodeSize * defaultNodeSpacing);
-        Vector3 nodePosition = new Vector3(newCell.Coordinates.x, newCell.Coordinates.y, newCell.Coordinates.z) * spacingMultipler;
-        node.transform.position = nodePosition;
-        node.transform.parent = transform;
+        // loop through all cells data from server
+        foreach (var newCell in cells)
+        {
+            // create a primitive cube and set its scale to match image aspect ratio
+            GameObject node = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            node.transform.localScale = new Vector3(defaultNodeSize * 1.5f, defaultNodeSize, defaultNodeSize);
 
+            // assign coordinates to cell from server using a pre-defined space multiplier
+            float spacingMultipler = defaultNodeSize + (defaultNodeSize * defaultNodeSpacing);
+            Vector3 nodePosition = new Vector3(newCell.Coordinates.x, newCell.Coordinates.y, newCell.Coordinates.z) * spacingMultipler;        
+            node.transform.position = nodePosition;
+            node.transform.parent = transform;
 
-        string projectRoot = System.IO.Directory.GetCurrentDirectory().ToString() + "/LaugavegurDataDDS/";
-        string imageNameDDS = newCell.ImageName.Substring(0, newCell.ImageName.Length - 4) + ".dds";
+            // use filename to assign image .dds as texture from local system folder
+            string projectRoot = System.IO.Directory.GetCurrentDirectory().ToString() + "/LaugavegurDataDDS/";
+            string imageNameDDS = newCell.ImageName.Substring(0, newCell.ImageName.Length - 4) + ".dds";
+            byte[] imageBytes = File.ReadAllBytes(projectRoot + imageNameDDS);
+            Texture2D imageTexture = ConvertImage(imageBytes);
+            node.GetComponent<Renderer>().material.mainTexture = imageTexture;
+            //node.GetComponent<Renderer>().material.SetTextureScale("_MainTex", new Vector2(1, -1));    
 
-        byte[] imageBytes = File.ReadAllBytes(projectRoot + imageNameDDS);
-        Texture2D imageTexture = ConvertImage(imageBytes);
-        node.GetComponent<Renderer>().material.mainTexture = imageTexture;
-        //node.GetComponent<Renderer>().material.SetTextureScale("_MainTex", new Vector2(1, -1));
+            // for debugging
+            // Debug.Log("X: " + newCell.Coordinates.x + " Y: " + newCell.Coordinates.y + " Z: " + newCell.Coordinates.z);
+        }
+
+        // center the parent on all of the generated cubes
+        CenterParentOnCells();
+    }
+    private List<ViRMA_APIController.CellParamHandler> GenerateDummyData()
+    {
+        //string url = "cell?xAxis={'AxisType': 'Tagset', 'TagsetId': 7}&yAxis={'AxisType': 'Tagset', 'TagsetId': 3}"; 
+        //string url = "cell?xAxis={'AxisType': 'Tagset', 'TagsetId': 7}&yAxis={'AxisType': 'Tagset', 'TagsetId': 7}&zAxis={'AxisType': 'Tagset', 'TagsetId': 7}";
+
+        List<ViRMA_APIController.CellParamHandler> paramHandlers = new List<ViRMA_APIController.CellParamHandler>();
+        ViRMA_APIController.CellParamHandler paramHandler1 = new ViRMA_APIController.CellParamHandler
+        {
+            Call = "cell",
+            Axis = "x",
+            Id = 77,
+            Type = "Hierarchy"
+        };
+        paramHandlers.Add(paramHandler1);
+        ViRMA_APIController.CellParamHandler paramHandler2 = new ViRMA_APIController.CellParamHandler
+        {
+            Call = "cell",
+            Axis = "y",
+            Id = 7,
+            Type = "Tagset"
+        };
+        paramHandlers.Add(paramHandler2);
+        return paramHandlers;
+    }
+    public static Texture2D ConvertImage(byte[] ddsBytes)
+    {
+        byte ddsSizeCheck = ddsBytes[4];
+        if (ddsSizeCheck != 124)
+        {
+            throw new Exception("Invalid DDS DXTn texture size! (not 124)");
+        }
+        int height = ddsBytes[13] * 256 + ddsBytes[12];
+        int width = ddsBytes[17] * 256 + ddsBytes[16];
+
+        int ddsHeaderSize = 128;
+        byte[] dxtBytes = new byte[ddsBytes.Length - ddsHeaderSize];
+        Buffer.BlockCopy(ddsBytes, ddsHeaderSize, dxtBytes, 0, ddsBytes.Length - ddsHeaderSize);
+        Texture2D texture = new Texture2D(width, height, TextureFormat.DXT1, false);
+
+        texture.LoadRawTextureData(dxtBytes);
+        texture.Apply();
+        return (texture);
     }
 
-    
     // node navigation (position, rotation, scale)
-    private void NodeNavigationController()
+    private void CellNavigationController()
     {
-        if (NodeNavigationToggle[SteamVR_Input_Sources.LeftHand].state && NodeNavigationToggle[SteamVR_Input_Sources.RightHand].state)
+        if (CellNavigationToggle[SteamVR_Input_Sources.LeftHand].state && CellNavigationToggle[SteamVR_Input_Sources.RightHand].state)
         {
             // both triggers held down
-            ToggleNodeScaling();
+            ToggleCellScaling();
         }
-        else if (NodeNavigationToggle[SteamVR_Input_Sources.LeftHand].state || NodeNavigationToggle[SteamVR_Input_Sources.RightHand].state)
+        else if (CellNavigationToggle[SteamVR_Input_Sources.LeftHand].state || CellNavigationToggle[SteamVR_Input_Sources.RightHand].state)
         {
             // one trigger held down
-            if (NodeNavigationToggle[SteamVR_Input_Sources.RightHand].state)
+            if (CellNavigationToggle[SteamVR_Input_Sources.RightHand].state)
             {
                 // right trigger held down
-                ToggleNodePositioning();
+                ToggleCellPositioning();
             }
 
-            if (NodeNavigationToggle[SteamVR_Input_Sources.LeftHand].state)
+            if (CellNavigationToggle[SteamVR_Input_Sources.LeftHand].state)
             {
                 // left trigger held down
-                ToggleNodeRotation();
+                ToggleCellRotation();
             }
         }
         else
         {
+            // no triggers held down
             if (previousDistanceBetweenHands != 0)
             {
                 previousDistanceBetweenHands = 0;
             }
         }    
     }
-    private void NodeNavigationLimiter()
-    {
-        if (Player.instance)
-        {
-            Vector3 currentVelocity = rigidBody.velocity;
-
-            // x and z
-            float boundary;
-            if (maximumScrollBounds.size.x > maximumScrollBounds.size.z)
-            {
-                boundary = maximumScrollBounds.size.x;
-            }
-            else
-            {
-                boundary = maximumScrollBounds.size.z;
-            }
-            if (Vector3.Distance(transform.position, Player.instance.hmdTransform.transform.position) > boundary) 
-            {
-                Vector3 normalisedDirection = (transform.position - Player.instance.hmdTransform.transform.position).normalized;
-                Vector3 v = rigidBody.velocity;
-                float d = Vector3.Dot(v, normalisedDirection);
-                if (d > 0f) v -= normalisedDirection * d;
-                rigidBody.velocity = v;
-            }
-
-            // y max
-            float maxDistanceY = Player.instance.eyeHeight + maximumScrollBounds.extents.y;       
-            if (transform.position.y >= maxDistanceY && currentVelocity.y > 0)
-            {
-                currentVelocity.y = 0;
-                rigidBody.velocity = currentVelocity;
-            }
-
-            // y min
-            float minDistanceY = Player.instance.eyeHeight - maximumScrollBounds.extents.y;
-            if (transform.position.y <= minDistanceY && currentVelocity.y < 0)
-            {
-                currentVelocity.y = 0;
-                rigidBody.velocity = currentVelocity;
-            }
-            
-        }
-    }
-    private void ToggleNodePositioning()
+    private void ToggleCellPositioning()
     {
         rigidBody.velocity = Vector3.zero;
         rigidBody.angularVelocity = Vector3.zero;
@@ -175,7 +186,7 @@ public class ViRMA_NavController : MonoBehaviour
             rigidBody.velocity = transform.TransformDirection(localVelocity) * 2f;
         }
     }
-    private void ToggleNodeRotation()
+    private void ToggleCellRotation()
     {
         rigidBody.velocity = Vector3.zero;
         rigidBody.angularVelocity = Vector3.zero;
@@ -186,7 +197,7 @@ public class ViRMA_NavController : MonoBehaviour
         localAngularVelocity.z = 0;
         rigidBody.angularVelocity = transform.TransformDirection(localAngularVelocity) * 0.1f;
     }
-    private void ToggleNodeScaling()
+    private void ToggleCellScaling()
     {
         Vector3 leftHandPosition = Player.instance.leftHand.transform.position;
         Vector3 rightHandPosition = Player.instance.rightHand.transform.position;
@@ -215,9 +226,45 @@ public class ViRMA_NavController : MonoBehaviour
         // calculate bounding box again
         CalculateBoundingBox();
     }
-  
-    // general classes
-    private void CenterGridOnNodes()
+    private void CellNavigationLimiter()
+    {
+        if (Player.instance)
+        {
+            Vector3 currentVelocity = rigidBody.velocity;
+
+            // x and z
+            float boundary = Mathf.Max(Mathf.Max(maximumScrollBounds.size.x, maximumScrollBounds.size.y), maximumScrollBounds.size.z);
+            if (Vector3.Distance(transform.position, Player.instance.hmdTransform.transform.position) > boundary)
+            {
+                Vector3 normalisedDirection = (transform.position - Player.instance.hmdTransform.transform.position).normalized;
+                Vector3 v = rigidBody.velocity;
+                float d = Vector3.Dot(v, normalisedDirection);
+                if (d > 0f) v -= normalisedDirection * d;
+                rigidBody.velocity = v;
+            }
+
+            // y max
+            float maxDistanceY = Player.instance.eyeHeight + maximumScrollBounds.extents.y;
+            if (transform.position.y >= maxDistanceY && currentVelocity.y > 0)
+            {
+                currentVelocity.y = 0;
+                rigidBody.velocity = currentVelocity;
+            }
+
+            // y min
+            float minDistanceY = Player.instance.eyeHeight - maximumScrollBounds.extents.y;
+            if (transform.position.y <= minDistanceY && currentVelocity.y < 0)
+            {
+                currentVelocity.y = 0;
+                rigidBody.velocity = currentVelocity;
+            }
+
+        }
+    }
+
+
+    // general methods
+    private void CenterParentOnCells()
     {
         Transform[] children = GetComponentsInChildren<Transform>();
         Vector3 newPosition = Vector3.zero;
@@ -235,7 +282,6 @@ public class ViRMA_NavController : MonoBehaviour
     }
     private void CalculateBoundingBox()
     {
-
         // calculate bounding box
         Renderer[] meshes = GetComponentsInChildren<Renderer>();
         Bounds bounds = new Bounds(transform.position, Vector3.zero);
@@ -245,6 +291,8 @@ public class ViRMA_NavController : MonoBehaviour
         }
         maximumScrollBounds = bounds;
 
+        // toggle bounding box visibility for testing
+        // ToggleBoundingBox();
     }
     private void PlaceInFrontOfPlayer(float distance)
     {
@@ -255,6 +303,9 @@ public class ViRMA_NavController : MonoBehaviour
         transform.position = spawnPos;
         transform.LookAt(Player.instance.hmdTransform.position);
     }
+
+
+    // testing methods
     private void ToggleBoundingBox()
     {
         boundingBox = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -266,23 +317,21 @@ public class ViRMA_NavController : MonoBehaviour
         boundingBox.transform.position = maximumScrollBounds.center;
         boundingBox.transform.SetParent(transform);
     }
-
-    // testing
-    private void TestRotationTechnique () {
+    private void CellRotationTest() {
 
         // need to be global
         Quaternion initialCubesRotation = Quaternion.identity;
         Quaternion initialControllerRotation = Quaternion.identity;
         bool set = false;
 
-        if (NodeNavigationToggle[SteamVR_Input_Sources.LeftHand].state && NodeNavigationToggle[SteamVR_Input_Sources.RightHand].state)
+        if (CellNavigationToggle[SteamVR_Input_Sources.LeftHand].state && CellNavigationToggle[SteamVR_Input_Sources.RightHand].state)
         {
             Debug.Log("Two controllers!");
         }
-        else if (NodeNavigationToggle[SteamVR_Input_Sources.LeftHand].state || NodeNavigationToggle[SteamVR_Input_Sources.RightHand].state)
+        else if (CellNavigationToggle[SteamVR_Input_Sources.LeftHand].state || CellNavigationToggle[SteamVR_Input_Sources.RightHand].state)
         {
             Debug.Log("One controller!");
-            if (NodeNavigationToggle[SteamVR_Input_Sources.RightHand].state)
+            if (CellNavigationToggle[SteamVR_Input_Sources.RightHand].state)
             {
                 if (set == false)
                 {
@@ -299,7 +348,7 @@ public class ViRMA_NavController : MonoBehaviour
             set = false;
         }
     }
-    private void GenerateTestGrid(Vector3 blueprint)
+    private void GenerateTestCells(Vector3 blueprint)
     {
         UnityEngine.Object[] imagesAsTextures = Resources.LoadAll("Test Images", typeof(Material));
 
@@ -345,23 +394,5 @@ public class ViRMA_NavController : MonoBehaviour
         }
         parent.gameObject.SetActive(true);
     }
-    public static Texture2D ConvertImage(byte[] ddsBytes)
-    {
-        byte ddsSizeCheck = ddsBytes[4];
-        if (ddsSizeCheck != 124)
-        {
-            throw new Exception("Invalid DDS DXTn texture size! (not 124)");
-        }
-        int height = ddsBytes[13] * 256 + ddsBytes[12];
-        int width = ddsBytes[17] * 256 + ddsBytes[16];
 
-        int ddsHeaderSize = 128;
-        byte[] dxtBytes = new byte[ddsBytes.Length - ddsHeaderSize];
-        Buffer.BlockCopy(ddsBytes, ddsHeaderSize, dxtBytes, 0, ddsBytes.Length - ddsHeaderSize);
-        Texture2D texture = new Texture2D(width, height, TextureFormat.DXT1, false);
-
-        texture.LoadRawTextureData(dxtBytes);
-        texture.Apply();
-        return (texture);
-    }
 }

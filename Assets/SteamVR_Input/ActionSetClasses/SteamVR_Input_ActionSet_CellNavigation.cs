@@ -14,14 +14,14 @@ namespace Valve.VR
     using UnityEngine;
     
     
-    public class SteamVR_Input_ActionSet_NodeNavigation : Valve.VR.SteamVR_ActionSet
+    public class SteamVR_Input_ActionSet_CellNavigation : Valve.VR.SteamVR_ActionSet
     {
         
         public virtual SteamVR_Action_Boolean Toggle
         {
             get
             {
-                return SteamVR_Actions.nodeNavigation_Toggle;
+                return SteamVR_Actions.cellNavigation_Toggle;
             }
         }
     }
