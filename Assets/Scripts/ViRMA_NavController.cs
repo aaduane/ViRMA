@@ -8,24 +8,32 @@ using Valve.VR.InteractionSystem;
 
 public class ViRMA_NavController : MonoBehaviour
 {
-    // public 
+    /* --- public --- */
     public SteamVR_ActionSet CellNavigationControls;
     public SteamVR_Action_Boolean CellNavigationToggle;
 
-    // private
+    /*--- private --- */
+
+    // general
     private Rigidbody rigidBody;
-    private float previousDistanceBetweenHands; 
-    private Vector3 maxNodeScale = new Vector3(1.0f, 1.0f, 1.0f);
-    private Vector3 minNodeScale = new Vector3(0.1f, 0.1f, 0.1f);
-    private float defaultNodeSize = 0.2f;
-    private float defaultNodeSpacing = 1.5f;
+    private float previousDistanceBetweenHands;
     private Bounds maximumScrollBounds;
     private GameObject boundingBox;
 
+    // cell properties
+    private float maxParentScale = 1.0f;
+    private float minParentScale = 0.1f;
+    private float defaultParentSize = 0.2f;
+    private float defaultCellSpacingRatio = 1.5f;
+
     private void Awake()
     {
-        // assign globals
+        // setup default components
+        gameObject.AddComponent<Rigidbody>();
         rigidBody = GetComponent<Rigidbody>();
+        rigidBody.useGravity = false;
+        rigidBody.drag = 0.1f;
+        rigidBody.angularDrag = 0.5f;
     }
 
     private void Start()
@@ -39,26 +47,39 @@ public class ViRMA_NavController : MonoBehaviour
             // retriece handled data from server
             List<ViRMA_APIController.Cell> cells = response;
 
+            // generate cell axes
+            //GenerateAxes(cells);
+
             // generate cells and their posiitons, centered on a parent
             GenerateCells(cells);
 
+            // center the parent on all of the generated cubes
+            CenterParentOnCells();
+
+            // set initial size of parent
+            //transform.localScale = Vector3.one * defaultParentSize;
+
             // calculate bounding box to set cells positional limits
-            CalculateBoundingBox();      
+            CalculateBoundingBox();
 
             // place cells in front of player
-            PlaceInFrontOfPlayer(8f);
+            //PlaceInFrontOfPlayer(8f);
 
             // activate navigation action controls
-            CellNavigationControls.Activate();
+            //CellNavigationControls.Activate();
+
+
+            // TESTING
+            GameObject testSphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            Destroy(testSphere.GetComponent<Collider>());
+            testSphere.transform.localScale = Vector3.one * 0.5f;
+            testSphere.transform.position = boundingBox.transform.position;
+            testSphere.transform.rotation = boundingBox.transform.rotation;
+            testSphere.transform.parent = transform;
         }));
     }
 
-    private IEnumerator LateStart()
-    {
-        yield return new WaitForSeconds(1);
-    }
-
-    private void FixedUpdate()
+    private void Update()
     {
         // control call navigation and spatial limitations each fixed frame
         CellNavigationController();
@@ -73,16 +94,16 @@ public class ViRMA_NavController : MonoBehaviour
         {
             // create a primitive cube and set its scale to match image aspect ratio
             GameObject node = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            node.transform.localScale = new Vector3(defaultNodeSize * 1.5f, defaultNodeSize, defaultNodeSize);
+            float aspectRatio = 1.5f;
+            node.transform.localScale = new Vector3(aspectRatio, 1, 1);
 
             // assign coordinates to cell from server using a pre-defined space multiplier
-            float spacingMultipler = defaultNodeSize + (defaultNodeSize * defaultNodeSpacing);
-            Vector3 nodePosition = new Vector3(newCell.Coordinates.x, newCell.Coordinates.y, newCell.Coordinates.z) * spacingMultipler;        
+            Vector3 nodePosition = new Vector3(newCell.Coordinates.x, newCell.Coordinates.y, newCell.Coordinates.z) * (defaultCellSpacingRatio + 1);        
             node.transform.position = nodePosition;
             node.transform.parent = transform;
 
             // use filename to assign image .dds as texture from local system folder
-            string projectRoot = System.IO.Directory.GetCurrentDirectory().ToString() + "/LaugavegurDataDDS/";
+            string projectRoot = ViRMA_APIController.imagesDirectory;
             string imageNameDDS = newCell.ImageName.Substring(0, newCell.ImageName.Length - 4) + ".dds";
             byte[] imageBytes = File.ReadAllBytes(projectRoot + imageNameDDS);
             Texture2D imageTexture = ConvertImage(imageBytes);
@@ -92,34 +113,7 @@ public class ViRMA_NavController : MonoBehaviour
             // for debugging
             // Debug.Log("X: " + newCell.Coordinates.x + " Y: " + newCell.Coordinates.y + " Z: " + newCell.Coordinates.z);
         }
-
-        // center the parent on all of the generated cubes
-        CenterParentOnCells();
-    }
-    private List<ViRMA_APIController.CellParamHandler> GenerateDummyData()
-    {
-        //string url = "cell?xAxis={'AxisType': 'Tagset', 'TagsetId': 7}&yAxis={'AxisType': 'Tagset', 'TagsetId': 3}"; 
-        //string url = "cell?xAxis={'AxisType': 'Tagset', 'TagsetId': 7}&yAxis={'AxisType': 'Tagset', 'TagsetId': 7}&zAxis={'AxisType': 'Tagset', 'TagsetId': 7}";
-
-        List<ViRMA_APIController.CellParamHandler> paramHandlers = new List<ViRMA_APIController.CellParamHandler>();
-        ViRMA_APIController.CellParamHandler paramHandler1 = new ViRMA_APIController.CellParamHandler
-        {
-            Call = "cell",
-            Axis = "x",
-            Id = 77,
-            Type = "Hierarchy"
-        };
-        paramHandlers.Add(paramHandler1);
-        ViRMA_APIController.CellParamHandler paramHandler2 = new ViRMA_APIController.CellParamHandler
-        {
-            Call = "cell",
-            Axis = "y",
-            Id = 7,
-            Type = "Tagset"
-        };
-        paramHandlers.Add(paramHandler2);
-        return paramHandlers;
-    }
+    }  
     public static Texture2D ConvertImage(byte[] ddsBytes)
     {
         byte ddsSizeCheck = ddsBytes[4];
@@ -139,6 +133,85 @@ public class ViRMA_NavController : MonoBehaviour
         texture.Apply();
         return (texture);
     }
+    public void GenerateAxes(List<ViRMA_APIController.Cell> cells)
+    {
+        float maxX = 0;
+        float maxY = 0;
+        float maxZ = 0;
+        foreach (var newCell in cells)
+        {
+            if (newCell.Coordinates.x > maxX)
+            {
+                maxX = newCell.Coordinates.x;
+            }
+            if (newCell.Coordinates.y > maxY)
+            {
+                maxY = newCell.Coordinates.y;
+            }
+            if (newCell.Coordinates.z > maxZ)
+            {
+                maxZ = newCell.Coordinates.z;
+            }
+        }
+ 
+        GameObject oAxisObj = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        oAxisObj.GetComponent<Renderer>().material = Resources.Load("Materials/BasicTransparent") as Material;
+        oAxisObj.GetComponent<Renderer>().material.color = new Color32(0, 0, 0, 255);
+        oAxisObj.name = "Axis_Origin";
+        oAxisObj.transform.position = Vector3.zero;
+        //oAxisObj.transform.localScale = Vector3.one * 0.5f;
+        oAxisObj.transform.parent = transform;
+
+        for (int i = 0; i <= maxX; i++)
+        {
+            GameObject xAxisObj = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            xAxisObj.GetComponent<Renderer>().material = Resources.Load("Materials/BasicTransparent") as Material;
+            xAxisObj.GetComponent<Renderer>().material.color = new Color32(255, 0, 0, 130);
+            xAxisObj.name = "Axis_X_" + i;
+            xAxisObj.transform.position = new Vector3(i, 0, 0) * (defaultCellSpacingRatio + 1);
+            //xAxisObj.transform.localScale = Vector3.one * 0.5f;
+            xAxisObj.transform.parent = transform;
+        }
+
+        for (int i = 0; i <= maxY; i++)
+        {
+            GameObject yAxisObj = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            yAxisObj.GetComponent<Renderer>().material = Resources.Load("Materials/BasicTransparent") as Material;
+            yAxisObj.GetComponent<Renderer>().material.color = new Color32(0, 255, 0, 130);
+            yAxisObj.name = "Axis_Y_" + i;
+            yAxisObj.transform.position = new Vector3(0, i, 0) * (defaultCellSpacingRatio + 1);
+            //yAxisObj.transform.localScale = Vector3.one * 0.5f;
+            yAxisObj.transform.parent = transform;
+        }
+
+        for (int i = 0; i <= maxZ; i++)
+        {
+            GameObject zAxisObj = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            zAxisObj.GetComponent<Renderer>().material = Resources.Load("Materials/BasicTransparent") as Material;
+            zAxisObj.GetComponent<Renderer>().material.color = new Color32(0, 0, 255, 130);
+            zAxisObj.name = "Axis_Z_" + i;
+            zAxisObj.transform.position = new Vector3(0, 0, i) * (defaultCellSpacingRatio + 1);
+            // zAxisObj.transform.localScale = Vector3.one * 0.5f;
+            zAxisObj.transform.parent = transform;
+        }
+    }
+    private void CenterParentOnCells()
+    {
+        Transform[] children = GetComponentsInChildren<Transform>();
+        Vector3 newPosition = Vector3.one;
+        foreach (var child in children)
+        {
+            newPosition += child.position;
+            child.parent = null;
+        }
+        newPosition /= children.Length;
+        gameObject.transform.position = newPosition;
+        foreach (var child in children)
+        {
+            child.parent = gameObject.transform;
+        }
+    }
+
 
     // node navigation (position, rotation, scale)
     private void CellNavigationController()
@@ -179,11 +252,19 @@ public class ViRMA_NavController : MonoBehaviour
 
         if (Player.instance.rightHand.GetTrackedObjectVelocity().magnitude > 0.5f)
         {
+            /*      
             Vector3 localVelocity = transform.InverseTransformDirection(Player.instance.rightHand.GetTrackedObjectVelocity());
-            //localVelocity.x = 0;
-            //localVelocity.y = 0;
-            //localVelocity.z = 0;
+            localVelocity.x = 0;
+            localVelocity.y = 0;
+            localVelocity.z = 0;
             rigidBody.velocity = transform.TransformDirection(localVelocity) * 2f;
+            */
+
+            // scale throwing velocity with the size of the parent
+            float parentMagnitude = transform.lossyScale.magnitude;
+            float thrustAdjuster = parentMagnitude * 5f;
+            Vector3 controllerVelocity = Player.instance.rightHand.GetTrackedObjectVelocity();
+            rigidBody.velocity = controllerVelocity * thrustAdjuster;
         }
     }
     private void ToggleCellRotation()
@@ -199,28 +280,30 @@ public class ViRMA_NavController : MonoBehaviour
     }
     private void ToggleCellScaling()
     {
-        Vector3 leftHandPosition = Player.instance.leftHand.transform.position;
-        Vector3 rightHandPosition = Player.instance.rightHand.transform.position;
-        float thisFramedistance = Mathf.Round(Vector3.Distance(leftHandPosition, rightHandPosition) * 100.0f) * 0.01f;
-
         rigidBody.velocity = Vector3.zero;
         rigidBody.angularVelocity = Vector3.zero;
 
+        Vector3 leftHandPosition = Player.instance.leftHand.transform.position;
+        Vector3 rightHandPosition = Player.instance.rightHand.transform.position;
+        float thisFrameDistance = Mathf.Round(Vector3.Distance(leftHandPosition, rightHandPosition) * 100.0f) * 0.01f;
+
         if (previousDistanceBetweenHands == 0)
         {
-            previousDistanceBetweenHands = thisFramedistance;
+            previousDistanceBetweenHands = thisFrameDistance;
         }
         else
         {
-            if (thisFramedistance > previousDistanceBetweenHands)
+            if (thisFrameDistance > previousDistanceBetweenHands)
             {
-                transform.localScale = Vector3.Lerp(transform.localScale, maxNodeScale, 2f * Time.deltaTime);
+                Vector3 targetScale = Vector3.one * maxParentScale;            
+                transform.localScale = Vector3.Lerp(transform.localScale, targetScale, 2f * Time.deltaTime);
             }
-            if (thisFramedistance < previousDistanceBetweenHands)
+            if (thisFrameDistance < previousDistanceBetweenHands)
             {
-                transform.localScale = Vector3.Lerp(transform.localScale, minNodeScale, 2f * Time.deltaTime);
+                Vector3 targetScale = Vector3.one * minParentScale;
+                transform.localScale = Vector3.Lerp(transform.localScale, targetScale, 2f * Time.deltaTime);
             }
-            previousDistanceBetweenHands = thisFramedistance;
+            previousDistanceBetweenHands = thisFrameDistance;
         }
 
         // calculate bounding box again
@@ -263,23 +346,7 @@ public class ViRMA_NavController : MonoBehaviour
     }
 
 
-    // general methods
-    private void CenterParentOnCells()
-    {
-        Transform[] children = GetComponentsInChildren<Transform>();
-        Vector3 newPosition = Vector3.zero;
-        foreach (var child in children)
-        {
-            newPosition += child.position;
-            child.parent = null;
-        }
-        newPosition /= children.Length;
-        gameObject.transform.position = newPosition;
-        foreach (var child in children)
-        {
-            child.parent = gameObject.transform;
-        }
-    }
+    // general methods 
     private void CalculateBoundingBox()
     {
         // calculate bounding box
@@ -292,7 +359,7 @@ public class ViRMA_NavController : MonoBehaviour
         maximumScrollBounds = bounds;
 
         // toggle bounding box visibility for testing
-        // ToggleBoundingBox();
+        ToggleBoundingBox();
     }
     private void PlaceInFrontOfPlayer(float distance)
     {
@@ -306,16 +373,52 @@ public class ViRMA_NavController : MonoBehaviour
 
 
     // testing methods
+    private List<ViRMA_APIController.CellParamHandler> GenerateDummyData()
+    {
+        // string url = "cell?xAxis={'AxisType': 'Tagset', 'TagsetId': 7}&yAxis={'AxisType': 'Tagset', 'TagsetId': 3}"; 
+        // string url = "cell?xAxis={'AxisType': 'Tagset', 'TagsetId': 7}&yAxis={'AxisType': 'Tagset', 'TagsetId': 7}&zAxis={'AxisType': 'Tagset', 'TagsetId': 7}";
+        // localhost:44317/api/cell/?xAxis={"AxisDirection":"X","AxisType":"Tagset","TagsetId":3,"HierarchyNodeId":0}&yAxis={"AxisDirection":"Y","AxisType":"Tagset","TagsetId":7,"HierarchyNodeId":0}&zAxis={"AxisDirection":"Z","AxisType":"Hierarchy","TagsetId":0,"HierarchyNodeId":77}
+
+        List<ViRMA_APIController.CellParamHandler> paramHandlers = new List<ViRMA_APIController.CellParamHandler>();
+        ViRMA_APIController.CellParamHandler paramHandler1 = new ViRMA_APIController.CellParamHandler
+        {
+            Call = "cell",
+            Axis = "x",
+            Id = 77,
+            Type = "Hierarchy"
+        };
+        paramHandlers.Add(paramHandler1);
+        ViRMA_APIController.CellParamHandler paramHandler2 = new ViRMA_APIController.CellParamHandler
+        {
+            Call = "cell",
+            Axis = "y",
+            Id = 7,
+            Type = "Tagset"
+        };
+        paramHandlers.Add(paramHandler2);
+        ViRMA_APIController.CellParamHandler paramHandler3 = new ViRMA_APIController.CellParamHandler
+        {
+            Call = "cell",
+            Axis = "z",
+            Id = 3,
+            Type = "Tagset"
+        };
+        paramHandlers.Add(paramHandler3);
+        return paramHandlers;
+    }
     private void ToggleBoundingBox()
     {
-        boundingBox = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        Destroy(boundingBox.GetComponent<Collider>());
-        boundingBox.GetComponent<Renderer>().material = Resources.Load("Materials/BasicTransparent") as Material;
-        boundingBox.GetComponent<Renderer>().material.color = new Color32(255, 0, 0, 130);
-        boundingBox.name = "BoundingBox";
-        boundingBox.transform.localScale = new Vector3(maximumScrollBounds.size.x, maximumScrollBounds.size.y, maximumScrollBounds.size.z);
-        boundingBox.transform.position = maximumScrollBounds.center;
-        boundingBox.transform.SetParent(transform);
+        if (!boundingBox)
+        {
+            boundingBox = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            Destroy(boundingBox.GetComponent<Collider>());
+            boundingBox.GetComponent<Renderer>().material = Resources.Load("Materials/BasicTransparent") as Material;
+            boundingBox.GetComponent<Renderer>().material.color = new Color32(255, 0, 0, 130);
+            boundingBox.name = "BoundingBox";
+            boundingBox.transform.position = maximumScrollBounds.center;
+            boundingBox.transform.localScale = maximumScrollBounds.size;
+            boundingBox.transform.SetParent(transform);
+        }     
     }
     private void CellRotationTest() {
 
@@ -362,16 +465,16 @@ public class ViRMA_NavController : MonoBehaviour
                 for (int z = 0; z < blueprint.z; z++)
                 {
                     // create cubes and give them spaced out positions
-                    GameObject node = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                    node.transform.localScale = new Vector3(defaultNodeSize, defaultNodeSize, defaultNodeSize);
-                    float spacingMultipler = defaultNodeSize + (defaultNodeSize * defaultNodeSpacing);
+                    GameObject cell = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                    cell.transform.localScale = new Vector3(defaultParentSize, defaultParentSize, defaultParentSize);
+                    float spacingMultipler = defaultParentSize + (defaultParentSize * defaultCellSpacingRatio);
                     Vector3 nodePosition = new Vector3(x, y, z) * spacingMultipler;
-                    node.transform.position = nodePosition;
-                    node.transform.parent = transform;
+                    cell.transform.position = nodePosition;
+                    cell.transform.parent = transform;
 
                     // apply textures 
                     int imageId = UnityEngine.Random.Range(0, imagesAsTextures.Length);
-                    node.GetComponent<Renderer>().material = imagesAsTextures[imageId] as Material;
+                    cell.GetComponent<Renderer>().material = imagesAsTextures[imageId] as Material;
                 }
             }
         }

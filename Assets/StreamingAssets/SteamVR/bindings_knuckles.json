@@ -105,13 +105,6 @@
             }
          ]
       },
-      "/actions/cubenavigation" : {
-         "chords" : [],
-         "haptics" : [],
-         "poses" : [],
-         "skeleton" : [],
-         "sources" : []
-      },
       "/actions/default" : {
          "chords" : [],
          "haptics" : [
@@ -259,13 +252,6 @@
                "path" : "/user/hand/right/input/trackpad"
             }
          ]
-      },
-      "/actions/nodenavigation" : {
-         "chords" : [],
-         "haptics" : [],
-         "poses" : [],
-         "skeleton" : [],
-         "sources" : []
       },
       "/actions/platformer" : {
          "chords" : [],

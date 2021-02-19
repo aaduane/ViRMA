@@ -11,6 +11,8 @@ public class ViRMA_APIController : MonoBehaviour
 {
     // public
     public static string serverAddress = "https://localhost:44317/api/";
+    //public static string imagesDirectory = "C:/Users/aaron/Documents/Unity Projects/ViRMA/LaugavegurDataDDS/"; // for test build
+    public static string imagesDirectory = System.IO.Directory.GetCurrentDirectory().ToString() + "/LaugavegurDataDDS/";
 
     // cell API methods
     public class Cell
