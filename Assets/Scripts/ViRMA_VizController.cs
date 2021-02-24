@@ -6,11 +6,18 @@ using UnityEngine;
 using Valve.VR;
 using Valve.VR.InteractionSystem;
 
-public class ViRMA_NavController : MonoBehaviour
+public class ViRMA_VizController : MonoBehaviour
 {
     /* --- public --- */
+
+    // actions
     public SteamVR_ActionSet CellNavigationControls;
     public SteamVR_Action_Boolean CellNavigationToggle;
+
+    // cells and axes objects
+
+    [HideInInspector] public List<GameObject> Cells, AxisXPoints, AxisYPoints, AxisZPoints;
+    [HideInInspector] public LineRenderer AxisXLine, AxisYLine, AxisZLine;
 
     /*--- private --- */
 
@@ -28,7 +35,7 @@ public class ViRMA_NavController : MonoBehaviour
 
     private void Awake()
     {
-        // setup wrappers
+        // setup wrapper
         cellsandAxesWrapper = new GameObject("CellsAndAxesWrapper");
 
         // setup rigidbody
@@ -48,13 +55,13 @@ public class ViRMA_NavController : MonoBehaviour
         StartCoroutine(ViRMA_APIController.GetCells(paramHandlers, (response) => {
 
             // retriece handled data from server
-            List<ViRMA_APIController.Cell> cells = response;
+            List<ViRMA_APIController.Cell> cellData = response;
 
             // generate cell axes
-            GenerateAxes(cells);
+            GenerateAxes(cellData);
 
             // generate cells and their posiitons, centered on a parent
-            GenerateCells(cells);
+            GenerateCells(cellData);
 
             // set center point of wrapper around cells and axes
             CenterParentOnCellsAndAxes();
@@ -63,10 +70,13 @@ public class ViRMA_NavController : MonoBehaviour
             CalculateCellsAndAxesBounds();
 
             // show cells/axes bounds and bounds center for debugging
-            ToggleDebuggingBounds(); 
+            // ToggleDebuggingBounds(); 
 
             // add cells and axes to final parent to set default starting scale and position
             SetupDefaultScaleAndPosition();
+
+            // so it does not affect bounds, organise hierarachy after everything is done
+            OrganiseHierarchy();
 
             // activate navigation action controls
             CellNavigationControls.Activate();
@@ -75,41 +85,40 @@ public class ViRMA_NavController : MonoBehaviour
 
     private void Update()
     {
-        // control call navigation and spatial limitations each fixed frame
+        // control call navigation and spatial limitations
         CellNavigationController();
         CellNavigationLimiter();
+
+        // draw axes line renderers 
+        DrawAxesLines();
     }
 
-    // cell generation
-    public void GenerateCells(List<ViRMA_APIController.Cell> cells)
+
+    // cell and axes generation
+    private void GenerateCells(List<ViRMA_APIController.Cell> cellData)
     {  
         // loop through all cells data from server
-        foreach (var newCell in cells)
-        {
+        foreach (var newCellData in cellData)
+        {       
             // create a primitive cube and set its scale to match image aspect ratio
             GameObject cell = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            cell.name = "Cell";
+            cell.name = "Cell(" + newCellData.Coordinates.x + "," + newCellData.Coordinates.y + "," + newCellData.Coordinates.z + ")";
+            cell.AddComponent<ViRMA_Cell>().CellSetup(newCellData);
+            Cells.Add(cell);
+
+            // adjust aspect ratio
             float aspectRatio = 1.5f;
             cell.transform.localScale = new Vector3(aspectRatio, 1, 1);
 
             // assign coordinates to cell from server using a pre-defined space multiplier
-            Vector3 nodePosition = new Vector3(newCell.Coordinates.x, newCell.Coordinates.y, newCell.Coordinates.z) * (defaultCellSpacingRatio + 1);
+            Vector3 nodePosition = new Vector3(newCellData.Coordinates.x, newCellData.Coordinates.y, newCellData.Coordinates.z) * (defaultCellSpacingRatio + 1);
             cell.transform.position = nodePosition;
             cell.transform.parent = cellsandAxesWrapper.transform;
 
-            // use filename to assign image .dds as texture from local system folder
-            string projectRoot = ViRMA_APIController.imagesDirectory;
-            string imageNameDDS = newCell.ImageName.Substring(0, newCell.ImageName.Length - 4) + ".dds";
-            byte[] imageBytes = File.ReadAllBytes(projectRoot + imageNameDDS);
-            Texture2D imageTexture = ConvertImage(imageBytes);
-            cell.GetComponent<Renderer>().material.mainTexture = imageTexture;
-            //node.GetComponent<Renderer>().material.SetTextureScale("_MainTex", new Vector2(1, -1));    
-
-            // for debugging
-            // Debug.Log("X: " + newCell.Coordinates.x + " Y: " + newCell.Coordinates.y + " Z: " + newCell.Coordinates.z);
-        }      
+            // Debug.Log("X: " + newCell.Coordinates.x + " Y: " + newCell.Coordinates.y + " Z: " + newCell.Coordinates.z); // testing
+        }
     }  
-    public static Texture2D ConvertImage(byte[] ddsBytes)
+    private static Texture2D ConvertImage(byte[] ddsBytes)
     {
         byte ddsSizeCheck = ddsBytes[4];
         if (ddsSizeCheck != 124)
@@ -128,7 +137,7 @@ public class ViRMA_NavController : MonoBehaviour
         texture.Apply();
         return (texture);
     }
-    public void GenerateAxes(List<ViRMA_APIController.Cell> cells)
+    private void GenerateAxes(List<ViRMA_APIController.Cell> cells)
     {
         // get max cell axis values
         float maxX = 0;
@@ -151,66 +160,136 @@ public class ViRMA_NavController : MonoBehaviour
         }
  
         // origin
-        GameObject oAxisObj = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        oAxisObj.GetComponent<Renderer>().material = Resources.Load("Materials/BasicTransparent") as Material;
-        oAxisObj.GetComponent<Renderer>().material.color = new Color32(0, 0, 0, 255);
-        oAxisObj.name = "Axis_Origin";
-        oAxisObj.transform.position = Vector3.zero;
-        oAxisObj.transform.localScale = Vector3.one * 0.5f;
-        oAxisObj.transform.parent = cellsandAxesWrapper.transform;
+        GameObject AxisOriginPoint = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        AxisOriginPoint.GetComponent<Renderer>().material = Resources.Load("Materials/BasicTransparent") as Material;
+        AxisOriginPoint.GetComponent<Renderer>().material.color = new Color32(0, 0, 0, 255);
+        AxisOriginPoint.name = "AxisOriginPoint";
+        AxisOriginPoint.transform.position = Vector3.zero;
+        AxisOriginPoint.transform.localScale = Vector3.one * 0.5f;
+        AxisOriginPoint.transform.parent = cellsandAxesWrapper.transform;
+        AxisXPoints.Add(AxisOriginPoint);
+        AxisYPoints.Add(AxisOriginPoint);
+        AxisZPoints.Add(AxisOriginPoint);
 
         // x axis
+        GameObject AxisXLineObj = new GameObject("AxisXLine");
+        AxisXLine = AxisXLineObj.AddComponent<LineRenderer>();
+        AxisXLine.GetComponent<Renderer>().material = Resources.Load("Materials/BasicTransparent") as Material;
+        AxisXLine.GetComponent<Renderer>().material.color = new Color32(255, 0, 0, 130);
+        AxisXLine.positionCount = 2;
+        AxisXLine.startWidth = 0.05f;
         for (int i = 0; i <= maxX; i++)
         {
-            GameObject xAxisObj = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            xAxisObj.GetComponent<Renderer>().material = Resources.Load("Materials/BasicTransparent") as Material;
-            xAxisObj.GetComponent<Renderer>().material.color = new Color32(255, 0, 0, 130);
-            xAxisObj.name = "Axis_X_" + i;
-            xAxisObj.transform.position = new Vector3(i, 0, 0) * (defaultCellSpacingRatio + 1);
-            xAxisObj.transform.localScale = Vector3.one * 0.5f;
-            xAxisObj.transform.parent = cellsandAxesWrapper.transform;
+            GameObject AxisXPoint = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            AxisXPoint.GetComponent<Renderer>().material = Resources.Load("Materials/BasicTransparent") as Material;
+            AxisXPoint.GetComponent<Renderer>().material.color = new Color32(255, 0, 0, 130);
+            AxisXPoint.name = "AxisXPoint" + i;
+            AxisXPoint.transform.position = new Vector3(i, 0, 0) * (defaultCellSpacingRatio + 1);
+            AxisXPoint.transform.localScale = Vector3.one * 0.5f;
+            AxisXPoint.transform.parent = cellsandAxesWrapper.transform;
+            AxisXPoints.Add(AxisXPoint);
         }
 
         // y axis
+        GameObject AxisYLineObj = new GameObject("AxisYLine");
+        AxisYLine = AxisYLineObj.AddComponent<LineRenderer>();
+        AxisYLine.GetComponent<Renderer>().material = Resources.Load("Materials/BasicTransparent") as Material;
+        AxisYLine.GetComponent<Renderer>().material.color = new Color32(0, 255, 0, 130);
+        AxisYLine.positionCount = 2;
+        AxisYLine.startWidth = 0.05f;
         for (int i = 0; i <= maxY; i++)
         {
-            GameObject yAxisObj = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            yAxisObj.GetComponent<Renderer>().material = Resources.Load("Materials/BasicTransparent") as Material;
-            yAxisObj.GetComponent<Renderer>().material.color = new Color32(0, 255, 0, 130);
-            yAxisObj.name = "Axis_Y_" + i;
-            yAxisObj.transform.position = new Vector3(0, i, 0) * (defaultCellSpacingRatio + 1);
-            yAxisObj.transform.localScale = Vector3.one * 0.5f;
-            yAxisObj.transform.parent = cellsandAxesWrapper.transform;
+            GameObject AxisYPoint = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            AxisYPoint.GetComponent<Renderer>().material = Resources.Load("Materials/BasicTransparent") as Material;
+            AxisYPoint.GetComponent<Renderer>().material.color = new Color32(0, 255, 0, 130);
+            AxisYPoint.name = "AxisYPoint" + i;
+            AxisYPoint.transform.position = new Vector3(0, i, 0) * (defaultCellSpacingRatio + 1);
+            AxisYPoint.transform.localScale = Vector3.one * 0.5f;
+            AxisYPoint.transform.parent = cellsandAxesWrapper.transform;
+            AxisYPoints.Add(AxisYPoint);
         }
 
         // z axis
+        GameObject AxisZLineObj = new GameObject("AxisZLine");
+        AxisZLine = AxisZLineObj.AddComponent<LineRenderer>();
+        AxisZLine.GetComponent<Renderer>().material = Resources.Load("Materials/BasicTransparent") as Material;
+        AxisZLine.GetComponent<Renderer>().material.color = new Color32(0, 0, 255, 130);
+        AxisZLine.positionCount = 2;
+        AxisZLine.startWidth = 0.05f;
         for (int i = 0; i <= maxZ; i++)
         {
-            GameObject zAxisObj = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            zAxisObj.GetComponent<Renderer>().material = Resources.Load("Materials/BasicTransparent") as Material;
-            zAxisObj.GetComponent<Renderer>().material.color = new Color32(0, 0, 255, 130);
-            zAxisObj.name = "Axis_Z_" + i;
-            zAxisObj.transform.position = new Vector3(0, 0, i) * (defaultCellSpacingRatio + 1);
-            zAxisObj.transform.localScale = Vector3.one * 0.5f;
-            zAxisObj.transform.parent = cellsandAxesWrapper.transform;
+            GameObject AxisZPoint = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            AxisZPoint.GetComponent<Renderer>().material = Resources.Load("Materials/BasicTransparent") as Material;
+            AxisZPoint.GetComponent<Renderer>().material.color = new Color32(0, 0, 255, 130);
+            AxisZPoint.name = "AxisZPoint" + i;
+            AxisZPoint.transform.position = new Vector3(0, 0, i) * (defaultCellSpacingRatio + 1);
+            AxisZPoint.transform.localScale = Vector3.one * 0.5f;
+            AxisZPoint.transform.parent = cellsandAxesWrapper.transform;
+            AxisZPoints.Add(AxisZPoint);
         }
     }
-    private void CenterParentOnCellsAndAxes()
+    private void DrawAxesLines()
     {
-        Transform[] children = cellsandAxesWrapper.transform.GetComponentsInChildren<Transform>();
-        Vector3 newPosition = Vector3.one;
-        foreach (var child in children)
+        // x axis
+        if (AxisXLine)
         {
-            newPosition += child.position;
-            child.parent = null;
+            if (AxisXPoints.Count > 1)
+            {
+                AxisXLine.SetPosition(0, AxisXPoints[0].transform.position);
+                AxisXLine.SetPosition(1, AxisXPoints[AxisXPoints.Count - 1].transform.position);
+            }
         }
-        newPosition /= children.Length;
-        cellsandAxesWrapper.transform.position = newPosition;
-        foreach (var child in children)
+
+        // y axis
+        if (AxisYLine)
         {
-            child.parent = cellsandAxesWrapper.transform;
+            if (AxisYPoints.Count > 1)
+            {
+                AxisYLine.SetPosition(0, AxisYPoints[0].transform.position);
+                AxisYLine.SetPosition(1, AxisYPoints[AxisYPoints.Count - 1].transform.position);
+            }
+        }
+
+        // z axis
+        if (AxisZLine)
+        {
+            if (AxisZPoints.Count > 1)
+            {
+                AxisZLine.SetPosition(0, AxisZPoints[0].transform.position);
+                AxisZLine.SetPosition(1, AxisZPoints[AxisZPoints.Count - 1].transform.position);
+            }
         }
     }
+    private void OrganiseHierarchy()
+    {
+        // add cells to hierarchy parent
+        GameObject cellsParent = new GameObject("Cells");
+        cellsParent.transform.parent = cellsandAxesWrapper.transform;
+        foreach (var cell in Cells)
+        {
+            cell.transform.parent = cellsParent.transform;
+        }
+
+        // add axes to hierarchy parent
+        GameObject axesParent = new GameObject("Axes");
+        axesParent.transform.parent = cellsandAxesWrapper.transform;
+        foreach (GameObject point in AxisXPoints)
+        {
+            point.transform.parent = axesParent.transform;
+        }
+        AxisXLine.gameObject.transform.parent = axesParent.transform;
+        foreach (GameObject point in AxisYPoints)
+        {
+            point.transform.parent = axesParent.transform;
+        }
+        AxisYLine.gameObject.transform.parent = axesParent.transform;
+        foreach (GameObject point in AxisZPoints)
+        {
+            point.transform.parent = axesParent.transform;
+        }
+        AxisZLine.gameObject.transform.parent = axesParent.transform;
+    }
+
 
     // node navigation (position, rotation, scale)
     private void CellNavigationController()
@@ -345,7 +424,7 @@ public class ViRMA_NavController : MonoBehaviour
     }
 
 
-    // general methods 
+    // general  
     private void CalculateCellsAndAxesBounds()
     {
         // calculate bounding box
@@ -384,9 +463,25 @@ public class ViRMA_NavController : MonoBehaviour
         // recalculate bounds to dertmine positional limits 
         CalculateCellsAndAxesBounds();
     }
+    private void CenterParentOnCellsAndAxes()
+    {
+        Transform[] children = cellsandAxesWrapper.transform.GetComponentsInChildren<Transform>();
+        Vector3 newPosition = Vector3.one;
+        foreach (var child in children)
+        {
+            newPosition += child.position;
+            child.parent = null;
+        }
+        newPosition /= children.Length;
+        cellsandAxesWrapper.transform.position = newPosition;
+        foreach (var child in children)
+        {
+            child.parent = cellsandAxesWrapper.transform;
+        }
+    }
 
 
-    // testing methods
+    // testing 
     private void ToggleDebuggingBounds()
     {
         // show bounds in-game for debugging

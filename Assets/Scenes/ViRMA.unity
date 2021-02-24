@@ -121,6 +121,49 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &949834145
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 949834147}
+  - component: {fileID: 949834146}
+  m_Layer: 0
+  m_Name: QueryBuilder
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &949834146
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 949834145}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b7459648ac9f3c4cb1078bc27e00959, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!4 &949834147
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 949834145}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 3
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1113545517
 GameObject:
   m_ObjectHideFlags: 0
@@ -132,7 +175,7 @@ GameObject:
   - component: {fileID: 1113545519}
   - component: {fileID: 1113545518}
   m_Layer: 0
-  m_Name: Directional Light
+  m_Name: Light
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -230,6 +273,13 @@ MonoBehaviour:
   CellNavigationToggle:
     actionPath: /actions/CellNavigation/in/Toggle
     needsReinit: 0
+  Cells: []
+  AxisXPoints: []
+  AxisYPoints: []
+  AxisZPoints: []
+  AxisXLine: {fileID: 0}
+  AxisYLine: {fileID: 0}
+  AxisZLine: {fileID: 0}
 --- !u!1001 &1715758422
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -520,9 +570,9 @@ GameObject:
   - component: {fileID: 4830932944233190344}
   - component: {fileID: 1538969817}
   m_Layer: 0
-  m_Name: Cells
+  m_Name: VisualisationController
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0

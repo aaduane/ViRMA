@@ -14,6 +14,24 @@ public class ViRMA_APIController : MonoBehaviour
     //public static string imagesDirectory = "C:/Users/aaron/Documents/Unity Projects/ViRMA/LaugavegurDataDDS/"; // for test build
     public static string imagesDirectory = System.IO.Directory.GetCurrentDirectory().ToString() + "/LaugavegurDataDDS/";
 
+    // general API methods
+    public static IEnumerator GetTagsets(string paramsURL, Action<JSONNode> returnResponse)
+    {
+        string getRequest = serverAddress + paramsURL;
+        Debug.Log(getRequest); // testing
+
+        UnityWebRequest request = UnityWebRequest.Get(getRequest);
+        yield return request.SendWebRequest();
+        if (request.isNetworkError || request.isHttpError)
+        {
+            Debug.LogError(request.error);
+            yield break;
+        }
+        JSONNode response = JSON.Parse(request.downloadHandler.text);
+        yield return null;
+        returnResponse(response);
+    }
+
     // cell API methods
     public class Cell
     {
@@ -27,10 +45,10 @@ public class ViRMA_APIController : MonoBehaviour
         public string Axis { get; set; }
         public string Type { get; set; }
     }  
-    private static string CallHandler(List<CellParamHandler> paramHandlers)
+    private static string CellCallHandler(List<CellParamHandler> cellParamHandlers)
     {
         string url = "cell?";
-        foreach (CellParamHandler paramHandler in paramHandlers)
+        foreach (CellParamHandler paramHandler in cellParamHandlers)
         {
             string typeId = paramHandler.Type == "Tagset" ? paramHandler.Type + "Id" : paramHandler.Type + "NodeId";
             url += paramHandler.Axis + "Axis={'AxisType': '" + paramHandler.Type + "', '" + typeId + "': " + paramHandler.Id + "}&";
@@ -38,7 +56,7 @@ public class ViRMA_APIController : MonoBehaviour
         url = url.Substring(0, url.Length - 1);
         return url;
     }
-    private static List<Cell> ResponseHandler(JSONNode response)
+    private static List<Cell> CellResponseHandler(JSONNode response)
     {
         List<Cell> cells = new List<Cell>();
         foreach (var obj in response)
@@ -52,7 +70,7 @@ public class ViRMA_APIController : MonoBehaviour
     }
     public static IEnumerator GetCells(List<CellParamHandler> paramHandlers, Action<List<Cell>> returnResponse)
     {
-        string paramsURL = CallHandler(paramHandlers);
+        string paramsURL = CellCallHandler(paramHandlers);
         string getRequest = serverAddress + paramsURL;
 
         Debug.Log(getRequest); // testing
@@ -65,7 +83,7 @@ public class ViRMA_APIController : MonoBehaviour
             yield break;
         }
         JSONNode response = JSON.Parse(request.downloadHandler.text);
-        List<Cell> cells = ResponseHandler(response);
+        List<Cell> cells = CellResponseHandler(response);
         yield return null;
         returnResponse(cells);
     }
