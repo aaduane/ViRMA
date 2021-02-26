@@ -6,6 +6,14 @@ using UnityEngine;
 using UnityEngine.Networking;
 using SimpleJSON;
 using System;
+using System.Threading;
+
+
+namespace APIController
+{
+
+}
+
 
 public class ViRMA_APIController : MonoBehaviour
 {
@@ -13,13 +21,22 @@ public class ViRMA_APIController : MonoBehaviour
     public static string serverAddress = "https://localhost:44317/api/";
     //public static string imagesDirectory = "C:/Users/aaron/Documents/Unity Projects/ViRMA/LaugavegurDataDDS/"; // for test build
     public static string imagesDirectory = System.IO.Directory.GetCurrentDirectory().ToString() + "/LaugavegurDataDDS/";
+    public static bool debugging = true;
 
     // general API methods
-    public static IEnumerator GetTagsets(string paramsURL, Action<JSONNode> returnResponse)
+    public static IEnumerator GetRequest(string paramsURL, Action<JSONNode> returnResponse)
     {
         string getRequest = serverAddress + paramsURL;
-        Debug.Log(getRequest); // testing
+        float beforeWebRequest = 0, afterWebRequest = 0, beforeJsonParse = 0, afterJsonParse = 0;
 
+        // for debugging
+        if (debugging)
+        {
+            Debug.Log("URL: " + getRequest);
+            beforeWebRequest = Time.realtimeSinceStartup;
+        }
+
+        // unity web request packet
         UnityWebRequest request = UnityWebRequest.Get(getRequest);
         yield return request.SendWebRequest();
         if (request.isNetworkError || request.isHttpError)
@@ -27,10 +44,74 @@ public class ViRMA_APIController : MonoBehaviour
             Debug.LogError(request.error);
             yield break;
         }
-        JSONNode response = JSON.Parse(request.downloadHandler.text);
-        yield return null;
-        returnResponse(response);
+        string json = request.downloadHandler.text;
+
+        // for debugging
+        if (debugging)
+        {
+            afterWebRequest = Time.realtimeSinceStartup;
+            Debug.Log("Server Time: " + (afterWebRequest - beforeWebRequest).ToString("n3") + " seconds");
+            beforeJsonParse = Time.realtimeSinceStartup;
+        }
+
+        // parse JSON string off the main thread to prevent frame skips in Unity
+        Thread thread = new Thread(() => {
+            JSONNode response = JSON.Parse(json);
+            if (debugging)
+            {
+                Debug.Log(response.Count + " results!");
+            }
+            returnResponse(response);
+        });
+        thread.Start();
+        while (thread.IsAlive)
+        {
+            yield return null;
+        }
+
+        // for debugging
+        if (debugging)
+        {
+            afterJsonParse = Time.realtimeSinceStartup;
+            Debug.Log("Process Time: " + (afterJsonParse - beforeJsonParse).ToString("n3") + " seconds");
+        }
     }
+    public static class Tagsets
+    {
+        public static JSONNode Data { get; set; }
+        public static int Id { get; set; }
+        public static string Name { get; set; }
+
+        public class Tag
+        {
+            public int Id { get; set; }
+            public string Name { get; set; }
+        }
+
+        public static IEnumerator GetData()
+        {
+            yield return GetRequest("tagset", (response) =>
+            {
+                Data = response;         
+            });
+        }
+
+        public static List<Tag> GetTagsets()
+        {
+            List<Tag> tagsetNames = new List<Tag>();
+            foreach (var obj in Data)
+            {
+                Tag newTag = new Tag { 
+                    Id = obj.Value["Id"],
+                    Name = obj.Value["Name"]
+                };
+                tagsetNames.Add(newTag);
+            }
+            return tagsetNames;
+        }
+    }
+
+   
 
     // cell API methods
     public class Cell

@@ -49,7 +49,7 @@ public class ViRMA_VizController : MonoBehaviour
     private void Start()
     {
         // test dummy data
-        List<ViRMA_APIController.CellParamHandler> paramHandlers = GenerateDummyData(); 
+        List<ViRMA_APIController.CellParamHandler> paramHandlers = GenerateDummyData();
 
         // get an initial call too test
         StartCoroutine(ViRMA_APIController.GetCells(paramHandlers, (response) => {
@@ -517,8 +517,8 @@ public class ViRMA_VizController : MonoBehaviour
         {
             Call = "cell",
             Axis = "x",
-            Id = 77,
-            Type = "Hierarchy"
+            Id = 3,
+            Type = "Tagset"
         };
         paramHandlers.Add(paramHandler1);
         ViRMA_APIController.CellParamHandler paramHandler2 = new ViRMA_APIController.CellParamHandler
@@ -533,8 +533,8 @@ public class ViRMA_VizController : MonoBehaviour
         {
             Call = "cell",
             Axis = "z",
-            Id = 3,
-            Type = "Tagset"
+            Id = 77,
+            Type = "Hierarchy"
         };
         paramHandlers.Add(paramHandler3);
         return paramHandlers;
