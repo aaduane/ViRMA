@@ -15,8 +15,8 @@ public class ViRMA_VizController : MonoBehaviour
     public SteamVR_Action_Boolean CellNavigationToggle;
 
     // cells and axes objects
-
-    [HideInInspector] public List<GameObject> Cells, AxisXPoints, AxisYPoints, AxisZPoints;
+    [HideInInspector] public List<Cell> CellData;
+    [HideInInspector] public List<GameObject> CellsGameObjs, AxisXPointsObjs, AxisYPointsObjs, AxisZPointsObjs;
     [HideInInspector] public LineRenderer AxisXLine, AxisYLine, AxisZLine;
 
     /*--- private --- */
@@ -35,7 +35,7 @@ public class ViRMA_VizController : MonoBehaviour
 
     private void Awake()
     {
-        // setup wrapper
+        // setup cells and axes wrapper
         cellsandAxesWrapper = new GameObject("CellsAndAxesWrapper");
 
         // setup rigidbody
@@ -46,41 +46,40 @@ public class ViRMA_VizController : MonoBehaviour
         rigidBody.angularDrag = 0.5f;       
     }
 
-    private void Start()
+    private IEnumerator Start()
     {
-        // test dummy data
-        List<ViRMA_APIController.CellParamHandler> paramHandlers = GenerateDummyData();
+        Query dummyQuery = new Query();
+        dummyQuery.X = new Query.Axis(3, "Tagset");
+        dummyQuery.Y = new Query.Axis(7, "Tagset");
+        dummyQuery.Z = new Query.Axis(77, "Hierarchy");
 
-        // get an initial call too test
-        StartCoroutine(ViRMA_APIController.GetCells(paramHandlers, (response) => {
-
-            // retriece handled data from server
-            List<ViRMA_APIController.Cell> cellData = response;
-
-            // generate cell axes
-            GenerateAxes(cellData);
-
-            // generate cells and their posiitons, centered on a parent
-            GenerateCells(cellData);
-
-            // set center point of wrapper around cells and axes
-            CenterParentOnCellsAndAxes();
-
-            // calculate bounding box to set cells positional limits
-            CalculateCellsAndAxesBounds();
-
-            // show cells/axes bounds and bounds center for debugging
-            // ToggleDebuggingBounds(); 
-
-            // add cells and axes to final parent to set default starting scale and position
-            SetupDefaultScaleAndPosition();
-
-            // so it does not affect bounds, organise hierarachy after everything is done
-            OrganiseHierarchy();
-
-            // activate navigation action controls
-            CellNavigationControls.Activate();
+        yield return StartCoroutine(ViRMA_APIController.GetCells(dummyQuery, (cells) => {
+            CellData = cells;
         }));
+
+        // generate cell axes
+        GenerateAxes(CellData);
+
+        // generate cells and their posiitons, centered on a parent
+        GenerateCells(CellData);
+
+        // set center point of wrapper around cells and axes
+        CenterParentOnCellsAndAxes();
+
+        // calculate bounding box to set cells positional limits
+        CalculateCellsAndAxesBounds();
+
+        // show cells/axes bounds and bounds center for debugging
+        // ToggleDebuggingBounds(); 
+
+        // add cells and axes to final parent to set default starting scale and position
+        SetupDefaultScaleAndPosition();
+
+        // so it does not affect bounds, organise hierarachy after everything is rendered
+        OrganiseHierarchy();
+
+        // activate navigation action controls
+        CellNavigationControls.Activate();
     }
 
     private void Update()
@@ -95,7 +94,7 @@ public class ViRMA_VizController : MonoBehaviour
 
 
     // cell and axes generation
-    private void GenerateCells(List<ViRMA_APIController.Cell> cellData)
+    private void GenerateCells(List<Cell> cellData)
     {  
         // loop through all cells data from server
         foreach (var newCellData in cellData)
@@ -104,7 +103,7 @@ public class ViRMA_VizController : MonoBehaviour
             GameObject cell = GameObject.CreatePrimitive(PrimitiveType.Cube);
             cell.name = "Cell(" + newCellData.Coordinates.x + "," + newCellData.Coordinates.y + "," + newCellData.Coordinates.z + ")";
             cell.AddComponent<ViRMA_Cell>().CellSetup(newCellData);
-            Cells.Add(cell);
+            CellsGameObjs.Add(cell);
 
             // adjust aspect ratio
             float aspectRatio = 1.5f;
@@ -137,7 +136,7 @@ public class ViRMA_VizController : MonoBehaviour
         texture.Apply();
         return (texture);
     }
-    private void GenerateAxes(List<ViRMA_APIController.Cell> cells)
+    private void GenerateAxes(List<Cell> cells)
     {
         // get max cell axis values
         float maxX = 0;
@@ -167,9 +166,9 @@ public class ViRMA_VizController : MonoBehaviour
         AxisOriginPoint.transform.position = Vector3.zero;
         AxisOriginPoint.transform.localScale = Vector3.one * 0.5f;
         AxisOriginPoint.transform.parent = cellsandAxesWrapper.transform;
-        AxisXPoints.Add(AxisOriginPoint);
-        AxisYPoints.Add(AxisOriginPoint);
-        AxisZPoints.Add(AxisOriginPoint);
+        AxisXPointsObjs.Add(AxisOriginPoint);
+        AxisYPointsObjs.Add(AxisOriginPoint);
+        AxisZPointsObjs.Add(AxisOriginPoint);
 
         // x axis
         GameObject AxisXLineObj = new GameObject("AxisXLine");
@@ -187,7 +186,7 @@ public class ViRMA_VizController : MonoBehaviour
             AxisXPoint.transform.position = new Vector3(i, 0, 0) * (defaultCellSpacingRatio + 1);
             AxisXPoint.transform.localScale = Vector3.one * 0.5f;
             AxisXPoint.transform.parent = cellsandAxesWrapper.transform;
-            AxisXPoints.Add(AxisXPoint);
+            AxisXPointsObjs.Add(AxisXPoint);
         }
 
         // y axis
@@ -206,7 +205,7 @@ public class ViRMA_VizController : MonoBehaviour
             AxisYPoint.transform.position = new Vector3(0, i, 0) * (defaultCellSpacingRatio + 1);
             AxisYPoint.transform.localScale = Vector3.one * 0.5f;
             AxisYPoint.transform.parent = cellsandAxesWrapper.transform;
-            AxisYPoints.Add(AxisYPoint);
+            AxisYPointsObjs.Add(AxisYPoint);
         }
 
         // z axis
@@ -225,7 +224,7 @@ public class ViRMA_VizController : MonoBehaviour
             AxisZPoint.transform.position = new Vector3(0, 0, i) * (defaultCellSpacingRatio + 1);
             AxisZPoint.transform.localScale = Vector3.one * 0.5f;
             AxisZPoint.transform.parent = cellsandAxesWrapper.transform;
-            AxisZPoints.Add(AxisZPoint);
+            AxisZPointsObjs.Add(AxisZPoint);
         }
     }
     private void DrawAxesLines()
@@ -233,30 +232,30 @@ public class ViRMA_VizController : MonoBehaviour
         // x axis
         if (AxisXLine)
         {
-            if (AxisXPoints.Count > 1)
+            if (AxisXPointsObjs.Count > 1)
             {
-                AxisXLine.SetPosition(0, AxisXPoints[0].transform.position);
-                AxisXLine.SetPosition(1, AxisXPoints[AxisXPoints.Count - 1].transform.position);
+                AxisXLine.SetPosition(0, AxisXPointsObjs[0].transform.position);
+                AxisXLine.SetPosition(1, AxisXPointsObjs[AxisXPointsObjs.Count - 1].transform.position);
             }
         }
 
         // y axis
         if (AxisYLine)
         {
-            if (AxisYPoints.Count > 1)
+            if (AxisYPointsObjs.Count > 1)
             {
-                AxisYLine.SetPosition(0, AxisYPoints[0].transform.position);
-                AxisYLine.SetPosition(1, AxisYPoints[AxisYPoints.Count - 1].transform.position);
+                AxisYLine.SetPosition(0, AxisYPointsObjs[0].transform.position);
+                AxisYLine.SetPosition(1, AxisYPointsObjs[AxisYPointsObjs.Count - 1].transform.position);
             }
         }
 
         // z axis
         if (AxisZLine)
         {
-            if (AxisZPoints.Count > 1)
+            if (AxisZPointsObjs.Count > 1)
             {
-                AxisZLine.SetPosition(0, AxisZPoints[0].transform.position);
-                AxisZLine.SetPosition(1, AxisZPoints[AxisZPoints.Count - 1].transform.position);
+                AxisZLine.SetPosition(0, AxisZPointsObjs[0].transform.position);
+                AxisZLine.SetPosition(1, AxisZPointsObjs[AxisZPointsObjs.Count - 1].transform.position);
             }
         }
     }
@@ -265,7 +264,7 @@ public class ViRMA_VizController : MonoBehaviour
         // add cells to hierarchy parent
         GameObject cellsParent = new GameObject("Cells");
         cellsParent.transform.parent = cellsandAxesWrapper.transform;
-        foreach (var cell in Cells)
+        foreach (var cell in CellsGameObjs)
         {
             cell.transform.parent = cellsParent.transform;
         }
@@ -273,17 +272,17 @@ public class ViRMA_VizController : MonoBehaviour
         // add axes to hierarchy parent
         GameObject axesParent = new GameObject("Axes");
         axesParent.transform.parent = cellsandAxesWrapper.transform;
-        foreach (GameObject point in AxisXPoints)
+        foreach (GameObject point in AxisXPointsObjs)
         {
             point.transform.parent = axesParent.transform;
         }
         AxisXLine.gameObject.transform.parent = axesParent.transform;
-        foreach (GameObject point in AxisYPoints)
+        foreach (GameObject point in AxisYPointsObjs)
         {
             point.transform.parent = axesParent.transform;
         }
         AxisYLine.gameObject.transform.parent = axesParent.transform;
-        foreach (GameObject point in AxisZPoints)
+        foreach (GameObject point in AxisZPointsObjs)
         {
             point.transform.parent = axesParent.transform;
         }
@@ -481,7 +480,7 @@ public class ViRMA_VizController : MonoBehaviour
     }
 
 
-    // testing 
+    // debugging
     private void ToggleDebuggingBounds()
     {
         // show bounds in-game for debugging
@@ -505,116 +504,6 @@ public class ViRMA_VizController : MonoBehaviour
         debugBoundsCenter.transform.rotation = cellsandAxesWrapper.transform.rotation;
         debugBoundsCenter.transform.parent = cellsandAxesWrapper.transform;
         debugBoundsCenter.transform.SetAsFirstSibling();
-    }
-    private List<ViRMA_APIController.CellParamHandler> GenerateDummyData()
-    {
-        // string url = "cell?xAxis={'AxisType': 'Tagset', 'TagsetId': 7}&yAxis={'AxisType': 'Tagset', 'TagsetId': 3}"; 
-        // string url = "cell?xAxis={'AxisType': 'Tagset', 'TagsetId': 7}&yAxis={'AxisType': 'Tagset', 'TagsetId': 7}&zAxis={'AxisType': 'Tagset', 'TagsetId': 7}";
-        // localhost:44317/api/cell/?xAxis={"AxisDirection":"X","AxisType":"Tagset","TagsetId":3,"HierarchyNodeId":0}&yAxis={"AxisDirection":"Y","AxisType":"Tagset","TagsetId":7,"HierarchyNodeId":0}&zAxis={"AxisDirection":"Z","AxisType":"Hierarchy","TagsetId":0,"HierarchyNodeId":77}
-
-        List<ViRMA_APIController.CellParamHandler> paramHandlers = new List<ViRMA_APIController.CellParamHandler>();
-        ViRMA_APIController.CellParamHandler paramHandler1 = new ViRMA_APIController.CellParamHandler
-        {
-            Call = "cell",
-            Axis = "x",
-            Id = 3,
-            Type = "Tagset"
-        };
-        paramHandlers.Add(paramHandler1);
-        ViRMA_APIController.CellParamHandler paramHandler2 = new ViRMA_APIController.CellParamHandler
-        {
-            Call = "cell",
-            Axis = "y",
-            Id = 7,
-            Type = "Tagset"
-        };
-        paramHandlers.Add(paramHandler2);
-        ViRMA_APIController.CellParamHandler paramHandler3 = new ViRMA_APIController.CellParamHandler
-        {
-            Call = "cell",
-            Axis = "z",
-            Id = 77,
-            Type = "Hierarchy"
-        };
-        paramHandlers.Add(paramHandler3);
-        return paramHandlers;
-    }  
-    private void CellRotationTest() {
-
-        // need to be global
-        Quaternion initialCubesRotation = Quaternion.identity;
-        Quaternion initialControllerRotation = Quaternion.identity;
-        bool set = false;
-
-        if (CellNavigationToggle[SteamVR_Input_Sources.LeftHand].state && CellNavigationToggle[SteamVR_Input_Sources.RightHand].state)
-        {
-            Debug.Log("Two controllers!");
-        }
-        else if (CellNavigationToggle[SteamVR_Input_Sources.LeftHand].state || CellNavigationToggle[SteamVR_Input_Sources.RightHand].state)
-        {
-            Debug.Log("One controller!");
-            if (CellNavigationToggle[SteamVR_Input_Sources.RightHand].state)
-            {
-                if (set == false)
-                {
-                    initialCubesRotation = transform.rotation;
-                    initialControllerRotation = Player.instance.rightHand.transform.rotation;
-                    set = true;
-                }
-                Quaternion controllerAngularDifference = initialControllerRotation * Quaternion.Inverse(Player.instance.rightHand.transform.rotation);
-                transform.rotation = controllerAngularDifference * Quaternion.Inverse(initialCubesRotation);
-            }
-        }
-        else
-        {
-            set = false;
-        }
-    }
-    private void GenerateTestCells(Vector3 blueprint)
-    {
-        UnityEngine.Object[] imagesAsTextures = Resources.LoadAll("Test Images", typeof(Material));
-
-        // x
-        for (int x = 0; x < blueprint.x; x++)
-        {
-            // y
-            for (int y = 0; y < blueprint.y; y++)
-            {
-                // z
-                for (int z = 0; z < blueprint.z; z++)
-                {
-                    // create cubes and give them spaced out positions
-                    GameObject cell = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                    cell.transform.localScale = new Vector3(defaultParentSize, defaultParentSize, defaultParentSize);
-                    float spacingMultipler = defaultParentSize + (defaultParentSize * defaultCellSpacingRatio);
-                    Vector3 nodePosition = new Vector3(x, y, z) * spacingMultipler;
-                    cell.transform.position = nodePosition;
-                    cell.transform.parent = transform;
-
-                    // apply textures 
-                    int imageId = UnityEngine.Random.Range(0, imagesAsTextures.Length);
-                    cell.GetComponent<Renderer>().material = imagesAsTextures[imageId] as Material;
-                }
-            }
-        }
-
-        // center children on parent 
-        Transform parent = gameObject.transform;
-        Transform[] children = GetComponentsInChildren<Transform>();
-        var pos = Vector3.zero;
-        foreach (var child in children)
-        {
-            pos += child.position;
-            child.parent = null;
-        }
-        pos /= children.Length;
-        parent.position = pos;
-        foreach (var child in children)
-        {
-            child.parent = parent;
-            child.gameObject.SetActive(false);
-        }
-        parent.gameObject.SetActive(true);
-    }
+    } 
 
 }

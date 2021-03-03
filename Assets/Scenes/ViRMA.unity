@@ -137,7 +137,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &949834146
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -273,10 +273,10 @@ MonoBehaviour:
   CellNavigationToggle:
     actionPath: /actions/CellNavigation/in/Toggle
     needsReinit: 0
-  Cells: []
-  AxisXPoints: []
-  AxisYPoints: []
-  AxisZPoints: []
+  CellsGameObjs: []
+  AxisXPointsObjs: []
+  AxisYPointsObjs: []
+  AxisZPointsObjs: []
   AxisXLine: {fileID: 0}
   AxisYLine: {fileID: 0}
   AxisZLine: {fileID: 0}
@@ -575,4 +575,4 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1

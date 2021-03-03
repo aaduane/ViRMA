@@ -6,9 +6,9 @@ using UnityEngine;
 
 public class ViRMA_Cell : MonoBehaviour
 {
-    public ViRMA_APIController.Cell CellData;
+    public Cell CellData;
 
-    public void CellSetup(ViRMA_APIController.Cell newCellData)
+    public void CellSetup(Cell newCellData)
     {
         CellData = newCellData; 
 
