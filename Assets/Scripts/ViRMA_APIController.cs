@@ -5,6 +5,7 @@ using UnityEngine.Networking;
 using SimpleJSON;
 using System;
 using System.Threading;
+using System.IO;
 
 public class Tag
 {
@@ -15,9 +16,18 @@ public class Cell
 {
     public Vector3 Coordinates { get; set; }
     public string ImageName { get; set; }
+    public Texture2D ImageTexture { get; set; }
+    public Material ImageMaterial { get; set; }
+
+    public bool Filtered;
 }
 public class Query
 {
+    public Axis X;
+    public Axis Y;
+    public Axis Z;
+    public List<Filter> Filters = new List<Filter>();
+
     public class Axis
     {
         public int Id { get; set; }
@@ -28,18 +38,63 @@ public class Query
             Type = type;
         }
     }
+    public class Filter
+    {
+        public int Id { get; set; }
+        public string Type { get; set; }
 
-    public Axis X;
-    public Axis Y;
-    public Axis Z;
+        public Filter(int id, string type)
+        {
+            Id = id;
+            Type = type;
+        }
+    }
+
+    public void SetAxis(string axis, int id, string type)
+    {
+        if (axis.ToUpper() == "X")
+        {
+            X = new Axis(id, type);
+        }
+        else if (axis.ToUpper() == "Y")
+        {
+            Y = new Axis(id, type);
+        }
+        else if (axis.ToUpper() == "Z")
+        {
+            Z = new Axis(id, type);
+        }
+        else
+        {
+            Debug.LogError("Invalid axis selected.");
+        }
+    }
+    public void AddFilter(int id, string type)
+    {
+        Filter addFilter = new Filter(id, type);
+        if (!Filters.Contains(addFilter))
+        {
+            Filters.Add(addFilter);
+        }       
+    }
+    public void RemoveFilter(int id, string type)
+    {
+        Filter removeFilter = new Filter(id, type);
+        Filters.Remove(removeFilter);
+    }
+    public void ClearFilters()
+    {
+        Filters.Clear();
+    }
+
 }
 
 public class ViRMA_APIController : MonoBehaviour
 {
     // public
     public static string serverAddress = "https://localhost:44317/api/";
-    //public static string imagesDirectory = "C:/Users/aaron/Documents/Unity Projects/ViRMA/LaugavegurDataDDS/"; // for testing full build
-    public static string imagesDirectory = System.IO.Directory.GetCurrentDirectory().ToString() + "/LaugavegurDataDDS/"; // for testing in Unity Editor
+    //public static string imagesDirectory = "C:/Users/aaron/Documents/Unity Projects/ViRMA/LaugavegurDataDDS/"; // for testing in build
+    public static string imagesDirectory = System.IO.Directory.GetCurrentDirectory().ToString() + "/LaugavegurDataDDS/"; // for testing in editor
     public static bool debugging = true;
 
     // private
@@ -138,6 +193,8 @@ public class ViRMA_APIController : MonoBehaviour
     }
     public static IEnumerator GetCells(Query query, Action<List<Cell>> onSuccess)
     {
+        // https://localhost:44317/api/cell?xAxis={'AxisType': 'Tagset', 'TagsetId': 3}&yAxis={'AxisType': 'Tagset', 'TagsetId': 7}&zAxis={'AxisType': 'Hierarchy', 'HierarchyNodeId': 77}&filters=[{'type': 'Tagset', 'tagId': 7},{'type': 'Hierarchy', 'nodeId': 5}]
+
         string url = "cell?";
         if (query.X != null)
         {
@@ -156,19 +213,81 @@ public class ViRMA_APIController : MonoBehaviour
         }
         url = url.Substring(0, url.Length - 1);
 
+        if (query.Filters.Count > 0)
+        {
+            url += "&filters=[";
+            foreach (Query.Filter filter in query.Filters)
+            {
+                string typeId = filter.Type == "Tagset" ? "tagId" : "nodeId";
+                url += "{'type': '" + filter.Type.ToLower() + "', '" + typeId + "': " + filter.Id + "},";
+            }
+            url = url.Substring(0, url.Length - 1) + "]";
+            url = url.Replace("\'", "\"");
+        }
+       
         yield return GetRequest(url, (response) =>
         {
             jsonData = response;
         });
 
         List<Cell> cells = new List<Cell>();
+
+        List<KeyValuePair<string, Texture2D>> uniqueTextures = new List<KeyValuePair<string, Texture2D>>();
+
         foreach (var obj in jsonData)
         {
             Cell newCell = new Cell();
             newCell.Coordinates = new Vector3(obj.Value["x"], obj.Value["y"], obj.Value["z"]);
-            newCell.ImageName = obj.Value["CubeObjects"][0]["FileName"];
+            if (obj.Value["CubeObjects"].Count > 0)
+            {
+
+                newCell.ImageName = obj.Value["CubeObjects"][0]["FileName"];
+                string imageNameDDS = newCell.ImageName.Substring(0, newCell.ImageName.Length - 4) + ".dds";
+
+
+
+                foreach (var prevCell in cells)
+                {
+                    if (prevCell.ImageName == newCell.ImageName)
+                    {
+                        newCell.ImageTexture = prevCell.ImageTexture;
+                        break;
+                    }
+                }
+                if (newCell.ImageTexture == null)
+                {
+                    byte[] imageBytes = File.ReadAllBytes(imagesDirectory + imageNameDDS);
+                    newCell.ImageTexture = ConvertImage(imageBytes);
+                }
+
+
+
+            }
+            else
+            {
+                newCell.Filtered = true;
+            }
             cells.Add(newCell);
         }
         onSuccess(cells);
+    }
+    private static Texture2D ConvertImage(byte[] ddsBytes)
+    {
+        byte ddsSizeCheck = ddsBytes[4];
+        if (ddsSizeCheck != 124)
+        {
+            throw new Exception("Invalid DDS DXTn texture size! (not 124)");
+        }
+        int height = ddsBytes[13] * 256 + ddsBytes[12];
+        int width = ddsBytes[17] * 256 + ddsBytes[16];
+
+        int ddsHeaderSize = 128;
+        byte[] dxtBytes = new byte[ddsBytes.Length - ddsHeaderSize];
+        Buffer.BlockCopy(ddsBytes, ddsHeaderSize, dxtBytes, 0, ddsBytes.Length - ddsHeaderSize);
+        Texture2D texture = new Texture2D(width, height, TextureFormat.DXT1, false);
+
+        texture.LoadRawTextureData(dxtBytes);
+        texture.Apply();
+        return (texture);
     }
 }

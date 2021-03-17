@@ -11,6 +11,11 @@ public class ViRMA_AxisPoint : MonoBehaviour
 
     public void AxisPointSetup()
     {
+        // use prefab to prevent additional draw calls with colour change?
+
+        //MaterialPropertyBlock materialSettings = new MaterialPropertyBlock();
+        //materialSettings.SetColor("_Color", Color.red);
+        //GetComponent<MeshRenderer>().SetPropertyBlock(materialSettings);
 
     }
 
