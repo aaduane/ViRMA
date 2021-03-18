@@ -50,6 +50,7 @@ public class ViRMA_VizController : MonoBehaviour
     private IEnumerator Start()
     {
         Query dummyQuery = new Query();
+
         dummyQuery.SetAxis("X", 3, "Tagset");
         dummyQuery.SetAxis("Y", 7, "Tagset");
         dummyQuery.SetAxis("Z", 77, "Hierarchy");
@@ -57,12 +58,17 @@ public class ViRMA_VizController : MonoBehaviour
         //dummyQuery.SetAxis("X", 7, "Tagset");
         //dummyQuery.SetAxis("Y", 7, "Tagset");
         //dummyQuery.SetAxis("Z", 7, "Tagset");
+
         //dummyQuery.AddFilter(115, "Hierarchy");
         //dummyQuery.AddFilter(116, "Hierarchy");
 
         yield return StartCoroutine(ViRMA_APIController.GetCells(dummyQuery, (cells) => {
             CellData = cells;
         }));
+
+        //TestTextureArrays(CellData);
+
+        GenerateTextures(CellData);
 
         // generate cell axes
         GenerateAxes(CellData);
@@ -103,38 +109,12 @@ public class ViRMA_VizController : MonoBehaviour
     // cell and axes generation
     private void GenerateCells(List<Cell> cellData)
     {
-        GameObject cellPrefab = Resources.Load("Prefabs/CellPrefab") as GameObject;
-        List<KeyValuePair<string, Material>> uniqueMaterials = new List<KeyValuePair<string, Material>>();
-
-        Texture2D textureArray = TextureArrayMaker(cellData);
-        Debug.Log("Max texture Size: " + SystemInfo.maxTextureSize);
-
         // loop through all cells data from server
         foreach (var newCellData in cellData)
         {
             // create a primitive cube and set its scale to match image aspect ratio
-
-            //GameObject cell = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            //StartCoroutine(cell.AddComponent<ViRMA_Cell>().CellSetup(newCellData));
-            GameObject cell = Instantiate(cellPrefab);
-            cell.GetComponent<MeshRenderer>().material.mainTexture = textureArray;
-            cell.AddComponent<ViRMA_Cell>().SetTexture();
-
-            /*
-            int index = uniqueMaterials.FindIndex(a => a.Key == newCellData.ImageName);
-            if (index == -1)
-            {
-                Material newMaterial = new Material(Resources.Load("Materials/CellMaterial") as Material);
-                newMaterial.mainTexture = newCellData.ImageTexture;
-                KeyValuePair<string, Material> uniqueMaterial = new KeyValuePair<string, Material>(newCellData.ImageName, newMaterial);
-                uniqueMaterials.Add(uniqueMaterial);
-                cell.GetComponent<MeshRenderer>().material = newMaterial;
-            }
-            else
-            {
-                cell.GetComponent<MeshRenderer>().material = uniqueMaterials[index].Value;
-            }
-            */
+            GameObject cell = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            cell.AddComponent<ViRMA_Cell>().ThisCellData = newCellData;
 
             // adjust aspect ratio
             float aspectRatio = 1.5f;
@@ -148,8 +128,6 @@ public class ViRMA_VizController : MonoBehaviour
             // name cell object and add it to a list of objects for reference
             cell.name = "Cell(" + newCellData.Coordinates.x + "," + newCellData.Coordinates.y + "," + newCellData.Coordinates.z + ")";
             CellsGameObjs.Add(cell);
-
-            // Debug.Log("X: " + newCell.Coordinates.x + " Y: " + newCell.Coordinates.y + " Z: " + newCell.Coordinates.z); // testing
         }
 
     }  
@@ -553,7 +531,6 @@ public class ViRMA_VizController : MonoBehaviour
         texture.Apply();
         return (texture);
     }
-
     private void TestTextureArrays(List<Cell> cellData)
     {
         // CopyTexture(Texture src, int srcElement, int srcMip, int srcX, int srcY, int srcWidth, int srcHeight, Texture dst, int dstElement, int dstMip, int dstX, int dstY);
@@ -638,6 +615,7 @@ public class ViRMA_VizController : MonoBehaviour
         int destinationWidth = 1024;
         int destinationHeight = 765 * 4;
         Texture2D destinationTexture = new Texture2D(destinationWidth, destinationHeight, TextureFormat.RGB24, false);
+        //Texture2DArray testArray = new Texture2DArray(destinationWidth, destinationHeight, 4, TextureFormat.RGB24, false); // testing
 
         Graphics.CopyTexture(texture_1, 0, 0, 0, 0, texture_1.width, texture_1.height, destinationTexture, 0, 0, 0, 0);
         Graphics.CopyTexture(texture_2, 0, 0, 0, 0, texture_2.width, texture_2.height, destinationTexture, 0, 0, 0, 765);
@@ -650,27 +628,94 @@ public class ViRMA_VizController : MonoBehaviour
         testCube.AddComponent<TextureUVTest>();
     }
 
-    private Texture2D TextureArrayMaker(List<Cell> cellData)
+
+
+
+    private void GenerateTextures(List<Cell> cellData)
     {
-        int textureWidth = cellData[0].ImageTexture.width;
-        int textureHeight = cellData[0].ImageTexture.height;
-
-        int maxTextures = 33;
-
-        Texture2D textureArray = new Texture2D(textureWidth, textureHeight * maxTextures, TextureFormat.DXT1, false);
-
-        int counter = 0;
+        List<KeyValuePair<string, Texture2D>> uniqueTextures = new List<KeyValuePair<string, Texture2D>>();
         foreach (var newCell in cellData)
         {   
-            Texture2D targetTexture = newCell.ImageTexture;
-            Graphics.CopyTexture(targetTexture, 0, 0, 0, 0, targetTexture.width, targetTexture.height, textureArray, 0, 0, 0, targetTexture.height * counter);
-            counter++;
-
-            if (counter == maxTextures)
+            if (!newCell.Filtered)
             {
-                break;
+                int index = uniqueTextures.FindIndex(a => a.Key == newCell.ImageName);
+                if (index == -1)
+                {
+                    byte[] imageBytes = File.ReadAllBytes(ViRMA_APIController.imagesDirectory + newCell.ImageName);
+                    newCell.ImageTexture = ConvertImage(imageBytes);
+                    KeyValuePair<string, Texture2D> uniqueTexture = new KeyValuePair<string, Texture2D>(newCell.ImageName, newCell.ImageTexture);
+                    uniqueTextures.Add(uniqueTexture);
+                }
+                else
+                {
+                    newCell.ImageTexture = uniqueTextures[index].Value;
+                }
+            }      
+        }
+
+        int textureWidth = uniqueTextures[0].Value.width; // 684
+        int textureHeight = uniqueTextures[0].Value.height; // 485
+        int maxTextureArraySize = SystemInfo.maxTextureSize; // 16k+
+        int maxTexturesPerArray = maxTextureArraySize / textureHeight; // 33
+        int totalTextureArrays = uniqueTextures.Count / maxTexturesPerArray + 1; // 3       
+
+        for (int i = 0; i < totalTextureArrays; i++)
+        {
+            //Debug.Log("----------------- " + i + " -----------------"); // debugging
+
+            if (i != totalTextureArrays - 1)
+            {
+                Material newtextureArrayMaterial = new Material(Resources.Load("Materials/CellMaterial") as Material);
+
+                Texture2D newTextureArray = new Texture2D(textureWidth, textureHeight * maxTexturesPerArray, TextureFormat.DXT1, false);
+                for (int j = 0; j < maxTexturesPerArray; j++)
+                {
+                    int uniqueTextureIndex = j + maxTexturesPerArray * i;
+                    Texture2D targetTexture = uniqueTextures[uniqueTextureIndex].Value;
+                    Graphics.CopyTexture(targetTexture, 0, 0, 0, 0, targetTexture.width, targetTexture.height, newTextureArray, 0, 0, 0, targetTexture.height * j);
+
+                    //Debug.Log(j + " | " + uniqueTextureIndex); // debugging
+
+
+                    foreach (var cellDataObj in CellData)
+                    {
+                        if (cellDataObj.ImageName == uniqueTextures[uniqueTextureIndex].Key)
+                        {
+                            cellDataObj.TextureArrayId = j;
+                            cellDataObj.TextureArrayMaterial = newtextureArrayMaterial;
+                            cellDataObj.TextureArraySize = maxTexturesPerArray;
+                        }
+                    }
+                }
+                newtextureArrayMaterial.mainTexture = newTextureArray;
+            }
+            else
+            {
+                Material newtextureArrayMaterial = new Material(Resources.Load("Materials/CellMaterial") as Material);
+
+                int lastTextureArraySize = uniqueTextures.Count - (maxTexturesPerArray * (totalTextureArrays - 1)); // 15
+                Texture2D newTextureArray = new Texture2D(textureWidth, textureHeight * lastTextureArraySize, TextureFormat.DXT1, false);
+                for (int j = 0; j < lastTextureArraySize; j++)
+                {
+                    int uniqueTextureIndex = j + maxTexturesPerArray * i;
+                    Texture2D targetTexture = uniqueTextures[uniqueTextureIndex].Value;
+                    Graphics.CopyTexture(targetTexture, 0, 0, 0, 0, targetTexture.width, targetTexture.height, newTextureArray, 0, 0, 0, targetTexture.height * j);
+
+                    // Debug.Log(j + " | " + uniqueTextureIndex); // debugging
+
+                    foreach (var cellDataObj in CellData)
+                    {
+                        if (cellDataObj.ImageName == uniqueTextures[uniqueTextureIndex].Key)
+                        {
+                            cellDataObj.TextureArrayId = j;
+                            cellDataObj.TextureArrayMaterial = newtextureArrayMaterial;
+                            cellDataObj.TextureArraySize = lastTextureArraySize;
+                        }
+                    }
+                }               
+                newtextureArrayMaterial.mainTexture = newTextureArray;
             }
         }
-        return textureArray;
+
     }
 }

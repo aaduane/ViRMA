@@ -5,7 +5,6 @@ using UnityEngine.Networking;
 using SimpleJSON;
 using System;
 using System.Threading;
-using System.IO;
 
 public class Tag
 {
@@ -14,12 +13,14 @@ public class Tag
 }
 public class Cell
 {
+    public bool Filtered;
     public Vector3 Coordinates { get; set; }
     public string ImageName { get; set; }
     public Texture2D ImageTexture { get; set; }
-    public Material ImageMaterial { get; set; }
-
-    public bool Filtered;
+    public Texture2D TextureArray { get; set; }
+    public Material TextureArrayMaterial { get; set; }
+    public int TextureArrayId { get; set; }
+    public int TextureArraySize { get; set; }
 }
 public class Query
 {
@@ -231,37 +232,15 @@ public class ViRMA_APIController : MonoBehaviour
         });
 
         List<Cell> cells = new List<Cell>();
-
-        List<KeyValuePair<string, Texture2D>> uniqueTextures = new List<KeyValuePair<string, Texture2D>>();
-
         foreach (var obj in jsonData)
         {
             Cell newCell = new Cell();
             newCell.Coordinates = new Vector3(obj.Value["x"], obj.Value["y"], obj.Value["z"]);
             if (obj.Value["CubeObjects"].Count > 0)
             {
-
                 newCell.ImageName = obj.Value["CubeObjects"][0]["FileName"];
                 string imageNameDDS = newCell.ImageName.Substring(0, newCell.ImageName.Length - 4) + ".dds";
-
-
-
-                foreach (var prevCell in cells)
-                {
-                    if (prevCell.ImageName == newCell.ImageName)
-                    {
-                        newCell.ImageTexture = prevCell.ImageTexture;
-                        break;
-                    }
-                }
-                if (newCell.ImageTexture == null)
-                {
-                    byte[] imageBytes = File.ReadAllBytes(imagesDirectory + imageNameDDS);
-                    newCell.ImageTexture = ConvertImage(imageBytes);
-                }
-
-
-
+                newCell.ImageName = imageNameDDS;
             }
             else
             {
@@ -270,24 +249,5 @@ public class ViRMA_APIController : MonoBehaviour
             cells.Add(newCell);
         }
         onSuccess(cells);
-    }
-    private static Texture2D ConvertImage(byte[] ddsBytes)
-    {
-        byte ddsSizeCheck = ddsBytes[4];
-        if (ddsSizeCheck != 124)
-        {
-            throw new Exception("Invalid DDS DXTn texture size! (not 124)");
-        }
-        int height = ddsBytes[13] * 256 + ddsBytes[12];
-        int width = ddsBytes[17] * 256 + ddsBytes[16];
-
-        int ddsHeaderSize = 128;
-        byte[] dxtBytes = new byte[ddsBytes.Length - ddsHeaderSize];
-        Buffer.BlockCopy(ddsBytes, ddsHeaderSize, dxtBytes, 0, ddsBytes.Length - ddsHeaderSize);
-        Texture2D texture = new Texture2D(width, height, TextureFormat.DXT1, false);
-
-        texture.LoadRawTextureData(dxtBytes);
-        texture.Apply();
-        return (texture);
     }
 }

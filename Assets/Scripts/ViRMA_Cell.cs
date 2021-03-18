@@ -1,83 +1,28 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class ViRMA_Cell : MonoBehaviour
 {
-    public Cell CellData;
+    public Cell ThisCellData;
 
-    public IEnumerator CellSetup(Cell newCellData)
+    private void Start()
     {
-        CellData = newCellData; 
-
-        if (newCellData.Filtered)
+        if (ThisCellData.Filtered)
         {
             Destroy(gameObject);
         }
         else
         {
-            // use filename to assign image .dds as texture from local system folder
-            string projectRoot = ViRMA_APIController.imagesDirectory;
-            string imageNameDDS = CellData.ImageName.Substring(0, CellData.ImageName.Length - 4) + ".dds";
-
-            // read bytes from local storage and convert it to Unity texture
-            byte[] imageBytes = new byte[] { };
-            Thread thread = new Thread(() => {
-                imageBytes = File.ReadAllBytes(projectRoot + imageNameDDS);        
-            });
-            thread.Start();
-            while (thread.IsAlive)
-            {
-                yield return null;
-            }
-            Texture2D imageTexture = ConvertImage(imageBytes);
-
-            // apply new texture and make sure lights/shadows are off for performance
-            GetComponent<Renderer>().material.mainTexture = imageTexture;
-            GetComponent<MeshRenderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            GetComponent<MeshRenderer>().receiveShadows = false;
-
-
-            //GetComponent<MeshRenderer>().material = Resources.Load("Materials/UnlitTexture") as Material;
-            //GetComponent<MeshRenderer>().material.color = new Color32(255, 0, 0, 255);
-            
-            //MaterialPropertyBlock materialSettings = new MaterialPropertyBlock();
-            //materialSettings.SetColor("_Color", Color.red);
-            //GetComponent<MeshRenderer>().SetPropertyBlock(materialSettings);
-
-            //node.GetComponent<Renderer>().material.SetTextureScale("_MainTex", new Vector2(1, -1));
-        }
-    }
-    private static Texture2D ConvertImage(byte[] ddsBytes)
-    {
-        byte ddsSizeCheck = ddsBytes[4];
-        if (ddsSizeCheck != 124)
-        {
-            throw new Exception("Invalid DDS DXTn texture size! (not 124)");
-        }
-        int height = ddsBytes[13] * 256 + ddsBytes[12];
-        int width = ddsBytes[17] * 256 + ddsBytes[16];
-
-        int ddsHeaderSize = 128;
-        byte[] dxtBytes = new byte[ddsBytes.Length - ddsHeaderSize];
-        Buffer.BlockCopy(ddsBytes, ddsHeaderSize, dxtBytes, 0, ddsBytes.Length - ddsHeaderSize);
-        Texture2D texture = new Texture2D(width, height, TextureFormat.DXT1, false);
-
-        texture.LoadRawTextureData(dxtBytes);
-        texture.Apply();
-        return (texture);
+            GetComponent<MeshRenderer>().material = ThisCellData.TextureArrayMaterial;
+            SetTextureFromArray(ThisCellData.TextureArrayId);
+        }      
     }
 
-    public void SetTexture()
+    public void SetTextureFromArray(int target)
     {
         Mesh mesh = GetComponent<MeshFilter>().mesh;
         Vector2[] UVs = new Vector2[mesh.vertices.Length];
 
-        int target = 20;
-        int totalImages = 33;
+        int totalImages = ThisCellData.TextureArraySize;
 
         if (target >= totalImages)
         {
