@@ -132,7 +132,7 @@ GameObject:
   - component: {fileID: 949834147}
   - component: {fileID: 949834146}
   m_Layer: 0
-  m_Name: QueryBuilder
+  m_Name: QueryController
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -176,18 +176,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 18b82cf16e565274d814291219a00ac0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  CellNavigationControls:
+  cellNavigationControls:
     actionSetPath: /actions/CellNavigation
-  CellNavigationToggle:
+  cellNavigationToggle:
     actionPath: /actions/CellNavigation/in/Toggle
     needsReinit: 0
-  CellsGameObjs: []
-  AxisXPointsObjs: []
-  AxisYPointsObjs: []
-  AxisZPointsObjs: []
-  AxisXLine: {fileID: 0}
-  AxisYLine: {fileID: 0}
-  AxisZLine: {fileID: 0}
+  cellObjs: []
+  axisXPointObjs: []
+  axisYPointObjs: []
+  axisZPointObjs: []
+  axisXLine: {fileID: 0}
+  axisYLine: {fileID: 0}
+  axisZLine: {fileID: 0}
 --- !u!1001 &1715758422
 PrefabInstance:
   m_ObjectHideFlags: 0

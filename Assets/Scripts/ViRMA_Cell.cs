@@ -2,83 +2,119 @@
 
 public class ViRMA_Cell : MonoBehaviour
 {
-    public Cell ThisCellData;
+    public Cell thisCellData;
+    private Mesh thisCellMesh;
 
+    private void Awake()
+    {
+        thisCellMesh = GetComponent<MeshFilter>().mesh;
+    }
     private void Start()
     {
-        if (ThisCellData.Filtered)
+        if (thisCellData.Filtered)
         {
             Destroy(gameObject);
         }
         else
         {
-            GetComponent<MeshRenderer>().material = ThisCellData.TextureArrayMaterial;
-            SetTextureFromArray(ThisCellData.TextureArrayId);
+            GetComponent<MeshRenderer>().material = thisCellData.TextureArrayMaterial;
+            SetTextureFromArray(thisCellData.TextureArrayId);
         }      
     }
-
-    public void SetTextureFromArray(int target)
+    public void SetTextureFromArray(int textureIndexInArray)
     {
-        Mesh mesh = GetComponent<MeshFilter>().mesh;
-        Vector2[] UVs = new Vector2[mesh.vertices.Length];
-
-        int totalImages = ThisCellData.TextureArraySize;
-
-        if (target >= totalImages)
+        Vector2[] UVs = new Vector2[thisCellMesh.vertices.Length];
+        int totalTexturesInArray = thisCellData.TextureArraySize;   
+        float textureOffset = 1.0f / totalTexturesInArray;
+        float textureLocationInArray = textureIndexInArray * textureOffset;
+        if (textureIndexInArray >= totalTexturesInArray)
         {
-            Debug.LogError("Warning! Target texture index above tyexture array count.");
+            Debug.LogError("Warning! Target texture index above texture array count.");
         }
-        float increment = 1.0f / totalImages;
-        float modifier = increment * target;
 
-        Vector2 bottomLeft = new Vector2(0, modifier);
-        Vector2 bottomRight = new Vector2(1, modifier);
-        Vector2 topLeft = new Vector2(0, modifier + increment);
-        Vector2 topRight = new Vector2(1, modifier + increment);
+        Vector2 bottomLeftOfTexture = new Vector2(0, textureLocationInArray);
+        Vector2 bottomRightOfTexture = new Vector2(1, textureLocationInArray);
+        Vector2 topLeftOfTexture = new Vector2(0, textureLocationInArray + textureOffset);
+        Vector2 topRightOfTexture = new Vector2(1, textureLocationInArray + textureOffset);
 
+        /* - - - - - - - DDS Images - - - - - - - -*/
 
-        // front
-        //UVs[0] = bottomLeft;        // bottom-left
-        //UVs[1] = bottomRight;       // bottom-right
-        //UVs[2] = topLeft;           // top-left
-        //UVs[3] = topRight;          // top-right
+        // front of cube
+        UVs[2] = bottomLeftOfTexture;
+        UVs[3] = bottomRightOfTexture;
+        UVs[0] = topLeftOfTexture;              
+        UVs[1] = topRightOfTexture;                                 
 
-        UVs[0] = topLeft;              // bottom-left
-        UVs[1] = topRight;             // bottom-right
-        UVs[2] = bottomLeft;           // top-left
-        UVs[3] = bottomRight;          // top-right
+        // top of cube
+        UVs[8] = topLeftOfTexture;          
+        UVs[9] = topRightOfTexture;          
+        UVs[4] = bottomLeftOfTexture;        
+        UVs[5] = bottomRightOfTexture;
 
-        // top
-        UVs[4] = topLeft;           // top-left
-        UVs[5] = topRight;          // top-right
-        UVs[8] = bottomLeft;        // bottom-left
-        UVs[9] = bottomRight;       // bottom-right   
+        // back of cube
+        UVs[10] = bottomRightOfTexture;        
+        UVs[11] = bottomLeftOfTexture;         
+        UVs[6] = topRightOfTexture;          
+        UVs[7] = topLeftOfTexture;
 
-        // back
-        UVs[6] = bottomRight;        // bottom-right
-        UVs[7] = bottomLeft;         // bottom-left
-        UVs[10] = topRight;          // top-right
-        UVs[11] = topLeft;           // top-left      
+        // bottom of cube
+        UVs[14] = bottomLeftOfTexture;        
+        UVs[15] = topLeftOfTexture;           
+        UVs[12] = topRightOfTexture;          
+        UVs[13] = bottomRightOfTexture;
 
-        // bottom
-        UVs[12] = bottomLeft;        // bottom-left
-        UVs[13] = topLeft;           // top-left
-        UVs[14] = topRight;          // top-right
-        UVs[15] = bottomRight;       // bottom-right
+        // left of cube
+        UVs[18] = bottomLeftOfTexture;        
+        UVs[19] = topLeftOfTexture;           
+        UVs[16] = topRightOfTexture;          
+        UVs[17] = bottomRightOfTexture;
 
-        // left
-        UVs[16] = bottomLeft;        // bottom-left
-        UVs[17] = topLeft;           // top-left
-        UVs[18] = topRight;          // top-right
-        UVs[19] = bottomRight;       // bottom-right
+        // right of cube
+        UVs[22] = bottomLeftOfTexture;        
+        UVs[23] = topLeftOfTexture;           
+        UVs[20] = topRightOfTexture;          
+        UVs[21] = bottomRightOfTexture;
 
-        // right
-        UVs[20] = bottomLeft;        // bottom-left
-        UVs[21] = topLeft;           // top-left
-        UVs[22] = topRight;          // top-right
-        UVs[23] = bottomRight;       // bottom-right
+        /* - - - - - - - JPG Images - - - - - - - -*/
 
-        mesh.uv = UVs;
+        /*
+        // front of cube
+        UVs[0] = bottomLeftOfTexture;        
+        UVs[1] = bottomRightOfTexture;       
+        UVs[2] = topLeftOfTexture;           
+        UVs[3] = topRightOfTexture;          
+
+        // top of cube
+        UVs[4] = topLeftOfTexture;
+        UVs[5] = topRightOfTexture;
+        UVs[8] = bottomLeftOfTexture;
+        UVs[9] = bottomRightOfTexture;
+
+        // back of cube
+        UVs[6] = bottomRightOfTexture;
+        UVs[7] = bottomLeftOfTexture;
+        UVs[10] = topRightOfTexture;
+        UVs[11] = topLeftOfTexture;
+
+        // bottom of cube
+        UVs[12] = bottomLeftOfTexture;
+        UVs[13] = topLeftOfTexture;
+        UVs[14] = topRightOfTexture;
+        UVs[15] = bottomRightOfTexture;
+
+        // left of cube
+        UVs[16] = bottomLeftOfTexture;
+        UVs[17] = topLeftOfTexture;
+        UVs[18] = topRightOfTexture;
+        UVs[19] = bottomRightOfTexture;
+
+        // right of cube
+        UVs[20] = bottomLeftOfTexture;
+        UVs[21] = topLeftOfTexture;
+        UVs[22] = topRightOfTexture;
+        UVs[23] = bottomRightOfTexture;
+        */
+
+        thisCellMesh.uv = UVs;
     }
-
 }

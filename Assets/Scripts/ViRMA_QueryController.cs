@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public class ViRMA_QueryBuilder : MonoBehaviour
+public class ViRMA_QueryController : MonoBehaviour
 {
     private void Start()
     {

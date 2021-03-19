@@ -93,10 +93,10 @@ public class Query
 public class ViRMA_APIController : MonoBehaviour
 {
     // public
+    public static bool debugging = false;
     public static string serverAddress = "https://localhost:44317/api/";
-    //public static string imagesDirectory = "C:/Users/aaron/Documents/Unity Projects/ViRMA/LaugavegurDataDDS/"; // for testing in build
     public static string imagesDirectory = System.IO.Directory.GetCurrentDirectory().ToString() + "/LaugavegurDataDDS/"; // for testing in editor
-    public static bool debugging = true;
+    //public static string imagesDirectory = "C:/Users/aaron/Documents/Unity Projects/ViRMA/LaugavegurDataDDS/"; // for testing in build
 
     // private
     private static JSONNode jsonData;

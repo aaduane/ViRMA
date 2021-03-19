@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading;
 using UnityEngine;
 using Valve.VR;
 using Valve.VR.InteractionSystem;
@@ -12,13 +11,13 @@ public class ViRMA_VizController : MonoBehaviour
     /* --- public --- */
 
     // actions
-    public SteamVR_ActionSet CellNavigationControls;
-    public SteamVR_Action_Boolean CellNavigationToggle;
+    public SteamVR_ActionSet cellNavigationControls;
+    public SteamVR_Action_Boolean cellNavigationToggle;
 
     // cells and axes objects
-    [HideInInspector] public List<Cell> CellData;
-    [HideInInspector] public List<GameObject> CellsGameObjs, AxisXPointsObjs, AxisYPointsObjs, AxisZPointsObjs;
-    [HideInInspector] public LineRenderer AxisXLine, AxisYLine, AxisZLine;
+    [HideInInspector] public List<Cell> cellData;
+    [HideInInspector] public List<GameObject> cellObjs, axisXPointObjs, axisYPointObjs, axisZPointObjs;
+    [HideInInspector] public LineRenderer axisXLine, axisYLine, axisZLine;
 
     /*--- private --- */
 
@@ -33,6 +32,7 @@ public class ViRMA_VizController : MonoBehaviour
     private float minParentScale = 0.1f;
     private float defaultParentSize = 0.2f;
     private float defaultCellSpacingRatio = 1.5f;
+    private string cellMaterial = "Materials/UnlitCell";
 
     private void Awake()
     {
@@ -46,35 +46,32 @@ public class ViRMA_VizController : MonoBehaviour
         rigidBody.drag = 0.1f;
         rigidBody.angularDrag = 0.5f;       
     }
-
     private IEnumerator Start()
     {
+        // dummy queries for debugging
         Query dummyQuery = new Query();
-
         dummyQuery.SetAxis("X", 3, "Tagset");
         dummyQuery.SetAxis("Y", 7, "Tagset");
         dummyQuery.SetAxis("Z", 77, "Hierarchy");
-
         //dummyQuery.SetAxis("X", 7, "Tagset");
         //dummyQuery.SetAxis("Y", 7, "Tagset");
         //dummyQuery.SetAxis("Z", 7, "Tagset");
-
         //dummyQuery.AddFilter(115, "Hierarchy");
         //dummyQuery.AddFilter(116, "Hierarchy");
 
+        // get actual data from server
         yield return StartCoroutine(ViRMA_APIController.GetCells(dummyQuery, (cells) => {
-            CellData = cells;
+            cellData = cells;
         }));
 
-        //TestTextureArrays(CellData);
+        // generate textures and texture arrays from local image storage
+        GenerateTexturesAndTextureArrays(cellData);
 
-        GenerateTextures(CellData);
-
-        // generate cell axes
-        GenerateAxes(CellData);
+        // generate cell X, Y, Z axes 
+        GenerateAxes(cellData);
 
         // generate cells and their posiitons, centered on a parent
-        GenerateCells(CellData);
+        GenerateCells(cellData);
 
         // set center point of wrapper around cells and axes
         CenterParentOnCellsAndAxes();
@@ -83,7 +80,7 @@ public class ViRMA_VizController : MonoBehaviour
         CalculateCellsAndAxesBounds();
 
         // show cells/axes bounds and bounds center for debugging
-        // ToggleDebuggingBounds(); 
+        // ToggleDebuggingBounds(); // debugging
 
         // add cells and axes to final parent to set default starting scale and position
         SetupDefaultScaleAndPosition();
@@ -92,9 +89,8 @@ public class ViRMA_VizController : MonoBehaviour
         OrganiseHierarchy();
 
         // activate navigation action controls
-        CellNavigationControls.Activate();
+        cellNavigationControls.Activate();
     }
-
     private void Update()
     {
         // control call navigation and spatial limitations
@@ -107,14 +103,129 @@ public class ViRMA_VizController : MonoBehaviour
 
 
     // cell and axes generation
+    private void GenerateTexturesAndTextureArrays(List<Cell> cellData)
+    {
+        // make a list of all the unique image textures present in the current query
+        List<KeyValuePair<string, Texture2D>> uniqueTextures = new List<KeyValuePair<string, Texture2D>>();
+        foreach (var newCell in cellData)
+        {
+            if (!newCell.Filtered)
+            {
+                int index = uniqueTextures.FindIndex(a => a.Key == newCell.ImageName);
+                if (index == -1)
+                {
+                    byte[] imageBytes = File.ReadAllBytes(ViRMA_APIController.imagesDirectory + newCell.ImageName);
+                    newCell.ImageTexture = ConvertImage(imageBytes);
+                    KeyValuePair<string, Texture2D> uniqueTexture = new KeyValuePair<string, Texture2D>(newCell.ImageName, newCell.ImageTexture);
+                    uniqueTextures.Add(uniqueTexture);
+                }
+                else
+                {
+                    newCell.ImageTexture = uniqueTextures[index].Value;
+                }
+            }
+        }
+
+        // calculate the number of texture arrays needed based on the size of the first texture in the list
+        int textureWidth = uniqueTextures[0].Value.width; // e.g. 1024 or 684
+        int textureHeight = uniqueTextures[0].Value.height; // e.g. 765 or 485
+        int maxTextureArraySize = SystemInfo.maxTextureSize; // e.g. 16384 (most GPUs)
+        int maxTexturesPerArray = maxTextureArraySize / textureHeight; // e.g. 22 or 33 
+        int totalTextureArrays = uniqueTextures.Count / maxTexturesPerArray + 1;
+
+        for (int i = 0; i < totalTextureArrays; i++)
+        {
+            //Debug.Log("----------------- " + i + " -----------------"); // debugging
+
+            if (i != totalTextureArrays - 1)
+            {
+                Material newtextureArrayMaterial = new Material(Resources.Load(cellMaterial) as Material);
+                Texture2D newTextureArray = new Texture2D(textureWidth, textureHeight * maxTexturesPerArray, TextureFormat.DXT1, false);
+                for (int j = 0; j < maxTexturesPerArray; j++)
+                {
+                    int uniqueTextureIndex = j + maxTexturesPerArray * i;
+                    Texture2D targetTexture = uniqueTextures[uniqueTextureIndex].Value;
+                    if (targetTexture.width != textureWidth || targetTexture.height != textureHeight)
+                    {
+                        Debug.LogError("Texture " + uniqueTextures[uniqueTextureIndex].Key + " is not " + textureWidth + " x " + textureHeight + " and so will not fit properly in the texture array!");
+                    }
+                    Graphics.CopyTexture(targetTexture, 0, 0, 0, 0, targetTexture.width, targetTexture.height, newTextureArray, 0, 0, 0, targetTexture.height * j);
+
+                    //Debug.Log(j + " | " + uniqueTextureIndex); // debugging
+
+                    foreach (var cellDataObj in this.cellData)
+                    {
+                        if (cellDataObj.ImageName == uniqueTextures[uniqueTextureIndex].Key)
+                        {
+                            cellDataObj.TextureArrayId = j;
+                            cellDataObj.TextureArrayMaterial = newtextureArrayMaterial;
+                            cellDataObj.TextureArraySize = maxTexturesPerArray;
+                        }
+                    }
+                }
+                newtextureArrayMaterial.mainTexture = newTextureArray;
+            }
+            else
+            {
+                Material newtextureArrayMaterial = new Material(Resources.Load(cellMaterial) as Material);
+                int lastTextureArraySize = uniqueTextures.Count - (maxTexturesPerArray * (totalTextureArrays - 1));
+                Texture2D newTextureArray = new Texture2D(textureWidth, textureHeight * lastTextureArraySize, TextureFormat.DXT1, false);
+                for (int j = 0; j < lastTextureArraySize; j++)
+                {
+                    int uniqueTextureIndex = j + maxTexturesPerArray * i;
+                    Texture2D targetTexture = uniqueTextures[uniqueTextureIndex].Value;
+                    if (targetTexture.width != textureWidth || targetTexture.height != textureHeight)
+                    {
+                        Debug.LogError("Texture " + uniqueTextures[uniqueTextureIndex].Key + " is not " + textureWidth + " x " + textureHeight + " and so will not fit properly in the texture array!");
+                    }
+                    Graphics.CopyTexture(targetTexture, 0, 0, 0, 0, targetTexture.width, targetTexture.height, newTextureArray, 0, 0, 0, targetTexture.height * j);
+
+                    // Debug.Log(j + " | " + uniqueTextureIndex); // debugging
+
+                    foreach (var cellDataObj in this.cellData)
+                    {
+                        if (cellDataObj.ImageName == uniqueTextures[uniqueTextureIndex].Key)
+                        {
+                            cellDataObj.TextureArrayId = j;
+                            cellDataObj.TextureArrayMaterial = newtextureArrayMaterial;
+                            cellDataObj.TextureArraySize = lastTextureArraySize;
+                        }
+                    }
+                }
+                newtextureArrayMaterial.mainTexture = newTextureArray;
+            }
+        }
+    }
+    private static Texture2D ConvertImage(byte[] ddsBytes)
+    {
+        byte ddsSizeCheck = ddsBytes[4];
+        if (ddsSizeCheck != 124)
+        {
+            throw new Exception("Invalid DDS DXTn texture size! (not 124)");
+        }
+        int height = ddsBytes[13] * 256 + ddsBytes[12];
+        int width = ddsBytes[17] * 256 + ddsBytes[16];
+
+        int ddsHeaderSize = 128;
+        byte[] dxtBytes = new byte[ddsBytes.Length - ddsHeaderSize];
+        Buffer.BlockCopy(ddsBytes, ddsHeaderSize, dxtBytes, 0, ddsBytes.Length - ddsHeaderSize);
+        Texture2D texture = new Texture2D(width, height, TextureFormat.DXT1, false);
+
+        texture.LoadRawTextureData(dxtBytes);
+        texture.Apply();
+        return (texture);
+    }
     private void GenerateCells(List<Cell> cellData)
     {
+        // grab cell prefab from resoucres
+        GameObject cellPrefab = Resources.Load("Prefabs/CellPrefab") as GameObject;
+
         // loop through all cells data from server
         foreach (var newCellData in cellData)
         {
             // create a primitive cube and set its scale to match image aspect ratio
-            GameObject cell = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            cell.AddComponent<ViRMA_Cell>().ThisCellData = newCellData;
+            GameObject cell = Instantiate(cellPrefab);       
+            cell.AddComponent<ViRMA_Cell>().thisCellData = newCellData;
 
             // adjust aspect ratio
             float aspectRatio = 1.5f;
@@ -127,10 +238,9 @@ public class ViRMA_VizController : MonoBehaviour
 
             // name cell object and add it to a list of objects for reference
             cell.name = "Cell(" + newCellData.Coordinates.x + "," + newCellData.Coordinates.y + "," + newCellData.Coordinates.z + ")";
-            CellsGameObjs.Add(cell);
+            cellObjs.Add(cell);
         }
-
-    }  
+    }
     private void GenerateAxes(List<Cell> cells)
     {
         // get max cell axis values
@@ -169,18 +279,18 @@ public class ViRMA_VizController : MonoBehaviour
         AxisOriginPoint.transform.position = Vector3.zero;
         AxisOriginPoint.transform.localScale = Vector3.one * 0.5f;
         AxisOriginPoint.transform.parent = cellsandAxesWrapper.transform;
-        AxisXPointsObjs.Add(AxisOriginPoint);
-        AxisYPointsObjs.Add(AxisOriginPoint);
-        AxisZPointsObjs.Add(AxisOriginPoint);
+        axisXPointObjs.Add(AxisOriginPoint);
+        axisYPointObjs.Add(AxisOriginPoint);
+        axisZPointObjs.Add(AxisOriginPoint);
 
         // x axis
         GameObject AxisXLineObj = new GameObject("AxisXLine");
-        AxisXLine = AxisXLineObj.AddComponent<LineRenderer>();
-        AxisXLine.GetComponent<Renderer>().material = transparentMaterial;
+        axisXLine = AxisXLineObj.AddComponent<LineRenderer>();
+        axisXLine.GetComponent<Renderer>().material = transparentMaterial;
         materialProperties.SetColor("_Color", transparentRed);
-        AxisXLine.GetComponent<Renderer>().SetPropertyBlock(materialProperties);
-        AxisXLine.positionCount = 2;
-        AxisXLine.startWidth = 0.05f;
+        axisXLine.GetComponent<Renderer>().SetPropertyBlock(materialProperties);
+        axisXLine.positionCount = 2;
+        axisXLine.startWidth = 0.05f;
         for (int i = 0; i <= maxX; i++)
         {
             GameObject AxisXPoint = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -190,18 +300,18 @@ public class ViRMA_VizController : MonoBehaviour
             AxisXPoint.transform.position = new Vector3(i, 0, 0) * (defaultCellSpacingRatio + 1);
             AxisXPoint.transform.localScale = Vector3.one * 0.5f;
             AxisXPoint.transform.parent = cellsandAxesWrapper.transform;
-            AxisXPointsObjs.Add(AxisXPoint);
+            axisXPointObjs.Add(AxisXPoint);
         }
 
         // y axis
         GameObject AxisYLineObj = new GameObject("AxisYLine");
-        AxisYLine = AxisYLineObj.AddComponent<LineRenderer>();
-        AxisYLine.GetComponent<Renderer>().material = transparentMaterial;
+        axisYLine = AxisYLineObj.AddComponent<LineRenderer>();
+        axisYLine.GetComponent<Renderer>().material = transparentMaterial;
         materialProperties.SetColor("_Color", transparentGreen);
-        AxisYLine.GetComponent<Renderer>().SetPropertyBlock(materialProperties);
+        axisYLine.GetComponent<Renderer>().SetPropertyBlock(materialProperties);
 
-        AxisYLine.positionCount = 2;
-        AxisYLine.startWidth = 0.05f;
+        axisYLine.positionCount = 2;
+        axisYLine.startWidth = 0.05f;
         for (int i = 0; i <= maxY; i++)
         {
             GameObject AxisYPoint = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -211,17 +321,17 @@ public class ViRMA_VizController : MonoBehaviour
             AxisYPoint.transform.position = new Vector3(0, i, 0) * (defaultCellSpacingRatio + 1);
             AxisYPoint.transform.localScale = Vector3.one * 0.5f;
             AxisYPoint.transform.parent = cellsandAxesWrapper.transform;
-            AxisYPointsObjs.Add(AxisYPoint);
+            axisYPointObjs.Add(AxisYPoint);
         }
 
         // z axis
         GameObject AxisZLineObj = new GameObject("AxisZLine");
-        AxisZLine = AxisZLineObj.AddComponent<LineRenderer>();
-        AxisZLine.GetComponent<Renderer>().material = transparentMaterial;
+        axisZLine = AxisZLineObj.AddComponent<LineRenderer>();
+        axisZLine.GetComponent<Renderer>().material = transparentMaterial;
         materialProperties.SetColor("_Color", transparentBlue);
-        AxisZLine.GetComponent<Renderer>().SetPropertyBlock(materialProperties);
-        AxisZLine.positionCount = 2;
-        AxisZLine.startWidth = 0.05f;
+        axisZLine.GetComponent<Renderer>().SetPropertyBlock(materialProperties);
+        axisZLine.positionCount = 2;
+        axisZLine.startWidth = 0.05f;
         for (int i = 0; i <= maxZ; i++)
         {
             GameObject AxisZPoint = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -231,38 +341,38 @@ public class ViRMA_VizController : MonoBehaviour
             AxisZPoint.transform.position = new Vector3(0, 0, i) * (defaultCellSpacingRatio + 1);
             AxisZPoint.transform.localScale = Vector3.one * 0.5f;
             AxisZPoint.transform.parent = cellsandAxesWrapper.transform;
-            AxisZPointsObjs.Add(AxisZPoint);
+            axisZPointObjs.Add(AxisZPoint);
         }
     }
     private void DrawAxesLines()
     {
         // x axis
-        if (AxisXLine)
+        if (axisXLine)
         {
-            if (AxisXPointsObjs.Count > 1)
+            if (axisXPointObjs.Count > 1)
             {
-                AxisXLine.SetPosition(0, AxisXPointsObjs[0].transform.position);
-                AxisXLine.SetPosition(1, AxisXPointsObjs[AxisXPointsObjs.Count - 1].transform.position);
+                axisXLine.SetPosition(0, axisXPointObjs[0].transform.position);
+                axisXLine.SetPosition(1, axisXPointObjs[axisXPointObjs.Count - 1].transform.position);
             }
         }
 
         // y axis
-        if (AxisYLine)
+        if (axisYLine)
         {
-            if (AxisYPointsObjs.Count > 1)
+            if (axisYPointObjs.Count > 1)
             {
-                AxisYLine.SetPosition(0, AxisYPointsObjs[0].transform.position);
-                AxisYLine.SetPosition(1, AxisYPointsObjs[AxisYPointsObjs.Count - 1].transform.position);
+                axisYLine.SetPosition(0, axisYPointObjs[0].transform.position);
+                axisYLine.SetPosition(1, axisYPointObjs[axisYPointObjs.Count - 1].transform.position);
             }
         }
 
         // z axis
-        if (AxisZLine)
+        if (axisZLine)
         {
-            if (AxisZPointsObjs.Count > 1)
+            if (axisZPointObjs.Count > 1)
             {
-                AxisZLine.SetPosition(0, AxisZPointsObjs[0].transform.position);
-                AxisZLine.SetPosition(1, AxisZPointsObjs[AxisZPointsObjs.Count - 1].transform.position);
+                axisZLine.SetPosition(0, axisZPointObjs[0].transform.position);
+                axisZLine.SetPosition(1, axisZPointObjs[axisZPointObjs.Count - 1].transform.position);
             }
         }
     }
@@ -271,7 +381,7 @@ public class ViRMA_VizController : MonoBehaviour
         // add cells to hierarchy parent
         GameObject cellsParent = new GameObject("Cells");
         cellsParent.transform.parent = cellsandAxesWrapper.transform;
-        foreach (var cell in CellsGameObjs)
+        foreach (var cell in cellObjs)
         {
             cell.transform.parent = cellsParent.transform;
         }
@@ -279,42 +389,42 @@ public class ViRMA_VizController : MonoBehaviour
         // add axes to hierarchy parent
         GameObject axesParent = new GameObject("Axes");
         axesParent.transform.parent = cellsandAxesWrapper.transform;
-        foreach (GameObject point in AxisXPointsObjs)
+        foreach (GameObject point in axisXPointObjs)
         {
             point.transform.parent = axesParent.transform;
         }
-        AxisXLine.gameObject.transform.parent = axesParent.transform;
-        foreach (GameObject point in AxisYPointsObjs)
+        axisXLine.gameObject.transform.parent = axesParent.transform;
+        foreach (GameObject point in axisYPointObjs)
         {
             point.transform.parent = axesParent.transform;
         }
-        AxisYLine.gameObject.transform.parent = axesParent.transform;
-        foreach (GameObject point in AxisZPointsObjs)
+        axisYLine.gameObject.transform.parent = axesParent.transform;
+        foreach (GameObject point in axisZPointObjs)
         {
             point.transform.parent = axesParent.transform;
         }
-        AxisZLine.gameObject.transform.parent = axesParent.transform;
+        axisZLine.gameObject.transform.parent = axesParent.transform;
     }
 
 
     // node navigation (position, rotation, scale)
     private void CellNavigationController()
     {
-        if (CellNavigationToggle[SteamVR_Input_Sources.LeftHand].state && CellNavigationToggle[SteamVR_Input_Sources.RightHand].state)
+        if (cellNavigationToggle[SteamVR_Input_Sources.LeftHand].state && cellNavigationToggle[SteamVR_Input_Sources.RightHand].state)
         {
             // both triggers held down
             ToggleCellScaling();
         }
-        else if (CellNavigationToggle[SteamVR_Input_Sources.LeftHand].state || CellNavigationToggle[SteamVR_Input_Sources.RightHand].state)
+        else if (cellNavigationToggle[SteamVR_Input_Sources.LeftHand].state || cellNavigationToggle[SteamVR_Input_Sources.RightHand].state)
         {
             // one trigger held down
-            if (CellNavigationToggle[SteamVR_Input_Sources.RightHand].state)
+            if (cellNavigationToggle[SteamVR_Input_Sources.RightHand].state)
             {
                 // right trigger held down
                 ToggleCellPositioning();
             }
 
-            if (CellNavigationToggle[SteamVR_Input_Sources.LeftHand].state)
+            if (cellNavigationToggle[SteamVR_Input_Sources.LeftHand].state)
             {
                 // left trigger held down
                 ToggleCellRotation();
@@ -487,7 +597,7 @@ public class ViRMA_VizController : MonoBehaviour
     }
 
 
-    // debugging
+    // testing and debugging
     private void ToggleDebuggingBounds()
     {
         // show bounds in-game for debugging
@@ -511,211 +621,5 @@ public class ViRMA_VizController : MonoBehaviour
         debugBoundsCenter.transform.rotation = cellsandAxesWrapper.transform.rotation;
         debugBoundsCenter.transform.parent = cellsandAxesWrapper.transform;
         debugBoundsCenter.transform.SetAsFirstSibling();
-    }
-    private static Texture2D ConvertImage(byte[] ddsBytes)
-    {
-        byte ddsSizeCheck = ddsBytes[4];
-        if (ddsSizeCheck != 124)
-        {
-            throw new Exception("Invalid DDS DXTn texture size! (not 124)");
-        }
-        int height = ddsBytes[13] * 256 + ddsBytes[12];
-        int width = ddsBytes[17] * 256 + ddsBytes[16];
-
-        int ddsHeaderSize = 128;
-        byte[] dxtBytes = new byte[ddsBytes.Length - ddsHeaderSize];
-        Buffer.BlockCopy(ddsBytes, ddsHeaderSize, dxtBytes, 0, ddsBytes.Length - ddsHeaderSize);
-        Texture2D texture = new Texture2D(width, height, TextureFormat.DXT1, false);
-
-        texture.LoadRawTextureData(dxtBytes);
-        texture.Apply();
-        return (texture);
-    }
-    private void TestTextureArrays(List<Cell> cellData)
-    {
-        // CopyTexture(Texture src, int srcElement, int srcMip, int srcX, int srcY, int srcWidth, int srcHeight, Texture dst, int dstElement, int dstMip, int dstX, int dstY);
-        // 684 x 484
-
-        /*
-        int destinationWidth = 684 * 2;
-        int destinationHeight = 484 * 2;
-        Texture2D destinationTexture = new Texture2D(destinationWidth, destinationHeight, TextureFormat.DXT1, false);
-
-        Texture2D texture_1 = cellData[0].ImageTexture;
-        Texture2D texture_2 = cellData[1].ImageTexture;
-        Texture2D texture_3 = cellData[5].ImageTexture;
-        Texture2D texture_4 = cellData[8].ImageTexture;
-
-        Graphics.CopyTexture(texture_1, 0, 0, 0, 0, texture_1.width, texture_1.height, destinationTexture, 0, 0, 0, 0);
-        Graphics.CopyTexture(texture_2, 0, 0, 0, 0, texture_2.width, texture_2.height, destinationTexture, 0, 0, 684, 0);
-        Graphics.CopyTexture(texture_3, 0, 0, 0, 0, texture_3.width, texture_3.height, destinationTexture, 0, 0, 0, 484);
-        Graphics.CopyTexture(texture_4, 0, 0, 0, 0, texture_4.width, texture_4.height, destinationTexture, 0, 0, 684, 484);
-
-        GameObject testCube = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        testCube.transform.localScale = new Vector3(1.5f, 1, 1.5f);
-        testCube.GetComponent<Renderer>().material.mainTexture = destinationTexture;
-        testCube.AddComponent<TextureUVTest>();
-        */
-
-        /*
-        int destinationWidth = 684;
-        int destinationHeight = 484 * 4;
-        Texture2D destinationTexture = new Texture2D(destinationWidth, destinationHeight, TextureFormat.DXT1, false);
-
-        Texture2D texture_1 = cellData[0].ImageTexture;
-        Texture2D texture_2 = cellData[1].ImageTexture;
-        Texture2D texture_3 = cellData[5].ImageTexture;
-        Texture2D texture_4 = cellData[8].ImageTexture;
-
-        Graphics.CopyTexture(texture_1, 0, 0, 0, 0, texture_1.width, texture_1.height, destinationTexture, 0, 0, 0, 0);
-        Graphics.CopyTexture(texture_2, 0, 0, 0, 0, texture_2.width, texture_2.height, destinationTexture, 0, 0, 0, 484);
-        Graphics.CopyTexture(texture_3, 0, 0, 0, 0, texture_3.width, texture_3.height, destinationTexture, 0, 0, 0, 484 * 2);
-        Graphics.CopyTexture(texture_4, 0, 0, 0, 0, texture_4.width, texture_4.height, destinationTexture, 0, 0, 0, 484 * 3);
-
-        GameObject testCube = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        testCube.transform.localScale = new Vector3(1.5f, 1, 1.5f);
-        testCube.GetComponent<Renderer>().material.mainTexture = destinationTexture;
-        testCube.AddComponent<TextureUVTest>();
-        */
-
-        
-
-        byte[] imageBytes1 = File.ReadAllBytes("C:/Users/aaron/Downloads/1.jpg");
-        Texture2D texture_1 = new Texture2D(1, 1);
-        texture_1.LoadImage(imageBytes1);
-
-        byte[] imageBytes2 = File.ReadAllBytes("C:/Users/aaron/Downloads/2.jpg");
-        Texture2D texture_2 = new Texture2D(1, 1);
-        texture_2.LoadImage(imageBytes2);
-
-        byte[] imageBytes3 = File.ReadAllBytes("C:/Users/aaron/Downloads/4.jpg");
-        Texture2D texture_3 = new Texture2D(1, 1);
-        texture_3.LoadImage(imageBytes3); 
-
-        byte[] imageBytes4 = File.ReadAllBytes("C:/Users/aaron/Downloads/4.jpg");
-        Texture2D texture_4 = new Texture2D(1, 1);
-        texture_4.LoadImage(imageBytes4);
-
-        bool isEqual = false;
-        int equalChecker = 0;
-        for (int i = 0; i < imageBytes3.Length; i++)
-        {
-            if (imageBytes3[i] == imageBytes4[i])
-            {
-                equalChecker++;
-            }
-            if (equalChecker == imageBytes3.Length)
-            {
-                isEqual = true;
-            }
-        }
-        Debug.Log(isEqual);
-
-
-        int destinationWidth = 1024;
-        int destinationHeight = 765 * 4;
-        Texture2D destinationTexture = new Texture2D(destinationWidth, destinationHeight, TextureFormat.RGB24, false);
-        //Texture2DArray testArray = new Texture2DArray(destinationWidth, destinationHeight, 4, TextureFormat.RGB24, false); // testing
-
-        Graphics.CopyTexture(texture_1, 0, 0, 0, 0, texture_1.width, texture_1.height, destinationTexture, 0, 0, 0, 0);
-        Graphics.CopyTexture(texture_2, 0, 0, 0, 0, texture_2.width, texture_2.height, destinationTexture, 0, 0, 0, 765);
-        Graphics.CopyTexture(texture_3, 0, 0, 0, 0, texture_3.width, texture_3.height, destinationTexture, 0, 0, 0, 765 * 2);
-        Graphics.CopyTexture(texture_4, 0, 0, 0, 0, texture_4.width, texture_4.height, destinationTexture, 0, 0, 0, 765 * 3);
-
-        GameObject testCube = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        testCube.transform.localScale = new Vector3(1.5f, 1, 1.5f);
-        testCube.GetComponent<Renderer>().material.mainTexture = destinationTexture;
-        testCube.AddComponent<TextureUVTest>();
-    }
-
-
-
-
-    private void GenerateTextures(List<Cell> cellData)
-    {
-        List<KeyValuePair<string, Texture2D>> uniqueTextures = new List<KeyValuePair<string, Texture2D>>();
-        foreach (var newCell in cellData)
-        {   
-            if (!newCell.Filtered)
-            {
-                int index = uniqueTextures.FindIndex(a => a.Key == newCell.ImageName);
-                if (index == -1)
-                {
-                    byte[] imageBytes = File.ReadAllBytes(ViRMA_APIController.imagesDirectory + newCell.ImageName);
-                    newCell.ImageTexture = ConvertImage(imageBytes);
-                    KeyValuePair<string, Texture2D> uniqueTexture = new KeyValuePair<string, Texture2D>(newCell.ImageName, newCell.ImageTexture);
-                    uniqueTextures.Add(uniqueTexture);
-                }
-                else
-                {
-                    newCell.ImageTexture = uniqueTextures[index].Value;
-                }
-            }      
-        }
-
-        int textureWidth = uniqueTextures[0].Value.width; // 684
-        int textureHeight = uniqueTextures[0].Value.height; // 485
-        int maxTextureArraySize = SystemInfo.maxTextureSize; // 16k+
-        int maxTexturesPerArray = maxTextureArraySize / textureHeight; // 33
-        int totalTextureArrays = uniqueTextures.Count / maxTexturesPerArray + 1; // 3       
-
-        for (int i = 0; i < totalTextureArrays; i++)
-        {
-            //Debug.Log("----------------- " + i + " -----------------"); // debugging
-
-            if (i != totalTextureArrays - 1)
-            {
-                Material newtextureArrayMaterial = new Material(Resources.Load("Materials/CellMaterial") as Material);
-
-                Texture2D newTextureArray = new Texture2D(textureWidth, textureHeight * maxTexturesPerArray, TextureFormat.DXT1, false);
-                for (int j = 0; j < maxTexturesPerArray; j++)
-                {
-                    int uniqueTextureIndex = j + maxTexturesPerArray * i;
-                    Texture2D targetTexture = uniqueTextures[uniqueTextureIndex].Value;
-                    Graphics.CopyTexture(targetTexture, 0, 0, 0, 0, targetTexture.width, targetTexture.height, newTextureArray, 0, 0, 0, targetTexture.height * j);
-
-                    //Debug.Log(j + " | " + uniqueTextureIndex); // debugging
-
-
-                    foreach (var cellDataObj in CellData)
-                    {
-                        if (cellDataObj.ImageName == uniqueTextures[uniqueTextureIndex].Key)
-                        {
-                            cellDataObj.TextureArrayId = j;
-                            cellDataObj.TextureArrayMaterial = newtextureArrayMaterial;
-                            cellDataObj.TextureArraySize = maxTexturesPerArray;
-                        }
-                    }
-                }
-                newtextureArrayMaterial.mainTexture = newTextureArray;
-            }
-            else
-            {
-                Material newtextureArrayMaterial = new Material(Resources.Load("Materials/CellMaterial") as Material);
-
-                int lastTextureArraySize = uniqueTextures.Count - (maxTexturesPerArray * (totalTextureArrays - 1)); // 15
-                Texture2D newTextureArray = new Texture2D(textureWidth, textureHeight * lastTextureArraySize, TextureFormat.DXT1, false);
-                for (int j = 0; j < lastTextureArraySize; j++)
-                {
-                    int uniqueTextureIndex = j + maxTexturesPerArray * i;
-                    Texture2D targetTexture = uniqueTextures[uniqueTextureIndex].Value;
-                    Graphics.CopyTexture(targetTexture, 0, 0, 0, 0, targetTexture.width, targetTexture.height, newTextureArray, 0, 0, 0, targetTexture.height * j);
-
-                    // Debug.Log(j + " | " + uniqueTextureIndex); // debugging
-
-                    foreach (var cellDataObj in CellData)
-                    {
-                        if (cellDataObj.ImageName == uniqueTextures[uniqueTextureIndex].Key)
-                        {
-                            cellDataObj.TextureArrayId = j;
-                            cellDataObj.TextureArrayMaterial = newtextureArrayMaterial;
-                            cellDataObj.TextureArraySize = lastTextureArraySize;
-                        }
-                    }
-                }               
-                newtextureArrayMaterial.mainTexture = newTextureArray;
-            }
-        }
-
-    }
+    }   
 }
