@@ -50,48 +50,16 @@
       "type": "boolean"
     },
     {
-      "name": "/actions/default/in/MoveRow",
-      "type": "boolean"
-    },
-    {
-      "name": "/actions/default/in/MoveColumn",
-      "type": "boolean"
-    },
-    {
       "name": "/actions/default/out/Haptic",
       "type": "vibration"
     },
     {
-      "name": "/actions/platformer/in/Move",
-      "type": "vector2"
-    },
-    {
-      "name": "/actions/platformer/in/Jump",
-      "type": "boolean"
-    },
-    {
-      "name": "/actions/buggy/in/Steering",
-      "type": "vector2"
-    },
-    {
-      "name": "/actions/buggy/in/Throttle",
-      "type": "vector1"
-    },
-    {
-      "name": "/actions/buggy/in/Brake",
-      "type": "boolean"
-    },
-    {
-      "name": "/actions/buggy/in/Reset",
-      "type": "boolean"
-    },
-    {
-      "name": "/actions/mixedreality/in/ExternalCamera",
-      "type": "pose",
+      "name": "/actions/CellNavigation/in/TogglePositionRotationScale",
+      "type": "boolean",
       "requirement": "optional"
     },
     {
-      "name": "/actions/CellNavigation/in/Toggle",
+      "name": "/actions/TestActions/in/actionClicked",
       "type": "boolean",
       "requirement": "optional"
     }
@@ -102,19 +70,11 @@
       "usage": "single"
     },
     {
-      "name": "/actions/platformer",
-      "usage": "single"
-    },
-    {
-      "name": "/actions/buggy",
-      "usage": "single"
-    },
-    {
-      "name": "/actions/mixedreality",
-      "usage": "single"
-    },
-    {
       "name": "/actions/CellNavigation",
+      "usage": "single"
+    },
+    {
+      "name": "/actions/TestActions",
       "usage": "single"
     }
   ],
@@ -184,7 +144,6 @@
       "/actions/default/in/SkeletonRightHand": "Skeleton (Right)",
       "/actions/default/in/Teleport": "Teleport",
       "/actions/default/out/Haptic": "Haptic",
-      "/actions/platformer/in/Jump": "Jump",
       "/actions/default/in/SnapTurnLeft": "Snap Turn (Left)",
       "/actions/default/in/SnapTurnRight": "Snap Turn (Right)"
     }

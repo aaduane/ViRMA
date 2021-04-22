@@ -17,11 +17,11 @@ namespace Valve.VR
     public class SteamVR_Input_ActionSet_CellNavigation : Valve.VR.SteamVR_ActionSet
     {
         
-        public virtual SteamVR_Action_Boolean Toggle
+        public virtual SteamVR_Action_Boolean TogglePositionRotationScale
         {
             get
             {
-                return SteamVR_Actions.cellNavigation_Toggle;
+                return SteamVR_Actions.cellNavigation_TogglePositionRotationScale;
             }
         }
     }

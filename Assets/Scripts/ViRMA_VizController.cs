@@ -10,9 +10,9 @@ public class ViRMA_VizController : MonoBehaviour
 {
     /* --- public --- */
 
-    // actions
+    // SteamVR actions for viz controller
     public SteamVR_ActionSet cellNavigationControls;
-    public SteamVR_Action_Boolean cellNavigationToggle;
+    public SteamVR_Action_Boolean togglePositionRotationScale;
 
     // cells and axes objects
     [HideInInspector] public List<Cell> cellData;
@@ -22,9 +22,14 @@ public class ViRMA_VizController : MonoBehaviour
     /*--- private --- */
 
     // general
+    private ViRMA_GlobalsAndActions globals;
     private Rigidbody rigidBody;
     private float previousDistanceBetweenHands;
     private Bounds cellsAndAxesBounds;
+
+    [HideInInspector] public bool activeBrowsingState;
+    [HideInInspector] public Vector3 activeVizPosition;
+    [HideInInspector] public Quaternion activeVizRotation;
 
     // cell properties
     private GameObject cellsandAxesWrapper;
@@ -36,6 +41,9 @@ public class ViRMA_VizController : MonoBehaviour
 
     private void Awake()
     {
+        // define ViRMA globals script
+        globals = Player.instance.gameObject.GetComponent<ViRMA_GlobalsAndActions>();
+
         // setup cells and axes wrapper
         cellsandAxesWrapper = new GameObject("CellsAndAxesWrapper");
 
@@ -46,7 +54,7 @@ public class ViRMA_VizController : MonoBehaviour
         rigidBody.drag = 0.1f;
         rigidBody.angularDrag = 0.5f;       
     }
-    private IEnumerator Start()
+    private void Start()
     {
         // dummy queries for debugging
         Query dummyQuery = new Query();
@@ -59,8 +67,27 @@ public class ViRMA_VizController : MonoBehaviour
         //dummyQuery.AddFilter(115, "Hierarchy");
         //dummyQuery.AddFilter(116, "Hierarchy");
 
+        StartCoroutine(SubmitVizQuery(dummyQuery));
+    }
+    private void Update()
+    {
+        // control call navigation and spatial limitations
+        if (cellNavigationControls.IsActive())
+        {
+            CellNavigationController();
+            CellNavigationLimiter();
+        }       
+
+        // draw axes line renderers 
+        DrawAxesLines();
+    }
+
+
+    // cell and axes generation
+    public IEnumerator SubmitVizQuery(Query submittedQuery)
+    {
         // get actual data from server
-        yield return StartCoroutine(ViRMA_APIController.GetCells(dummyQuery, (cells) => {
+        yield return StartCoroutine(ViRMA_APIController.GetCells(submittedQuery, (cells) => {
             cellData = cells;
         }));
 
@@ -87,22 +114,13 @@ public class ViRMA_VizController : MonoBehaviour
 
         // so it does not affect bounds, organise hierarachy after everything is rendered
         OrganiseHierarchy();
+      
+        // set flag that query is finished loading
+        globals.queryController.queryLoading = false;
 
         // activate navigation action controls
         cellNavigationControls.Activate();
-    }
-    private void Update()
-    {
-        // control call navigation and spatial limitations
-        CellNavigationController();
-        CellNavigationLimiter();
-
-        // draw axes line renderers 
-        DrawAxesLines();
-    }
-
-
-    // cell and axes generation
+    }     
     private void GenerateTexturesAndTextureArrays(List<Cell> cellData)
     {
         // make a list of all the unique image textures present in the current query
@@ -229,7 +247,7 @@ public class ViRMA_VizController : MonoBehaviour
 
             // adjust aspect ratio
             float aspectRatio = 1.5f;
-            cell.transform.localScale = new Vector3(aspectRatio, 1, 1);
+            cell.transform.localScale = new Vector3(aspectRatio, 1, aspectRatio);
 
             // assign coordinates to cell from server using a pre-defined space multiplier
             Vector3 nodePosition = new Vector3(newCellData.Coordinates.x, newCellData.Coordinates.y, newCellData.Coordinates.z) * (defaultCellSpacingRatio + 1);
@@ -291,7 +309,7 @@ public class ViRMA_VizController : MonoBehaviour
         axisXLine.GetComponent<Renderer>().SetPropertyBlock(materialProperties);
         axisXLine.positionCount = 2;
         axisXLine.startWidth = 0.05f;
-        for (int i = 0; i <= maxX; i++)
+        for (int i = 1; i <= maxX; i++)
         {
             GameObject AxisXPoint = GameObject.CreatePrimitive(PrimitiveType.Cube);
             AxisXPoint.GetComponent<Renderer>().material = transparentMaterial;
@@ -312,7 +330,7 @@ public class ViRMA_VizController : MonoBehaviour
 
         axisYLine.positionCount = 2;
         axisYLine.startWidth = 0.05f;
-        for (int i = 0; i <= maxY; i++)
+        for (int i = 1; i <= maxY; i++)
         {
             GameObject AxisYPoint = GameObject.CreatePrimitive(PrimitiveType.Cube);
             AxisYPoint.GetComponent<Renderer>().material = transparentMaterial;
@@ -332,7 +350,7 @@ public class ViRMA_VizController : MonoBehaviour
         axisZLine.GetComponent<Renderer>().SetPropertyBlock(materialProperties);
         axisZLine.positionCount = 2;
         axisZLine.startWidth = 0.05f;
-        for (int i = 0; i <= maxZ; i++)
+        for (int i = 1; i <= maxZ; i++)
         {
             GameObject AxisZPoint = GameObject.CreatePrimitive(PrimitiveType.Cube);
             AxisZPoint.GetComponent<Renderer>().material = transparentMaterial;
@@ -381,6 +399,7 @@ public class ViRMA_VizController : MonoBehaviour
         // add cells to hierarchy parent
         GameObject cellsParent = new GameObject("Cells");
         cellsParent.transform.parent = cellsandAxesWrapper.transform;
+        cellsParent.transform.localScale = Vector3.one;     
         foreach (var cell in cellObjs)
         {
             cell.transform.parent = cellsParent.transform;
@@ -389,6 +408,7 @@ public class ViRMA_VizController : MonoBehaviour
         // add axes to hierarchy parent
         GameObject axesParent = new GameObject("Axes");
         axesParent.transform.parent = cellsandAxesWrapper.transform;
+        axesParent.transform.localScale = Vector3.one;
         foreach (GameObject point in axisXPointObjs)
         {
             point.transform.parent = axesParent.transform;
@@ -405,26 +425,45 @@ public class ViRMA_VizController : MonoBehaviour
         }
         axisZLine.gameObject.transform.parent = axesParent.transform;
     }
+    public void ClearViz()
+    {
+        cellObjs.Clear();
+        axisXPointObjs.Clear();
+        axisYPointObjs.Clear();
+        axisZPointObjs.Clear();
+
+        activeVizPosition = transform.position;
+        activeVizRotation = transform.rotation;
+        activeBrowsingState = true;
+
+        transform.localScale = Vector3.one;
+        transform.rotation = Quaternion.identity;
+
+        foreach (Transform child in cellsandAxesWrapper.transform)
+        {
+            Destroy(child.gameObject);
+        }
+    }
 
 
     // node navigation (position, rotation, scale)
     private void CellNavigationController()
     {
-        if (cellNavigationToggle[SteamVR_Input_Sources.LeftHand].state && cellNavigationToggle[SteamVR_Input_Sources.RightHand].state)
+        if (togglePositionRotationScale[SteamVR_Input_Sources.LeftHand].state && togglePositionRotationScale[SteamVR_Input_Sources.RightHand].state)
         {
             // both triggers held down
             ToggleCellScaling();
         }
-        else if (cellNavigationToggle[SteamVR_Input_Sources.LeftHand].state || cellNavigationToggle[SteamVR_Input_Sources.RightHand].state)
+        else if (togglePositionRotationScale[SteamVR_Input_Sources.LeftHand].state || togglePositionRotationScale[SteamVR_Input_Sources.RightHand].state)
         {
             // one trigger held down
-            if (cellNavigationToggle[SteamVR_Input_Sources.RightHand].state)
+            if (togglePositionRotationScale[SteamVR_Input_Sources.RightHand].state)
             {
                 // right trigger held down
                 ToggleCellPositioning();
             }
 
-            if (cellNavigationToggle[SteamVR_Input_Sources.LeftHand].state)
+            if (togglePositionRotationScale[SteamVR_Input_Sources.LeftHand].state)
             {
                 // left trigger held down
                 ToggleCellRotation();
@@ -491,11 +530,13 @@ public class ViRMA_VizController : MonoBehaviour
             {
                 Vector3 targetScale = Vector3.one * maxParentScale;            
                 transform.localScale = Vector3.Lerp(transform.localScale, targetScale, 2f * Time.deltaTime);
+                defaultParentSize = transform.localScale.x;
             }
             if (thisFrameDistance < previousDistanceBetweenHands)
             {
                 Vector3 targetScale = Vector3.one * minParentScale;
                 transform.localScale = Vector3.Lerp(transform.localScale, targetScale, 2f * Time.deltaTime);
+                defaultParentSize = transform.localScale.x;
             }
             previousDistanceBetweenHands = thisFrameDistance;
         }
@@ -567,15 +608,25 @@ public class ViRMA_VizController : MonoBehaviour
             bounds.Encapsulate(mesh.bounds);
         }
 
-        // calculate distance to place cells/axes in front of player based on longest axis
-        float distance = Mathf.Max(Mathf.Max(bounds.size.x, bounds.size.y), bounds.size.z);
-        Vector3 flattenedVector = Player.instance.bodyDirectionGuess;
-        flattenedVector.y = 0;
-        flattenedVector.Normalize();
-        Vector3 spawnPos = Player.instance.hmdTransform.position + flattenedVector * distance;
-        transform.position = spawnPos;
-        transform.LookAt(2 * transform.position - Player.instance.hmdTransform.position);
-
+        // if there is an active browsing state, maintain location of viz
+        if (activeBrowsingState)
+        {
+            transform.position = activeVizPosition;
+            transform.rotation = activeVizRotation;
+        }
+        else
+        {
+            // calculate distance to place cells/axes in front of player based on longest axis
+            float distance = Mathf.Max(Mathf.Max(bounds.size.x, bounds.size.y), bounds.size.z);
+            Vector3 flattenedVector = Player.instance.bodyDirectionGuess;
+            flattenedVector.y = 0;
+            flattenedVector.Normalize();
+            Vector3 spawnPos = Player.instance.hmdTransform.position + flattenedVector * distance;
+            transform.position = spawnPos;
+            //transform.LookAt(Player.instance.hmdTransform.position);
+            transform.LookAt(2 * transform.position - Player.instance.hmdTransform.position); // flip viz 180 degrees
+        }
+        
         // recalculate bounds to dertmine positional limits 
         CalculateCellsAndAxesBounds();
     }

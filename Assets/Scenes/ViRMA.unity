@@ -137,7 +137,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &949834146
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -150,6 +150,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4b7459648ac9f3c4cb1078bc27e00959, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  queryLoading: 0
 --- !u!4 &949834147
 Transform:
   m_ObjectHideFlags: 0
@@ -164,6 +165,31 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1062316610 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 107946, guid: dc06161b6d97feb419f45f03b62e14b9,
+    type: 3}
+  m_PrefabInstance: {fileID: 1715758422}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1062316611
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1062316610}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fd2c37f35cea63d4c997786e9c4e3af5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  vizController: {fileID: 1538969817}
+  queryController: {fileID: 949834146}
+  testActions:
+    actionSetPath: 
+  actionClicked:
+    actionPath: 
+    needsReinit: 1
 --- !u!114 &1538969817
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -178,8 +204,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cellNavigationControls:
     actionSetPath: /actions/CellNavigation
-  cellNavigationToggle:
-    actionPath: /actions/CellNavigation/in/Toggle
+  togglePositionRotationScale:
+    actionPath: /actions/CellNavigation/in/TogglePositionRotationScale
     needsReinit: 0
   cellObjs: []
   axisXPointObjs: []
@@ -188,6 +214,9 @@ MonoBehaviour:
   axisXLine: {fileID: 0}
   axisYLine: {fileID: 0}
   axisZLine: {fileID: 0}
+  activeBrowsingState: 0
+  activeVizPosition: {x: 0, y: 0, z: 0}
+  activeVizRotation: {x: 0, y: 0, z: 0, w: 0}
 --- !u!1001 &1715758422
 PrefabInstance:
   m_ObjectHideFlags: 0
