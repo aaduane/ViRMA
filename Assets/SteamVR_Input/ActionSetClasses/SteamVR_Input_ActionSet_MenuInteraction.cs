@@ -14,14 +14,22 @@ namespace Valve.VR
     using UnityEngine;
     
     
-    public class SteamVR_Input_ActionSet_CellNavigation : Valve.VR.SteamVR_ActionSet
+    public class SteamVR_Input_ActionSet_MenuInteraction : Valve.VR.SteamVR_ActionSet
     {
         
-        public virtual SteamVR_Action_Boolean TogglePositionRotationScale
+        public virtual SteamVR_Action_Boolean Select
         {
             get
             {
-                return SteamVR_Actions.cellNavigation_TogglePositionRotationScale;
+                return SteamVR_Actions.menuInteraction_Select;
+            }
+        }
+        
+        public virtual SteamVR_Action_Boolean MenuControl
+        {
+            get
+            {
+                return SteamVR_Actions.menuInteraction_MenuControl;
             }
         }
     }

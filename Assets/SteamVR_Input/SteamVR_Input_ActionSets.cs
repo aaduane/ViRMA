@@ -19,9 +19,9 @@ namespace Valve.VR
         
         private static SteamVR_Input_ActionSet_default p__default;
         
-        private static SteamVR_Input_ActionSet_CellNavigation p_CellNavigation;
+        private static SteamVR_Input_ActionSet_VizNavigation p_VizNavigation;
         
-        private static SteamVR_Input_ActionSet_TestActions p_TestActions;
+        private static SteamVR_Input_ActionSet_MenuInteraction p_MenuInteraction;
         
         public static SteamVR_Input_ActionSet_default _default
         {
@@ -31,31 +31,31 @@ namespace Valve.VR
             }
         }
         
-        public static SteamVR_Input_ActionSet_CellNavigation CellNavigation
+        public static SteamVR_Input_ActionSet_VizNavigation VizNavigation
         {
             get
             {
-                return SteamVR_Actions.p_CellNavigation.GetCopy<SteamVR_Input_ActionSet_CellNavigation>();
+                return SteamVR_Actions.p_VizNavigation.GetCopy<SteamVR_Input_ActionSet_VizNavigation>();
             }
         }
         
-        public static SteamVR_Input_ActionSet_TestActions TestActions
+        public static SteamVR_Input_ActionSet_MenuInteraction MenuInteraction
         {
             get
             {
-                return SteamVR_Actions.p_TestActions.GetCopy<SteamVR_Input_ActionSet_TestActions>();
+                return SteamVR_Actions.p_MenuInteraction.GetCopy<SteamVR_Input_ActionSet_MenuInteraction>();
             }
         }
         
         private static void StartPreInitActionSets()
         {
             SteamVR_Actions.p__default = ((SteamVR_Input_ActionSet_default)(SteamVR_ActionSet.Create<SteamVR_Input_ActionSet_default>("/actions/default")));
-            SteamVR_Actions.p_CellNavigation = ((SteamVR_Input_ActionSet_CellNavigation)(SteamVR_ActionSet.Create<SteamVR_Input_ActionSet_CellNavigation>("/actions/CellNavigation")));
-            SteamVR_Actions.p_TestActions = ((SteamVR_Input_ActionSet_TestActions)(SteamVR_ActionSet.Create<SteamVR_Input_ActionSet_TestActions>("/actions/TestActions")));
+            SteamVR_Actions.p_VizNavigation = ((SteamVR_Input_ActionSet_VizNavigation)(SteamVR_ActionSet.Create<SteamVR_Input_ActionSet_VizNavigation>("/actions/VizNavigation")));
+            SteamVR_Actions.p_MenuInteraction = ((SteamVR_Input_ActionSet_MenuInteraction)(SteamVR_ActionSet.Create<SteamVR_Input_ActionSet_MenuInteraction>("/actions/MenuInteraction")));
             Valve.VR.SteamVR_Input.actionSets = new Valve.VR.SteamVR_ActionSet[] {
                     SteamVR_Actions._default,
-                    SteamVR_Actions.CellNavigation,
-                    SteamVR_Actions.TestActions};
+                    SteamVR_Actions.VizNavigation,
+                    SteamVR_Actions.MenuInteraction};
         }
     }
 }

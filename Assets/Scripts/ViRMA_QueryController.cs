@@ -15,7 +15,7 @@ public class ViRMA_QueryController : MonoBehaviour
 
     private void Start()
     {
-        
+        /*
         StartCoroutine(ViRMA_APIController.GetTagsets((tagsets) => {
             foreach (var tagset in tagsets)
             {
@@ -23,17 +23,18 @@ public class ViRMA_QueryController : MonoBehaviour
             }
         }));
 
+
         StartCoroutine(ViRMA_APIController.GetHierarchies((hierarchies) => {
             foreach (var hierarchy in hierarchies)
             {
                 //Debug.Log("Hierarchy: " + hierarchy.Id + " | " + hierarchy.Name); // debugging
             }
         }));
-
+        */
     }
 
 
-    public void doTestActionNow(SteamVR_Action_Boolean action, SteamVR_Input_Sources source)
+    public void testReloadViz(SteamVR_Action_Boolean action, SteamVR_Input_Sources source)
     {
         Debug.Log("Test action fired!");
         if (queryLoading == false)

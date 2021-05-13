@@ -54,14 +54,24 @@
       "type": "vibration"
     },
     {
-      "name": "/actions/CellNavigation/in/TogglePositionRotationScale",
-      "type": "boolean",
-      "requirement": "optional"
+      "name": "/actions/VizNavigation/in/Position",
+      "type": "boolean"
     },
     {
-      "name": "/actions/TestActions/in/actionClicked",
-      "type": "boolean",
-      "requirement": "optional"
+      "name": "/actions/VizNavigation/in/Rotation",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/VizNavigation/in/Scale",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/MenuInteraction/in/Select",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/MenuInteraction/in/MenuControl",
+      "type": "boolean"
     }
   ],
   "action_sets": [
@@ -70,11 +80,11 @@
       "usage": "single"
     },
     {
-      "name": "/actions/CellNavigation",
+      "name": "/actions/VizNavigation",
       "usage": "single"
     },
     {
-      "name": "/actions/TestActions",
+      "name": "/actions/MenuInteraction",
       "usage": "single"
     }
   ],

@@ -12,28 +12,7 @@
       "chords": [],
       "poses": [],
       "haptics": [],
-      "sources": [
-        {
-          "path": "/user/hand/left/input/trigger",
-          "mode": "trigger",
-          "parameters": {},
-          "inputs": {
-            "click": {
-              "output": "/actions/cellnavigation/in/togglepositionrotationscale"
-            }
-          }
-        },
-        {
-          "path": "/user/hand/right/input/trigger",
-          "mode": "trigger",
-          "parameters": {},
-          "inputs": {
-            "click": {
-              "output": "/actions/cellnavigation/in/togglepositionrotationscale"
-            }
-          }
-        }
-      ],
+      "sources": [],
       "skeleton": []
     },
     "/actions/default": {
@@ -58,129 +37,7 @@
           "path": "/user/hand/right/output/haptic"
         }
       ],
-      "sources": [
-        {
-          "path": "/user/hand/left/input/trigger",
-          "mode": "button",
-          "parameters": {},
-          "inputs": {
-            "click": {
-              "output": "/actions/default/in/interactui"
-            }
-          }
-        },
-        {
-          "path": "/user/hand/left/input/grip",
-          "mode": "force_sensor",
-          "parameters": {},
-          "inputs": {
-            "force": {
-              "output": "/actions/default/in/squeeze"
-            }
-          }
-        },
-        {
-          "path": "/user/hand/left/input/grip",
-          "mode": "grab",
-          "parameters": {
-            "force_hold_threshold": "0.02",
-            "force_release_threshold": "0.01"
-          },
-          "inputs": {
-            "grab": {
-              "output": "/actions/default/in/grabgrip"
-            }
-          }
-        },
-        {
-          "path": "/user/hand/left/input/pinch",
-          "mode": "grab",
-          "parameters": {
-            "force_hold_threshold": "0.02",
-            "force_release_threshold": "0.01"
-          },
-          "inputs": {
-            "grab": {
-              "output": "/actions/default/in/grabpinch"
-            }
-          }
-        },
-        {
-          "path": "/user/hand/right/input/grip",
-          "mode": "force_sensor",
-          "parameters": {},
-          "inputs": {
-            "force": {
-              "output": "/actions/default/in/squeeze"
-            }
-          }
-        },
-        {
-          "path": "/user/hand/right/input/grip",
-          "mode": "grab",
-          "parameters": {},
-          "inputs": {
-            "grab": {
-              "output": "/actions/default/in/grabgrip"
-            }
-          }
-        },
-        {
-          "path": "/user/hand/right/input/pinch",
-          "mode": "grab",
-          "parameters": {},
-          "inputs": {
-            "grab": {
-              "output": "/actions/default/in/grabpinch"
-            }
-          }
-        },
-        {
-          "path": "/user/hand/right/input/trigger",
-          "mode": "button",
-          "parameters": {},
-          "inputs": {
-            "click": {
-              "output": "/actions/default/in/interactui"
-            }
-          }
-        },
-        {
-          "path": "/user/hand/right/input/thumbstick",
-          "mode": "dpad",
-          "parameters": {
-            "sub_mode": "touch"
-          },
-          "inputs": {
-            "east": {
-              "output": "/actions/default/in/snapturnright"
-            },
-            "west": {
-              "output": "/actions/default/in/snapturnleft"
-            }
-          }
-        },
-        {
-          "path": "/user/hand/left/input/trackpad",
-          "mode": "trackpad",
-          "parameters": {},
-          "inputs": {
-            "touch": {
-              "output": "/actions/default/in/teleport"
-            }
-          }
-        },
-        {
-          "path": "/user/hand/right/input/trackpad",
-          "mode": "trackpad",
-          "parameters": {},
-          "inputs": {
-            "touch": {
-              "output": "/actions/default/in/teleport"
-            }
-          }
-        }
-      ],
+      "sources": [],
       "skeleton": [
         {
           "output": "/actions/default/in/skeletonlefthand",
@@ -191,6 +48,54 @@
           "path": "/user/hand/right/input/skeleton/right"
         }
       ]
+    },
+    "/actions/menuinteraction": {
+      "chords": [],
+      "poses": [],
+      "haptics": [],
+      "sources": [
+        {
+          "path": "/user/hand/left/input/trigger",
+          "mode": "trigger",
+          "parameters": {},
+          "inputs": {
+            "click": {
+              "output": "/actions/menuinteraction/in/select"
+            }
+          }
+        },
+        {
+          "path": "/user/hand/right/input/trigger",
+          "mode": "trigger",
+          "parameters": {},
+          "inputs": {
+            "click": {
+              "output": "/actions/menuinteraction/in/select"
+            }
+          }
+        },
+        {
+          "path": "/user/hand/left/input/a",
+          "mode": "button",
+          "parameters": {},
+          "inputs": {
+            "click": {
+              "output": "/actions/menuinteraction/in/menucontrol"
+            }
+          }
+        },
+        {
+          "path": "/user/hand/right/input/a",
+          "mode": "button",
+          "parameters": {},
+          "inputs": {
+            "click": {
+              "output": "/actions/menuinteraction/in/menucontrol"
+            }
+          }
+        }
+      ],
+      "skeleton": []
     },
     "/actions/platformer": {
       "chords": [],
@@ -203,24 +108,31 @@
       "chords": [],
       "poses": [],
       "haptics": [],
+      "sources": [],
+      "skeleton": []
+    },
+    "/actions/viznavigation": {
+      "chords": [],
+      "poses": [],
+      "haptics": [],
       "sources": [
         {
-          "path": "/user/hand/left/input/a",
-          "mode": "button",
+          "path": "/user/hand/left/input/trigger",
+          "mode": "trigger",
           "parameters": {},
           "inputs": {
             "click": {
-              "output": "/actions/testactions/in/actionclicked"
+              "output": "/actions/viznavigation/in/rotation"
             }
           }
         },
         {
-          "path": "/user/hand/right/input/a",
-          "mode": "button",
+          "path": "/user/hand/right/input/trigger",
+          "mode": "trigger",
           "parameters": {},
           "inputs": {
             "click": {
-              "output": "/actions/testactions/in/actionclicked"
+              "output": "/actions/viznavigation/in/position"
             }
           }
         }

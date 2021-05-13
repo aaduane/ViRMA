@@ -5,6 +5,7 @@ using UnityEngine.Networking;
 using SimpleJSON;
 using System;
 using System.Threading;
+using System.Linq;
 
 public class Tag
 {
@@ -33,7 +34,6 @@ public class Query
     {
         public int Id { get; set; }
         public string Type { get; set; }
-
         public Axis(int id, string type) {
             Id = id;
             Type = type;
@@ -50,7 +50,6 @@ public class Query
             Type = type;
         }
     }
-
     public void SetAxis(string axis, int id, string type)
     {
         if (axis.ToUpper() == "X")
@@ -86,6 +85,47 @@ public class Query
     public void ClearFilters()
     {
         Filters.Clear();
+    }
+
+}
+public class AxesLabels {
+
+    public AxisLabel X;
+    public AxisLabel Y;
+    public AxisLabel Z;
+
+    public class AxisLabel
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string Type { get; set; }    
+        public List<KeyValuePair<string, int>> Labels { get; set; }
+        public AxisLabel(int id, string type, string name, List<KeyValuePair<string, int>> labels)
+        {
+            Id = id;
+            Name = name;
+            Type = type;
+            Labels = labels;
+        }
+    }
+    public void SetAxisLabsls(string axis, int id, string type, string name, List<KeyValuePair<string, int>> labels)
+    {
+        if (axis.ToUpper() == "X")
+        {
+            X = new AxisLabel(id, type, name, labels);
+        }
+        else if (axis.ToUpper() == "Y")
+        {
+            Y = new AxisLabel(id, type, name, labels);
+        }
+        else if (axis.ToUpper() == "Z")
+        {
+            Z = new AxisLabel(id, type, name, labels);
+        }
+        else
+        {
+            Debug.LogError("Invalid axis selected.");
+        }
     }
 
 }
@@ -175,14 +215,21 @@ public class ViRMA_APIController : MonoBehaviour
     }
     public static IEnumerator GetHierarchies(Action<List<Tag>> onSuccess)
     {
-        yield return GetRequest("hierarchy", (response) =>
+        yield return GetRequest("hierarchy/6", (response) =>
         {
             jsonData = response;
         });
 
+        Debug.Log(jsonData["Id"]);
+        Debug.Log(jsonData["Name"]);
+        Debug.Log(jsonData["Nodes"]);
+
         List<Tag> hierarchies = new List<Tag>();
         foreach (var obj in jsonData)
         {
+
+            ///Debug.Log(obj);
+
             Tag newTag = new Tag
             {
                 Id = obj.Value["Id"],
@@ -250,4 +297,81 @@ public class ViRMA_APIController : MonoBehaviour
         }
         onSuccess(cells);
     }
+    public static IEnumerator GetAxesLabels(Query query, Action<AxesLabels> onSuccess)
+    {
+        AxesLabels axisLabels = new AxesLabels();
+
+        (string name, List<KeyValuePair<string, int>> labels) processLabelData(JSONNode response)
+        {
+            string name;
+            List<KeyValuePair<string, int>> labels = new List<KeyValuePair<string, int>>();
+            if (response["Tags"] == null)
+            {
+                // hierarchy
+                name = response["Tag"]["Name"];
+                foreach (JSONObject child in response["Children"])
+                {
+                    KeyValuePair<string, int> labelIdPair = new KeyValuePair<string, int>(child["Tag"]["Name"], child["Tag"]["Id"]);
+                    labels.Add(labelIdPair);
+                }
+            }
+            else
+            {
+                // tagset
+                name = response["Name"];
+                foreach (JSONObject child in response["Tags"])
+                {
+                    KeyValuePair<string, int> labelIdPair = new KeyValuePair<string, int>(child["Name"], child["Id"]);
+                    labels.Add(labelIdPair);
+                }
+            }
+            labels = labels.OrderBy(kvp => kvp.Key).ToList();
+            return (name, labels);
+        }
+
+        if (query.X != null)
+        {
+            string type = query.X.Type;
+            if (type == "Hierarchy")
+            {
+                type = "Node";
+            }
+            yield return GetRequest(type + "/" + query.X.Id, (response) =>
+            {
+                (string name, List<KeyValuePair<string, int>> labels) = processLabelData(response);   
+                axisLabels.SetAxisLabsls("X", query.X.Id, type, name, labels);
+            });
+        }   
+
+        if (query.Y != null)
+        {
+            string type = query.Y.Type;
+            if (type == "Hierarchy")
+            {
+                type = "Node";
+            }
+            yield return GetRequest(type + "/" + query.Y.Id, (response) =>
+            {
+                (string name, List<KeyValuePair<string, int>> labels) = processLabelData(response);
+                axisLabels.SetAxisLabsls("Y", query.Y.Id, type, name, labels);
+            });
+        }
+
+        if (query.Z != null)
+        {
+            string type = query.Z.Type;
+            if (type == "Hierarchy")
+            {
+                type = "Node";
+            }
+            yield return GetRequest(type + "/" + query.Z.Id, (response) =>
+            {
+                (string name, List<KeyValuePair<string, int>> labels) = processLabelData(response);
+                axisLabels.SetAxisLabsls("Z", query.Z.Id, type, name, labels);
+            });
+        }
+        
+        onSuccess(axisLabels);
+    }
+
 }

@@ -1,13 +1,17 @@
 ﻿using UnityEngine;
+using Valve.VR.InteractionSystem;
+
 
 public class ViRMA_Cell : MonoBehaviour
 {
     public Cell thisCellData;
     private Mesh thisCellMesh;
+    private ViRMA_GlobalsAndActions globals;
 
     private void Awake()
     {
         thisCellMesh = GetComponent<MeshFilter>().mesh;
+        globals = Player.instance.gameObject.GetComponent<ViRMA_GlobalsAndActions>();
     }
     private void Start()
     {
@@ -19,7 +23,8 @@ public class ViRMA_Cell : MonoBehaviour
         {
             GetComponent<MeshRenderer>().material = thisCellData.TextureArrayMaterial;
             SetTextureFromArray(thisCellData.TextureArrayId);
-        }      
+        }
+
     }
     public void SetTextureFromArray(int textureIndexInArray)
     {
@@ -117,4 +122,15 @@ public class ViRMA_Cell : MonoBehaviour
 
         thisCellMesh.uv = UVs;
     }
+
+    private void OnHandHoverBegin()
+    {
+        globals.vizController.targetCellAxesHover = gameObject;
+
+    }
+    private void OnHandHoverEnd()
+    {
+        globals.vizController.targetCellAxesHover = globals.vizController.axisXPointObjs[0];
+    }
+
 }
