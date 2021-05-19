@@ -72,6 +72,10 @@
     {
       "name": "/actions/MenuInteraction/in/MenuControl",
       "type": "boolean"
+    },
+    {
+      "name": "/actions/Testing/in/Test",
+      "type": "boolean"
     }
   ],
   "action_sets": [
@@ -85,6 +89,10 @@
     },
     {
       "name": "/actions/MenuInteraction",
+      "usage": "single"
+    },
+    {
+      "name": "/actions/Testing",
       "usage": "single"
     }
   ],

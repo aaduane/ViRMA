@@ -23,6 +23,8 @@ namespace Valve.VR
         
         private static SteamVR_Input_ActionSet_MenuInteraction p_MenuInteraction;
         
+        private static SteamVR_Input_ActionSet_Testing p_Testing;
+        
         public static SteamVR_Input_ActionSet_default _default
         {
             get
@@ -47,15 +49,25 @@ namespace Valve.VR
             }
         }
         
+        public static SteamVR_Input_ActionSet_Testing Testing
+        {
+            get
+            {
+                return SteamVR_Actions.p_Testing.GetCopy<SteamVR_Input_ActionSet_Testing>();
+            }
+        }
+        
         private static void StartPreInitActionSets()
         {
             SteamVR_Actions.p__default = ((SteamVR_Input_ActionSet_default)(SteamVR_ActionSet.Create<SteamVR_Input_ActionSet_default>("/actions/default")));
             SteamVR_Actions.p_VizNavigation = ((SteamVR_Input_ActionSet_VizNavigation)(SteamVR_ActionSet.Create<SteamVR_Input_ActionSet_VizNavigation>("/actions/VizNavigation")));
             SteamVR_Actions.p_MenuInteraction = ((SteamVR_Input_ActionSet_MenuInteraction)(SteamVR_ActionSet.Create<SteamVR_Input_ActionSet_MenuInteraction>("/actions/MenuInteraction")));
+            SteamVR_Actions.p_Testing = ((SteamVR_Input_ActionSet_Testing)(SteamVR_ActionSet.Create<SteamVR_Input_ActionSet_Testing>("/actions/Testing")));
             Valve.VR.SteamVR_Input.actionSets = new Valve.VR.SteamVR_ActionSet[] {
                     SteamVR_Actions._default,
                     SteamVR_Actions.VizNavigation,
-                    SteamVR_Actions.MenuInteraction};
+                    SteamVR_Actions.MenuInteraction,
+                    SteamVR_Actions.Testing};
         }
     }
 }

@@ -19,8 +19,6 @@ public class ViRMA_AxisPoint : MonoBehaviour
     public string axisPointLabel;
     public int axisPointLabelId;
 
-    public bool positionSet = false;
-
     private void Awake()
     {
         globals = Player.instance.gameObject.GetComponent<ViRMA_GlobalsAndActions>();
@@ -30,58 +28,75 @@ public class ViRMA_AxisPoint : MonoBehaviour
     {
         axisLabel = Instantiate(Resources.Load("Prefabs/AxisLabel")) as GameObject;
         axisLabel.transform.SetParent(transform);
+        axisLabel.transform.localScale = axisLabel.transform.localScale * 0.5f;
         axisLabel.transform.localPosition = Vector3.zero;
-        axisLabel.transform.rotation = Quaternion.identity;
-        axisLabel.transform.localScale = Vector3.one * 0.3f;       
+        axisLabel.transform.rotation = globals.vizController.cellsandAxesWrapper.transform.rotation;      
+
+        if (x)
+        {
+            axisLabel.name = "AxisXPointLabel";
+            Vector3 xPos = axisLabel.transform.localPosition;
+            xPos.y -= 1;
+            axisLabel.transform.localPosition = xPos;
+        }
+        if (y)
+        {
+            axisLabel.name = "AxisYPointLabel";         
+            Vector3 yPos = axisLabel.transform.localPosition;
+            yPos.x -= 1;
+            axisLabel.transform.localPosition = yPos;
+            axisLabel.GetComponent<TextMeshPro>().alignment = TextAlignmentOptions.MidlineRight;
+        }
+        if (z)
+        {
+            axisLabel.name = "AxisZPointLabel";
+            Vector3 zPos = axisLabel.transform.localPosition;
+            zPos.y -= 1;
+            axisLabel.transform.localPosition = zPos;
+        }
     }
 
     private void Update()
     {
         axisLabel.GetComponent<TextMeshPro>().text = axisPointLabel;
 
-        if (globals.vizController.targetCellAxesHover)
-        {
-            GameObject targetCell = globals.vizController.targetCellAxesHover;
+        transform.LookAt(2 * transform.position - Player.instance.hmdTransform.position);
 
-            Vector3 targetPosition = targetCell.transform.localPosition;
-            if (x)
-            {
-                targetPosition.x = transform.localPosition.x;
-                axisLabel.transform.localPosition = new Vector3(0, 2, 0);
-            }
-            if (y)
-            {
-                targetPosition.y = transform.localPosition.y;
-                axisLabel.transform.localPosition = new Vector3(0, 0, 0);
-            }
-            if (z)
-            {
-                targetPosition.z = transform.localPosition.z;
-                axisLabel.transform.localPosition = new Vector3(0, -2, 0);
-            }
-            transform.localPosition = targetPosition;
+        globals.vizController.gameObject.GetComponent<Rigidbody>().centerOfMass = Vector3.zero;
+
+        if (x)
+        {     
+            axisLabel.transform.LookAt(2 * transform.position - Player.instance.hmdTransform.position, Vector3.left);
+        }
+        if (y)
+        {
+            axisLabel.transform.LookAt(2 * transform.position - Player.instance.hmdTransform.position, Vector3.up);
+        }
+        if (z)
+        {
+            axisLabel.transform.LookAt(2 * transform.position - Player.instance.hmdTransform.position, Vector3.left);
         }
 
 
         if (globals.vizController.targetCellAxesHover)
         {
-            if (transform.localPosition == globals.vizController.targetCellAxesHover.transform.localPosition)
+            GameObject targetCell = globals.vizController.targetCellAxesHover;
+            Vector3 targetPosition = targetCell.transform.localPosition;
+            if (x)
             {
-                if (x)
-                {
-                    axisLabel.transform.LookAt(2 * transform.position - Player.instance.hmdTransform.position);
-                    globals.vizController.targetCellAxisLabelRotation = axisLabel.transform.localRotation;
-                }
-                else
-                {
-                    axisLabel.transform.localRotation = globals.vizController.targetCellAxisLabelRotation;
-                }
+                targetPosition.x = transform.localPosition.x;
             }
-            else
+            if (y)
             {
-                axisLabel.transform.localRotation = globals.vizController.targetCellAxisLabelRotation;
+                targetPosition.y = transform.localPosition.y;
             }
-        }        
+            if (z)
+            {
+                targetPosition.z = transform.localPosition.z;
+            }
+            transform.localPosition = targetPosition;
+        }
+
 
     }
 

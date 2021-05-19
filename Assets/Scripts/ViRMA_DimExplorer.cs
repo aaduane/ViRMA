@@ -15,6 +15,8 @@ public class ViRMA_DimExplorer : MonoBehaviour
 
     public void positionDimExplorer(SteamVR_Action_Boolean action, SteamVR_Input_Sources source)
     {
+        Debug.Log("FUBAR!");
+
         Vector3 flattenedVector = Player.instance.bodyDirectionGuess;
         flattenedVector.y = 0;
         flattenedVector.Normalize();
@@ -28,7 +30,7 @@ public class ViRMA_DimExplorer : MonoBehaviour
         {
             //ControllerButtonHints.ShowButtonHint(hand, globals.actionClicked);
         }
-        
+
     }
 
 

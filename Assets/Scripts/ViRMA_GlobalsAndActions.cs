@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using UnityEngine;
 using Valve.VR;
 using Valve.VR.InteractionSystem;
@@ -12,6 +13,15 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
 
     // --- SteamVR action sets --- \\
 
+    // Player hand/controller appearance
+
+    public bool rightControllerLoaded = false;
+    public bool leftControllerLoaded = false;
+    public bool disableAllButtonHints = false;
+    public Material controllerFadedMaterial;
+    public Material leftControllerNormalMaterial;
+    public Material rightControllerNormalMaterial;
+
     // default actions
     public SteamVR_ActionSet defaultAction;
 
@@ -23,7 +33,7 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
     // viz actions
     public SteamVR_ActionSet vizNavActions;
     public SteamVR_Action_Boolean vizNav_Position;
-    public SteamVR_Action_Boolean vizNav_Rotation;   
+    public SteamVR_Action_Boolean vizNav_Rotation;
 
     private void Awake()
     {
@@ -41,12 +51,13 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
         // this is only used during testing
         ActiveDevelopmentTesting();
     }
-
     private void Update()
     {
-        ToggleControllerAppearance();
+        // SteamVR controller models take some frames to load so this waits for them to set some globals
+        InitialiseSteamVRControllerStates();
     }
 
+    // actions
     private void AssignAllActionSets()
     {
         // default action set 
@@ -62,7 +73,6 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
         vizNav_Position = SteamVR_Input.GetAction<SteamVR_Action_Boolean>("Position");
         vizNav_Rotation = SteamVR_Input.GetAction<SteamVR_Action_Boolean>("Rotation");
 
-
         /*
         Debug.Log(testActionSet.allActions);
         foreach (var testAction in testActionSet.allActions)
@@ -74,52 +84,110 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
     private void AssignAllActions()
     {
         // ui interaction actions
-        menuInteraction_MenuControl[SteamVR_Input_Sources.Any].onStateDown += dimExplorer.positionDimExplorer;
+        //menuInteraction_MenuControl[SteamVR_Input_Sources.Any].onStateDown += dimExplorer.positionDimExplorer; 
+        menuInteraction_MenuControl[SteamVR_Input_Sources.Any].onStateDown += Foo;
     }
-    public void ToggleActionSet(SteamVR_ActionSet targetActionSet, bool onOff)
+    public void ToggleOnlyThisActionSet(SteamVR_ActionSet targetActionSet)
     {
         SteamVR_ActionSet_Manager.DisableAllActionSets();
         defaultAction.Activate();
-        if (onOff)
-        {
-            targetActionSet.Activate();
-        }
-        else
-        {
-            targetActionSet.Deactivate();
-        }
+        targetActionSet.Activate();
+    }
 
-        /*
-        SteamVR_ActionSet[] actionSets = SteamVR_Input.GetActionSets();
-        string activeActionSets = "";
-        foreach (var actionSet in actionSets)
+    // controller appearance
+    public void InitialiseSteamVRControllerStates()
+    {
+        if (!rightControllerLoaded)
         {
-            if (actionSet.IsActive())
+            if (Player.instance.rightHand.mainRenderModel)
             {
-                activeActionSets += actionSet.GetShortName() + " | ";
+                if (Player.instance.rightHand.mainRenderModel.transform.Find("controller(Clone)"))
+                {
+                    if (Player.instance.rightHand.mainRenderModel.transform.Find("controller(Clone)").Find("body"))
+                    {
+                        rightControllerLoaded = true;
+                        Player.instance.rightHand.HideSkeleton();
+                        Player.instance.rightHand.ShowController();
+
+                        GameObject steamVRControllerBody = Player.instance.rightHand.mainRenderModel.transform.Find("controller(Clone)").Find("body").gameObject;
+                        Renderer controllerRend = steamVRControllerBody.GetComponent<Renderer>();
+                        rightControllerNormalMaterial = new Material(controllerRend.material);
+                    }
+                }
             }
         }
-        Debug.Log(activeActionSets);
-        */
+
+        if (!leftControllerLoaded)
+        {
+            if (Player.instance.leftHand.mainRenderModel)
+            {
+                if (Player.instance.leftHand.mainRenderModel.transform.Find("controller(Clone)"))
+                {
+                    if (Player.instance.leftHand.mainRenderModel.transform.Find("controller(Clone)").Find("body"))
+                    {
+                        leftControllerLoaded = true;
+                        Player.instance.leftHand.HideSkeleton();
+                        Player.instance.leftHand.ShowController();
+
+                        GameObject steamVRControllerBody = Player.instance.leftHand.mainRenderModel.transform.Find("controller(Clone)").Find("body").gameObject;
+                        Renderer controllerRend = steamVRControllerBody.GetComponent<Renderer>();
+                        leftControllerNormalMaterial = new Material(controllerRend.material);
+                    }
+                }
+            }
+        }
     }
-    private void ToggleControllerAppearance()
+    public void ToggleControllerFade(Hand hand, bool toFade)
+    {
+        if (hand.mainRenderModel)
+        {
+            Renderer[] renderers = hand.mainRenderModel.GetComponentsInChildren<Renderer>();
+            foreach (var rend in renderers)
+            {
+                if (rend.transform.parent.name == "controller(Clone)")
+                {
+                    if (toFade)
+                    {
+                        rend.material = controllerFadedMaterial;
+                    }
+                    else
+                    {
+                        if (hand.handType.ToString() == "RightHand")
+                        {
+                            rend.material = rightControllerNormalMaterial;
+                        }
+                        if (hand.handType.ToString() == "LeftHand")
+                        {
+                            rend.material = leftControllerNormalMaterial;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    private void HideAllButtonHints()
     {
         foreach (Hand hand in Player.instance.hands)
         {
-            hand.HideSkeleton();
-            hand.ShowController();
-            //ControllerButtonHints.HideAllButtonHints(hand);
-            //ControllerButtonHints.HideAllTextHints(hand);
+            if (disableAllButtonHints)
+            {
+                ControllerButtonHints.HideAllButtonHints(hand);
+                ControllerButtonHints.HideAllTextHints(hand);
+            }
         }
     }
 
+    // testing
     private void ActiveDevelopmentTesting()
     {
+        vizController.gameObject.SetActive(true);
         queryController.gameObject.SetActive(false);
+
         //menuInteractionActions.Activate();
-
-
-
+    }
+    private void Foo(SteamVR_Action_Boolean action, SteamVR_Input_Sources source)
+    {
+        Debug.Log(action.GetShortName() + " | " + source);
     }
 
 }

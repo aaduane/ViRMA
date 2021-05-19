@@ -28,12 +28,12 @@ public class ViRMA_VizController : MonoBehaviour
     [HideInInspector] public Quaternion activeVizRotation;
 
     // cell properties
-    private GameObject cellsandAxesWrapper;
+    public GameObject cellsandAxesWrapper;
     private float maxParentScale = 0.025f;
     private float minParentScale = 0.015f;
     private float defaultParentSize;
     private float defaultCellSpacingRatio = 1.5f;
-    private string cellMaterial = "Materials/UnlitCell";
+    private string cellMaterial = "Materials/BasicTransparent";
 
     public GameObject targetCellAxesHover;
     public Quaternion targetCellAxisLabelRotation;
@@ -118,7 +118,7 @@ public class ViRMA_VizController : MonoBehaviour
         globals.queryController.queryLoading = false;
 
         // activate navigation action controls
-        globals.ToggleActionSet(globals.vizNavActions, true);
+        globals.ToggleOnlyThisActionSet(globals.vizNavActions);
     }     
     private void GenerateTexturesAndTextureArrays(List<Cell> cellData)
     {
@@ -480,10 +480,11 @@ public class ViRMA_VizController : MonoBehaviour
             if (globals.vizNav_Position.GetState(SteamVR_Input_Sources.Any))
             {
                 ToggleCellPositioning();
+                ToggleCellRotation();
             }
             if (globals.vizNav_Rotation.GetState(SteamVR_Input_Sources.Any))
             {
-                ToggleCellRotation();
+                // ToggleCellRotation();
             }
         }
         else
@@ -499,7 +500,7 @@ public class ViRMA_VizController : MonoBehaviour
     private void ToggleCellPositioning()
     {
         rigidBody.velocity = Vector3.zero;
-        rigidBody.angularVelocity = Vector3.zero;
+        //rigidBody.angularVelocity = Vector3.zero;
 
         /*
         if (Player.instance.rightHand.GetTrackedObjectVelocity().magnitude > 0.5f)
@@ -518,21 +519,26 @@ public class ViRMA_VizController : MonoBehaviour
         }
         */
 
-        // scale throwing velocity with the size of the parent
+        // adjust throwing velocity and drag
         Vector3 controllerVelocity = Player.instance.rightHand.GetTrackedObjectVelocity();
-        rigidBody.velocity = controllerVelocity * 0.75f;
+        if (!float.IsNaN(controllerVelocity.x) && !float.IsNaN(controllerVelocity.y) && !float.IsNaN(controllerVelocity.z))
+        {
+            rigidBody.velocity = controllerVelocity * 0.75f;
+        }
         rigidBody.drag = 2.5f;
     }
     private void ToggleCellRotation()
     {
-        rigidBody.velocity = Vector3.zero;
+        //rigidBody.velocity = Vector3.zero;
         rigidBody.angularVelocity = Vector3.zero;
 
-        Vector3 localAngularVelocity = transform.InverseTransformDirection(Player.instance.leftHand.GetTrackedObjectAngularVelocity());
+        Vector3 localAngularVelocity = transform.InverseTransformDirection(Player.instance.rightHand.GetTrackedObjectAngularVelocity());
         localAngularVelocity.x = 0;
         //localAngularVelocity.y = 0;
         localAngularVelocity.z = 0;
         rigidBody.angularVelocity = transform.TransformDirection(localAngularVelocity) * 0.1f;
+
+        rigidBody.angularDrag = 2.5f;
     }
     private void ToggleCellScaling()
     {

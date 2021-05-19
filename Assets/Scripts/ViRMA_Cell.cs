@@ -1,7 +1,6 @@
 ﻿using UnityEngine;
+using Valve.VR;
 using Valve.VR.InteractionSystem;
-
-
 public class ViRMA_Cell : MonoBehaviour
 {
     public Cell thisCellData;
@@ -24,7 +23,6 @@ public class ViRMA_Cell : MonoBehaviour
             GetComponent<MeshRenderer>().material = thisCellData.TextureArrayMaterial;
             SetTextureFromArray(thisCellData.TextureArrayId);
         }
-
     }
     public void SetTextureFromArray(int textureIndexInArray)
     {
@@ -123,14 +121,57 @@ public class ViRMA_Cell : MonoBehaviour
         thisCellMesh.uv = UVs;
     }
 
-    private void OnHandHoverBegin()
+    private void OnHandHoverBegin(Hand hand)
     {
+        globals.ToggleControllerFade(hand, true);
+
         globals.vizController.targetCellAxesHover = gameObject;
 
+        if (globals.vizController.cellObjs.Count > 0)
+        {
+            foreach (GameObject cell in globals.vizController.cellObjs)
+            {
+                if (cell != gameObject)
+                {
+                    cell.GetComponent<ViRMA_Cell>().ToggleFade(true);
+                }
+            }
+        }
+
     }
-    private void OnHandHoverEnd()
+    private void OnHandHoverEnd(Hand hand)
     {
+        globals.ToggleControllerFade(hand, false);
+
         globals.vizController.targetCellAxesHover = globals.vizController.axisXPointObjs[0];
+
+        if (globals.vizController.cellObjs.Count > 0)
+        {
+            foreach (GameObject cell in globals.vizController.cellObjs)
+            {
+                if (cell != gameObject)
+                {
+                    cell.GetComponent<ViRMA_Cell>().ToggleFade(false);
+                }
+            }
+        }
+    }
+
+    public void ToggleFade(bool toFade)
+    {
+        Material mat = GetComponent<Renderer>().material;
+        Color oldColor = mat.color;
+        float alpha = 0;
+        if (toFade)
+        {
+            alpha = 0.25f;
+        }
+        else
+        {
+            alpha = 1.0f;
+        }
+        Color newColorWithFade = new Color(oldColor.r, oldColor.g, oldColor.b, alpha);
+        mat.SetColor("_Color", newColorWithFade);
     }
 
 }
