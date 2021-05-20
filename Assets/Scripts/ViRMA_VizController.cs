@@ -118,7 +118,7 @@ public class ViRMA_VizController : MonoBehaviour
         globals.queryController.queryLoading = false;
 
         // activate navigation action controls
-        globals.ToggleOnlyThisActionSet(globals.vizNavActions);
+        globals.vizNavActions.Activate();
     }     
     private void GenerateTexturesAndTextureArrays(List<Cell> cellData)
     {
@@ -480,11 +480,10 @@ public class ViRMA_VizController : MonoBehaviour
             if (globals.vizNav_Position.GetState(SteamVR_Input_Sources.Any))
             {
                 ToggleCellPositioning();
-                ToggleCellRotation();
             }
             if (globals.vizNav_Rotation.GetState(SteamVR_Input_Sources.Any))
             {
-                // ToggleCellRotation();
+                ToggleCellRotation();
             }
         }
         else
@@ -500,7 +499,7 @@ public class ViRMA_VizController : MonoBehaviour
     private void ToggleCellPositioning()
     {
         rigidBody.velocity = Vector3.zero;
-        //rigidBody.angularVelocity = Vector3.zero;
+        rigidBody.angularVelocity = Vector3.zero;
 
         /*
         if (Player.instance.rightHand.GetTrackedObjectVelocity().magnitude > 0.5f)
@@ -529,16 +528,16 @@ public class ViRMA_VizController : MonoBehaviour
     }
     private void ToggleCellRotation()
     {
-        //rigidBody.velocity = Vector3.zero;
+        rigidBody.velocity = Vector3.zero;
         rigidBody.angularVelocity = Vector3.zero;
 
-        Vector3 localAngularVelocity = transform.InverseTransformDirection(Player.instance.rightHand.GetTrackedObjectAngularVelocity());
+        Vector3 localAngularVelocity = transform.InverseTransformDirection(Player.instance.leftHand.GetTrackedObjectAngularVelocity());
         localAngularVelocity.x = 0;
         //localAngularVelocity.y = 0;
         localAngularVelocity.z = 0;
         rigidBody.angularVelocity = transform.TransformDirection(localAngularVelocity) * 0.1f;
 
-        rigidBody.angularDrag = 2.5f;
+        rigidBody.angularDrag = 1f;
     }
     private void ToggleCellScaling()
     {

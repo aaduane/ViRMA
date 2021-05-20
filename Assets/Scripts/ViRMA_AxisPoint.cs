@@ -30,7 +30,7 @@ public class ViRMA_AxisPoint : MonoBehaviour
         axisLabel.transform.SetParent(transform);
         axisLabel.transform.localScale = axisLabel.transform.localScale * 0.5f;
         axisLabel.transform.localPosition = Vector3.zero;
-        axisLabel.transform.rotation = globals.vizController.cellsandAxesWrapper.transform.rotation;      
+        axisLabel.transform.localRotation = Quaternion.identity;    
 
         if (x)
         {
@@ -38,6 +38,8 @@ public class ViRMA_AxisPoint : MonoBehaviour
             Vector3 xPos = axisLabel.transform.localPosition;
             xPos.y -= 1;
             axisLabel.transform.localPosition = xPos;
+
+            axisLabel.transform.localEulerAngles = new Vector3(0, 0, -90);
         }
         if (y)
         {
@@ -53,6 +55,8 @@ public class ViRMA_AxisPoint : MonoBehaviour
             Vector3 zPos = axisLabel.transform.localPosition;
             zPos.y -= 1;
             axisLabel.transform.localPosition = zPos;
+
+            axisLabel.transform.localEulerAngles = new Vector3(0, 0, -90);
         }
     }
 
@@ -60,22 +64,27 @@ public class ViRMA_AxisPoint : MonoBehaviour
     {
         axisLabel.GetComponent<TextMeshPro>().text = axisPointLabel;
 
-        transform.LookAt(2 * transform.position - Player.instance.hmdTransform.position);
+        if (x)
+        {
+            transform.LookAt(2 * transform.position - Player.instance.hmdTransform.position);
+
+            int midPoint = globals.vizController.axisXPointObjs.Count / 2;
+            if (gameObject == globals.vizController.axisXPointObjs[midPoint])
+            {
+                //transform.LookAt(2 * transform.position - Player.instance.hmdTransform.position);
+            }
+            else
+            {
+                //transform.localRotation = globals.vizController.axisXPointObjs[midPoint].transform.localRotation;
+            }
+        }
+        
+
+        
+
 
         globals.vizController.gameObject.GetComponent<Rigidbody>().centerOfMass = Vector3.zero;
 
-        if (x)
-        {     
-            axisLabel.transform.LookAt(2 * transform.position - Player.instance.hmdTransform.position, Vector3.left);
-        }
-        if (y)
-        {
-            axisLabel.transform.LookAt(2 * transform.position - Player.instance.hmdTransform.position, Vector3.up);
-        }
-        if (z)
-        {
-            axisLabel.transform.LookAt(2 * transform.position - Player.instance.hmdTransform.position, Vector3.left);
-        }
 
 
         if (globals.vizController.targetCellAxesHover)
