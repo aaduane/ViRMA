@@ -123,6 +123,8 @@ public class ViRMA_Cell : MonoBehaviour
 
     private void OnHandHoverBegin(Hand hand)
     {
+        Debug.Log("Hover start: " + gameObject.name);
+
         globals.ToggleControllerFade(hand, true);
 
         globals.vizController.targetCellAxesHover = gameObject;
@@ -141,6 +143,8 @@ public class ViRMA_Cell : MonoBehaviour
     }
     private void OnHandHoverEnd(Hand hand)
     {
+        Debug.Log("Hover end: " + gameObject.name);
+
         globals.ToggleControllerFade(hand, false);
 
         globals.vizController.targetCellAxesHover = globals.vizController.axisXPointObjs[0];
@@ -172,6 +176,43 @@ public class ViRMA_Cell : MonoBehaviour
         }
         Color newColorWithFade = new Color(oldColor.r, oldColor.g, oldColor.b, alpha);
         mat.SetColor("_Color", newColorWithFade);
+    }
+
+
+    public void OnHoverStart(Hand hand)
+    {
+        globals.ToggleControllerFade(hand, true);
+
+        globals.vizController.targetCellAxesHover = gameObject;
+
+        if (globals.vizController.cellObjs.Count > 0)
+        {
+            foreach (GameObject cell in globals.vizController.cellObjs)
+            {
+                if (cell != gameObject)
+                {
+                    cell.GetComponent<ViRMA_Cell>().ToggleFade(true);
+                }
+            }
+        }
+    }
+
+    public void OnHoverEnd(Hand hand)
+    {
+        globals.ToggleControllerFade(hand, false);
+
+        globals.vizController.targetCellAxesHover = globals.vizController.axisXPointObjs[0];
+
+        if (globals.vizController.cellObjs.Count > 0)
+        {
+            foreach (GameObject cell in globals.vizController.cellObjs)
+            {
+                if (cell != gameObject)
+                {
+                    cell.GetComponent<ViRMA_Cell>().ToggleFade(false);
+                }
+            }
+        }
     }
 
 }

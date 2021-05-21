@@ -470,6 +470,7 @@ MonoBehaviour:
   axisXLine: {fileID: 0}
   axisYLine: {fileID: 0}
   axisZLine: {fileID: 0}
+  rigidBody: {fileID: 0}
   activeBrowsingState: 0
   activeVizPosition: {x: 0, y: 0, z: 0}
   activeVizRotation: {x: 0, y: 0, z: 0, w: 0}
@@ -1578,17 +1579,17 @@ MonoBehaviour:
     needsReinit: 0
   useHoverSphere: 0
   hoverSphereTransform: {fileID: 6633680202531070641}
-  hoverSphereRadius: 0.075
+  hoverSphereRadius: 0.01
   hoverLayerMask:
     serializedVersion: 2
     m_Bits: 4294967295
   hoverUpdateInterval: 0.1
-  useControllerHoverComponent: 1
+  useControllerHoverComponent: 0
   controllerHoverComponent: tip
   controllerHoverRadius: 0.05
-  useFingerJointHover: 1
+  useFingerJointHover: 0
   fingerJointHover: 10
-  fingerJointHoverRadius: 0.1
+  fingerJointHoverRadius: 0.01
   objectAttachmentPoint: {fileID: 6633680201427499557}
   noSteamVRFallbackCamera: {fileID: 0}
   noSteamVRFallbackMaxDistanceNoItem: 10
@@ -1877,17 +1878,17 @@ MonoBehaviour:
     needsReinit: 0
   useHoverSphere: 0
   hoverSphereTransform: {fileID: 6629761555156551513}
-  hoverSphereRadius: 0.075
+  hoverSphereRadius: 0.01
   hoverLayerMask:
     serializedVersion: 2
     m_Bits: 4294967295
   hoverUpdateInterval: 0.1
-  useControllerHoverComponent: 1
+  useControllerHoverComponent: 0
   controllerHoverComponent: tip
   controllerHoverRadius: 0.05
-  useFingerJointHover: 1
+  useFingerJointHover: 0
   fingerJointHover: 10
-  fingerJointHoverRadius: 0.1
+  fingerJointHoverRadius: 0.01
   objectAttachmentPoint: {fileID: 6629761555156560331}
   noSteamVRFallbackCamera: {fileID: 0}
   noSteamVRFallbackMaxDistanceNoItem: 10

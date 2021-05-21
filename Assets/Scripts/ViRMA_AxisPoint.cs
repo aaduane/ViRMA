@@ -64,24 +64,7 @@ public class ViRMA_AxisPoint : MonoBehaviour
     {
         axisLabel.GetComponent<TextMeshPro>().text = axisPointLabel;
 
-        if (x)
-        {
-            transform.LookAt(2 * transform.position - Player.instance.hmdTransform.position);
-
-            int midPoint = globals.vizController.axisXPointObjs.Count / 2;
-            if (gameObject == globals.vizController.axisXPointObjs[midPoint])
-            {
-                //transform.LookAt(2 * transform.position - Player.instance.hmdTransform.position);
-            }
-            else
-            {
-                //transform.localRotation = globals.vizController.axisXPointObjs[midPoint].transform.localRotation;
-            }
-        }
-        
-
-        
-
+        transform.LookAt(2 * transform.position - Player.instance.hmdTransform.position);
 
         globals.vizController.gameObject.GetComponent<Rigidbody>().centerOfMass = Vector3.zero;
 

@@ -19,7 +19,7 @@ public class ViRMA_VizController : MonoBehaviour
 
     // general
     private ViRMA_GlobalsAndActions globals;
-    private Rigidbody rigidBody;
+    public Rigidbody rigidBody;
     private float previousDistanceBetweenHands;
     private Bounds cellsAndAxesBounds;
 
@@ -51,7 +51,7 @@ public class ViRMA_VizController : MonoBehaviour
         rigidBody = GetComponent<Rigidbody>();
         rigidBody.useGravity = false;
         rigidBody.drag = 0.1f;
-        rigidBody.angularDrag = 0.5f;       
+        rigidBody.angularDrag = 0.5f;
     }
     private void Start()
     {

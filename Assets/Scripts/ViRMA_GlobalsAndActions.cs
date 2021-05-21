@@ -54,7 +54,7 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
     private void Update()
     {
         // SteamVR controller models take some frames to load so this waits for them to set some globals
-        InitialiseSteamVRControllerStates();
+        InitialiseSteamVRControllers();
     }
 
     // actions
@@ -95,7 +95,7 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
     }
 
     // controller appearance
-    public void InitialiseSteamVRControllerStates()
+    public void InitialiseSteamVRControllers()
     {
         if (!rightControllerLoaded)
         {
@@ -103,7 +103,8 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
             {
                 if (Player.instance.rightHand.mainRenderModel.transform.Find("controller(Clone)"))
                 {
-                    if (Player.instance.rightHand.mainRenderModel.transform.Find("controller(Clone)").Find("body"))
+                    GameObject controller = Player.instance.rightHand.mainRenderModel.transform.Find("controller(Clone)").gameObject;
+                    if (controller.transform.Find("body"))
                     {
                         rightControllerLoaded = true;
                         Player.instance.rightHand.HideSkeleton();
@@ -112,6 +113,16 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
                         GameObject steamVRControllerBody = Player.instance.rightHand.mainRenderModel.transform.Find("controller(Clone)").Find("body").gameObject;
                         Renderer controllerRend = steamVRControllerBody.GetComponent<Renderer>();
                         rightControllerNormalMaterial = new Material(controllerRend.material);
+
+
+
+                        GameObject drumstick = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                        drumstick.name = "drumstick";
+                        drumstick.transform.SetParent(controller.transform);
+                        drumstick.transform.localScale = Vector3.one * 0.05f;
+                        drumstick.transform.localPosition = new Vector3(0, 0, 0.05f);
+                        drumstick.GetComponent<Renderer>().material.color = Color.red;
+                        drumstick.AddComponent<ViRMA_Drumstick>().hand = Player.instance.rightHand;
                     }
                 }
             }
