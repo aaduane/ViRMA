@@ -25,8 +25,6 @@ public class ViRMA_InputModule : BaseInputModule
 		contactUIEnabled = true;
 	}
 
-	
-
 	// --- SteamVR: UI interaction with Hand script --- \\
 	private GameObject submitObject;
 	private static ViRMA_InputModule _instance;

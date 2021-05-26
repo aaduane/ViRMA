@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using TMPro;
+using UnityEngine;
 using Valve.VR;
 using Valve.VR.InteractionSystem;
 public class ViRMA_Cell : MonoBehaviour
@@ -6,6 +7,7 @@ public class ViRMA_Cell : MonoBehaviour
     public Cell thisCellData;
     private Mesh thisCellMesh;
     private ViRMA_GlobalsAndActions globals;
+    private GameObject axesLabels;
 
     private void Awake()
     {
@@ -120,47 +122,6 @@ public class ViRMA_Cell : MonoBehaviour
 
         thisCellMesh.uv = UVs;
     }
-
-    private void OnHandHoverBegin(Hand hand)
-    {
-        Debug.Log("Hover start: " + gameObject.name);
-
-        globals.ToggleControllerFade(hand, true);
-
-        globals.vizController.targetCellAxesHover = gameObject;
-
-        if (globals.vizController.cellObjs.Count > 0)
-        {
-            foreach (GameObject cell in globals.vizController.cellObjs)
-            {
-                if (cell != gameObject)
-                {
-                    cell.GetComponent<ViRMA_Cell>().ToggleFade(true);
-                }
-            }
-        }
-
-    }
-    private void OnHandHoverEnd(Hand hand)
-    {
-        Debug.Log("Hover end: " + gameObject.name);
-
-        globals.ToggleControllerFade(hand, false);
-
-        globals.vizController.targetCellAxesHover = globals.vizController.axisXPointObjs[0];
-
-        if (globals.vizController.cellObjs.Count > 0)
-        {
-            foreach (GameObject cell in globals.vizController.cellObjs)
-            {
-                if (cell != gameObject)
-                {
-                    cell.GetComponent<ViRMA_Cell>().ToggleFade(false);
-                }
-            }
-        }
-    }
-
     public void ToggleFade(bool toFade)
     {
         Material mat = GetComponent<Renderer>().material;
@@ -178,12 +139,13 @@ public class ViRMA_Cell : MonoBehaviour
         mat.SetColor("_Color", newColorWithFade);
     }
 
-
-    public void OnHoverStart(Hand hand)
+    // SteamVR controller hover functions
+    private void OnHandHoverBegin(Hand hand)
     {
         globals.ToggleControllerFade(hand, true);
 
-        globals.vizController.targetCellAxesHover = gameObject;
+        //globals.vizController.focusedCell = gameObject;
+        ToggleAxesLabels(true);
 
         if (globals.vizController.cellObjs.Count > 0)
         {
@@ -196,12 +158,12 @@ public class ViRMA_Cell : MonoBehaviour
             }
         }
     }
-
-    public void OnHoverEnd(Hand hand)
+    private void OnHandHoverEnd(Hand hand)
     {
         globals.ToggleControllerFade(hand, false);
 
-        globals.vizController.targetCellAxesHover = globals.vizController.axisXPointObjs[0];
+        //globals.vizController.focusedCell = globals.vizController.axisXPointObjs[0];
+        ToggleAxesLabels(false);
 
         if (globals.vizController.cellObjs.Count > 0)
         {
@@ -213,6 +175,87 @@ public class ViRMA_Cell : MonoBehaviour
                 }
             }
         }
+    }
+
+    // custom 'drumstick' controller hover functions
+    public void OnHoverStart(Hand hand)
+    {
+        globals.ToggleControllerFade(hand, true);
+
+        globals.vizController.focusedCell = gameObject;
+
+        if (globals.vizController.cellObjs.Count > 0)
+        {
+            foreach (GameObject cell in globals.vizController.cellObjs)
+            {
+                if (cell != gameObject)
+                {
+                    cell.GetComponent<ViRMA_Cell>().ToggleFade(true);
+                }
+            }
+        }
+    }
+    public void OnHoverEnd(Hand hand)
+    {
+        globals.ToggleControllerFade(hand, false);
+
+        globals.vizController.focusedCell = globals.vizController.axisXPointObjs[0];
+
+        if (globals.vizController.cellObjs.Count > 0)
+        {
+            foreach (GameObject cell in globals.vizController.cellObjs)
+            {
+                if (cell != gameObject)
+                {
+                    cell.GetComponent<ViRMA_Cell>().ToggleFade(false);
+                }
+            }
+        }
+    }
+
+
+    public void ToggleAxesLabels(bool showHide)
+    {
+        if (showHide)
+        {
+            // x 
+            int xAxisPointIndex = (int)thisCellData.Coordinates.x;
+            GameObject xAxisPointObj = globals.vizController.axisXPointObjs[xAxisPointIndex];
+            string xAxisPointLabel = xAxisPointObj.GetComponent<ViRMA_AxisPoint>().axisPointLabel;
+
+            // y
+            int yAxisPointIndex = (int)thisCellData.Coordinates.y;
+            GameObject yAxisPointObj = globals.vizController.axisYPointObjs[yAxisPointIndex];
+            string yAxisPointLabel = yAxisPointObj.GetComponent<ViRMA_AxisPoint>().axisPointLabel;
+
+            // z 
+            int zAxisPointIndex = (int)thisCellData.Coordinates.z;
+            GameObject zAxisPointObj = globals.vizController.axisZPointObjs[zAxisPointIndex];
+            string zAxisPointLabel = zAxisPointObj.GetComponent<ViRMA_AxisPoint>().axisPointLabel;
+
+
+            axesLabels = Instantiate(Resources.Load("Prefabs/AxesLabels")) as GameObject;
+            axesLabels.transform.SetParent(transform.parent.transform);
+            axesLabels.transform.localScale = Vector3.one * 0.3f;
+
+            axesLabels.transform.localPosition = new Vector3(transform.localPosition.x, transform.localPosition.y + 3f, transform.localPosition.z);
+
+            axesLabels.transform.LookAt(2 * axesLabels.transform.position - Player.instance.hmdTransform.position);
+
+            axesLabels.transform.Translate(transform.right * -0.05f);
+            axesLabels.transform.Translate(transform.forward * -0.05f);
+
+
+            axesLabels.transform.GetChild(0).GetComponent<TextMeshPro>().text = xAxisPointLabel;
+            axesLabels.transform.GetChild(1).GetComponent<TextMeshPro>().text = yAxisPointLabel;
+            axesLabels.transform.GetChild(2).GetComponent<TextMeshPro>().text = zAxisPointLabel;
+        }
+        else
+        {
+            Destroy(axesLabels);
+        }
+
+        
     }
 
 }

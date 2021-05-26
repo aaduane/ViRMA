@@ -115,7 +115,8 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
                         rightControllerNormalMaterial = new Material(controllerRend.material);
 
 
-
+                        /*
+                        // add drumstick appendage to controller
                         GameObject drumstick = GameObject.CreatePrimitive(PrimitiveType.Sphere);
                         drumstick.name = "drumstick";
                         drumstick.transform.SetParent(controller.transform);
@@ -123,6 +124,7 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
                         drumstick.transform.localPosition = new Vector3(0, 0, 0.05f);
                         drumstick.GetComponent<Renderer>().material.color = Color.red;
                         drumstick.AddComponent<ViRMA_Drumstick>().hand = Player.instance.rightHand;
+                        */
                     }
                 }
             }

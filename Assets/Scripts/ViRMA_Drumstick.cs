@@ -40,7 +40,7 @@ public class ViRMA_Drumstick : MonoBehaviour
         
         if (trigger.gameObject.GetComponent<ViRMA_Cell>())
         {
-            trigger.gameObject.GetComponent<ViRMA_Cell>().OnHoverStart(hand);
+            //trigger.gameObject.GetComponent<ViRMA_Cell>().OnHoverStart(hand);
         }
     }
 
@@ -50,7 +50,7 @@ public class ViRMA_Drumstick : MonoBehaviour
 
         if (trigger.gameObject.GetComponent<ViRMA_Cell>())
         {
-            trigger.gameObject.GetComponent<ViRMA_Cell>().OnHoverEnd(hand);
+            //trigger.gameObject.GetComponent<ViRMA_Cell>().OnHoverEnd(hand);
         }
     }
 

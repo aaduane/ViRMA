@@ -470,13 +470,13 @@ MonoBehaviour:
   axisXLine: {fileID: 0}
   axisYLine: {fileID: 0}
   axisZLine: {fileID: 0}
+  focusedCell: {fileID: 0}
+  focusedCellAxisLabelRotation: {x: 0, y: 0, z: 0, w: 0}
   rigidBody: {fileID: 0}
   activeBrowsingState: 0
   activeVizPosition: {x: 0, y: 0, z: 0}
   activeVizRotation: {x: 0, y: 0, z: 0, w: 0}
   cellsandAxesWrapper: {fileID: 0}
-  targetCellAxesHover: {fileID: 0}
-  targetCellAxisLabelRotation: {x: 0, y: 0, z: 0, w: 0}
 --- !u!4 &685121196
 Transform:
   m_ObjectHideFlags: 0
@@ -1321,6 +1321,11 @@ PrefabInstance:
       propertyPath: m_Camera
       value: 
       objectReference: {fileID: 2022910995}
+    - target: {fileID: 7551046508678826628, guid: cdead863663c77a4487ae5a9069ae508,
+        type: 3}
+      propertyPath: m_AdditionalShaderChannelsFlag
+      value: 25
+      objectReference: {fileID: 0}
     - target: {fileID: 7551046508725521512, guid: cdead863663c77a4487ae5a9069ae508,
         type: 3}
       propertyPath: m_AnchorMax.y
@@ -1584,7 +1589,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   hoverUpdateInterval: 0.1
-  useControllerHoverComponent: 0
+  useControllerHoverComponent: 1
   controllerHoverComponent: tip
   controllerHoverRadius: 0.05
   useFingerJointHover: 0
@@ -1883,7 +1888,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   hoverUpdateInterval: 0.1
-  useControllerHoverComponent: 0
+  useControllerHoverComponent: 1
   controllerHoverComponent: tip
   controllerHoverRadius: 0.05
   useFingerJointHover: 0

@@ -26,6 +26,7 @@ public class ViRMA_AxisPoint : MonoBehaviour
 
     private void Start()
     {
+
         axisLabel = Instantiate(Resources.Load("Prefabs/AxisLabel")) as GameObject;
         axisLabel.transform.SetParent(transform);
         axisLabel.transform.localScale = axisLabel.transform.localScale * 0.5f;
@@ -36,10 +37,9 @@ public class ViRMA_AxisPoint : MonoBehaviour
         {
             axisLabel.name = "AxisXPointLabel";
             Vector3 xPos = axisLabel.transform.localPosition;
-            xPos.y -= 1;
+            xPos.z -= 1;
             axisLabel.transform.localPosition = xPos;
-
-            axisLabel.transform.localEulerAngles = new Vector3(0, 0, -90);
+            axisLabel.transform.localEulerAngles = new Vector3(90, 0, -90);
         }
         if (y)
         {
@@ -53,26 +53,32 @@ public class ViRMA_AxisPoint : MonoBehaviour
         {
             axisLabel.name = "AxisZPointLabel";
             Vector3 zPos = axisLabel.transform.localPosition;
-            zPos.y -= 1;
+            zPos.x -= 1;
             axisLabel.transform.localPosition = zPos;
-
-            axisLabel.transform.localEulerAngles = new Vector3(0, 0, -90);
+            axisLabel.transform.localEulerAngles = new Vector3(90, 0, 0);
+            axisLabel.GetComponent<TextMeshPro>().alignment = TextAlignmentOptions.MidlineRight;
         }
+
     }
 
     private void Update()
     {
-        axisLabel.GetComponent<TextMeshPro>().text = axisPointLabel;
+        MoveAxesToFocusedCell();
+    }
 
-        transform.LookAt(2 * transform.position - Player.instance.hmdTransform.position);
-
-        globals.vizController.gameObject.GetComponent<Rigidbody>().centerOfMass = Vector3.zero;
-
-
-
-        if (globals.vizController.targetCellAxesHover)
+    private void MoveAxesToFocusedCell()
+    {
+        if (axisLabel.GetComponent<TextMeshPro>().text != axisPointLabel)
         {
-            GameObject targetCell = globals.vizController.targetCellAxesHover;
+            axisLabel.GetComponent<TextMeshPro>().text = axisPointLabel;
+        }   
+
+        //transform.LookAt(2 * transform.position - Player.instance.hmdTransform.position);
+        //globals.vizController.gameObject.GetComponent<Rigidbody>().centerOfMass = Vector3.zero;
+
+        if (globals.vizController.focusedCell)
+        {
+            GameObject targetCell = globals.vizController.focusedCell;
             Vector3 targetPosition = targetCell.transform.localPosition;
             if (x)
             {
@@ -88,8 +94,6 @@ public class ViRMA_AxisPoint : MonoBehaviour
             }
             transform.localPosition = targetPosition;
         }
-
-
     }
 
 }

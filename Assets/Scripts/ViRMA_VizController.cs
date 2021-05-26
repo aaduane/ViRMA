@@ -14,6 +14,8 @@ public class ViRMA_VizController : MonoBehaviour
     [HideInInspector] public List<Cell> cellData;
     [HideInInspector] public List<GameObject> cellObjs, axisXPointObjs, axisYPointObjs, axisZPointObjs;
     [HideInInspector] public LineRenderer axisXLine, axisYLine, axisZLine;
+    public GameObject focusedCell;
+    public Quaternion focusedCellAxisLabelRotation;
 
     /*--- private --- */
 
@@ -34,9 +36,6 @@ public class ViRMA_VizController : MonoBehaviour
     private float defaultParentSize;
     private float defaultCellSpacingRatio = 1.5f;
     private string cellMaterial = "Materials/BasicTransparent";
-
-    public GameObject targetCellAxesHover;
-    public Quaternion targetCellAxisLabelRotation;
 
     private void Awake()
     {
@@ -80,7 +79,6 @@ public class ViRMA_VizController : MonoBehaviour
         // draw axes line renderers 
         DrawAxesLines();
     }
-
 
     // cell and axes generation
     public IEnumerator SubmitVizQuery(Query submittedQuery)
