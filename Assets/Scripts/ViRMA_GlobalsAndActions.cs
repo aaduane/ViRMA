@@ -114,17 +114,17 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
                         Renderer controllerRend = steamVRControllerBody.GetComponent<Renderer>();
                         rightControllerNormalMaterial = new Material(controllerRend.material);
 
-
-                        /*
                         // add drumstick appendage to controller
                         GameObject drumstick = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                        drumstick.name = "drumstick";
+                        drumstick.name = "RightHandDrumstick";
                         drumstick.transform.SetParent(controller.transform);
                         drumstick.transform.localScale = Vector3.one * 0.05f;
                         drumstick.transform.localPosition = new Vector3(0, 0, 0.05f);
+
                         drumstick.GetComponent<Renderer>().material.color = Color.red;
+
                         drumstick.AddComponent<ViRMA_Drumstick>().hand = Player.instance.rightHand;
-                        */
+                        Player.instance.rightHand.gameObject.GetComponent<ViRMA_Hand>().handDrumstick = drumstick;
                     }
                 }
             }
@@ -136,7 +136,8 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
             {
                 if (Player.instance.leftHand.mainRenderModel.transform.Find("controller(Clone)"))
                 {
-                    if (Player.instance.leftHand.mainRenderModel.transform.Find("controller(Clone)").Find("body"))
+                    GameObject controller = Player.instance.leftHand.mainRenderModel.transform.Find("controller(Clone)").gameObject;
+                    if (controller.transform.Find("body"))
                     {
                         leftControllerLoaded = true;
                         Player.instance.leftHand.HideSkeleton();
@@ -145,6 +146,18 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
                         GameObject steamVRControllerBody = Player.instance.leftHand.mainRenderModel.transform.Find("controller(Clone)").Find("body").gameObject;
                         Renderer controllerRend = steamVRControllerBody.GetComponent<Renderer>();
                         leftControllerNormalMaterial = new Material(controllerRend.material);
+
+                        // add drumstick appendage to controller
+                        GameObject drumstick = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                        drumstick.name = "LeftHandDrumstick";
+                        drumstick.transform.SetParent(controller.transform);
+                        drumstick.transform.localScale = Vector3.one * 0.05f;
+                        drumstick.transform.localPosition = new Vector3(0, 0, 0.05f);
+
+                        drumstick.GetComponent<Renderer>().material.color = Color.red;
+
+                        drumstick.AddComponent<ViRMA_Drumstick>().hand = Player.instance.leftHand;
+                        Player.instance.leftHand.gameObject.GetComponent<ViRMA_Hand>().handDrumstick = drumstick;
                     }
                 }
             }
@@ -193,10 +206,10 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
     // testing
     private void ActiveDevelopmentTesting()
     {
-        vizController.gameObject.SetActive(true);
-        queryController.gameObject.SetActive(false);
+        vizController.gameObject.SetActive(false);
+        queryController.gameObject.SetActive(true);
 
-        //menuInteractionActions.Activate();
+        menuInteractionActions.Activate();
     }
     private void Foo(SteamVR_Action_Boolean action, SteamVR_Input_Sources source)
     {

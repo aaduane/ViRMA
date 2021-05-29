@@ -31,6 +31,10 @@ public class ViRMA_QueryController : MonoBehaviour
             }
         }));
         */
+
+        StartCoroutine(ViRMA_APIController.SearchHierachies((hierarchies) => {
+            Debug.Log("Done!");
+        }));
     }
 
 

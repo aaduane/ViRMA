@@ -220,9 +220,11 @@ public class ViRMA_APIController : MonoBehaviour
             jsonData = response;
         });
 
+        /*
         Debug.Log(jsonData["Id"]);
         Debug.Log(jsonData["Name"]);
         Debug.Log(jsonData["Nodes"]);
+        */
 
         List<Tag> hierarchies = new List<Tag>();
         foreach (var obj in jsonData)
@@ -239,6 +241,21 @@ public class ViRMA_APIController : MonoBehaviour
         }
         onSuccess(hierarchies);
     }
+
+    public static IEnumerator SearchHierachies(Action<List<Tag>> onSuccess)
+    {
+        yield return GetRequest("node/name=computer", (response) =>
+        {
+            jsonData = response;
+        });
+
+        List<Tag> nodes = new List<Tag>();
+
+        Debug.Log(jsonData.Count);
+
+        onSuccess(nodes);
+    }
+
     public static IEnumerator GetCells(Query query, Action<List<Cell>> onSuccess)
     {
         // https://localhost:44317/api/cell?xAxis={'AxisType': 'Tagset', 'TagsetId': 3}&yAxis={'AxisType': 'Tagset', 'TagsetId': 7}&zAxis={'AxisType': 'Hierarchy', 'HierarchyNodeId': 77}&filters=[{'type': 'Tagset', 'tagId': 7},{'type': 'Hierarchy', 'nodeId': 5}]

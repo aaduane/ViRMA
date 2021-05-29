@@ -212,8 +212,6 @@ public class ViRMA_Cell : MonoBehaviour
             }
         }
     }
-
-
     public void ToggleAxesLabels(bool showHide)
     {
         if (showHide)
@@ -233,18 +231,11 @@ public class ViRMA_Cell : MonoBehaviour
             GameObject zAxisPointObj = globals.vizController.axisZPointObjs[zAxisPointIndex];
             string zAxisPointLabel = zAxisPointObj.GetComponent<ViRMA_AxisPoint>().axisPointLabel;
 
-
             axesLabels = Instantiate(Resources.Load("Prefabs/AxesLabels")) as GameObject;
             axesLabels.transform.SetParent(transform.parent.transform);
             axesLabels.transform.localScale = Vector3.one * 0.3f;
-
             axesLabels.transform.localPosition = new Vector3(transform.localPosition.x, transform.localPosition.y + 3f, transform.localPosition.z);
-
             axesLabels.transform.LookAt(2 * axesLabels.transform.position - Player.instance.hmdTransform.position);
-
-            axesLabels.transform.Translate(transform.right * -0.05f);
-            axesLabels.transform.Translate(transform.forward * -0.05f);
-
 
             axesLabels.transform.GetChild(0).GetComponent<TextMeshPro>().text = xAxisPointLabel;
             axesLabels.transform.GetChild(1).GetComponent<TextMeshPro>().text = yAxisPointLabel;
