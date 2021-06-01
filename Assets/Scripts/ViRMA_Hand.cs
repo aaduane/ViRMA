@@ -62,7 +62,6 @@ public class ViRMA_Hand : Hand
         // Hover on this one
         hoveringInteractable = closestInteractable;
     }
-
     protected override void OnDrawGizmos()
     {
         if (useHoverSphere && hoverSphereTransform != null)

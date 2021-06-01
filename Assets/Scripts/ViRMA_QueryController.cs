@@ -32,8 +32,20 @@ public class ViRMA_QueryController : MonoBehaviour
         }));
         */
 
-        StartCoroutine(ViRMA_APIController.SearchHierachies((hierarchies) => {
-            Debug.Log("Done!");
+        StartCoroutine(ViRMA_APIController.SearchHierachies("entity", (nodes) => {
+
+            foreach (Tag node in nodes)
+            {
+                if (node.Parent == null)
+                {
+                    //Debug.Log("No parent!");
+                }
+                else
+                {
+                    //Debug.Log(node.Parent.Name);
+                }      
+            }
+
         }));
     }
 

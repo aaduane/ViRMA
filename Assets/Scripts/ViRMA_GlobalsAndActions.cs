@@ -22,8 +22,12 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
     public Material leftControllerNormalMaterial;
     public Material rightControllerNormalMaterial;
 
+    // test actions
+    public SteamVR_ActionSet testActions;
+    public SteamVR_Action_Boolean testActions_triggerTest;
+
     // default actions
-    public SteamVR_ActionSet defaultAction;
+    public SteamVR_ActionSet defaultAction;  
 
     // test actions
     public SteamVR_ActionSet menuInteractionActions;
@@ -60,6 +64,11 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
     // actions
     private void AssignAllActionSets()
     {
+        // test action set
+        testActions = SteamVR_Input.GetActionSet("Testing");
+        testActions_triggerTest = SteamVR_Input.GetAction<SteamVR_Action_Boolean>("TriggerTest");
+
+
         // default action set 
         defaultAction = SteamVR_Input.GetActionSet("default");
 
@@ -85,7 +94,7 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
     {
         // ui interaction actions
         //menuInteraction_MenuControl[SteamVR_Input_Sources.Any].onStateDown += dimExplorer.positionDimExplorer; 
-        menuInteraction_MenuControl[SteamVR_Input_Sources.Any].onStateDown += Foo;
+        //menuInteraction_MenuControl[SteamVR_Input_Sources.Any].onStateDown += Foo;
     }
     public void ToggleOnlyThisActionSet(SteamVR_ActionSet targetActionSet)
     {
@@ -209,7 +218,7 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
         vizController.gameObject.SetActive(false);
         queryController.gameObject.SetActive(true);
 
-        menuInteractionActions.Activate();
+        ToggleOnlyThisActionSet(testActions);
     }
     private void Foo(SteamVR_Action_Boolean action, SteamVR_Input_Sources source)
     {

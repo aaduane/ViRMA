@@ -76,6 +76,10 @@
     {
       "name": "/actions/Testing/in/Test",
       "type": "boolean"
+    },
+    {
+      "name": "/actions/Testing/in/TriggerTest",
+      "type": "boolean"
     }
   ],
   "action_sets": [

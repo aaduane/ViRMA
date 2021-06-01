@@ -11,6 +11,8 @@ public class Tag
 {
     public int Id { get; set; }
     public string Name { get; set; }
+    public Tag Parent { get; set; }
+    public List<Tag> Children { get; set; }
 }
 public class Cell
 {
@@ -242,16 +244,47 @@ public class ViRMA_APIController : MonoBehaviour
         onSuccess(hierarchies);
     }
 
-    public static IEnumerator SearchHierachies(Action<List<Tag>> onSuccess)
+    public static IEnumerator SearchHierachies(string searchParam, Action<List<Tag>> onSuccess)
     {
-        yield return GetRequest("node/name=computer", (response) =>
+        yield return GetRequest("node/name=" + searchParam, (response) =>
         {
             jsonData = response;
         });
 
         List<Tag> nodes = new List<Tag>();
+        foreach (var obj in jsonData)
+        {
+            Tag newTag = new Tag();
 
-        Debug.Log(jsonData.Count);
+            newTag.Id = obj.Value["Id"];
+
+            string tagName = obj.Value["Name"];
+            int bracketIndex = tagName.IndexOf("(");
+            if (bracketIndex > -1) {
+                tagName = tagName.Substring(0, bracketIndex - 1);
+            }
+            newTag.Name = tagName;
+
+            if (obj.Value["ParentNode"] != null)
+            {
+                Tag parentNode = new Tag();
+                parentNode.Id = obj.Value["ParentNode"]["Id"];
+                string parentTagName = obj.Value["ParentNode"]["Name"];
+                int parentBracketIndex = parentTagName.IndexOf("(");
+                if (parentBracketIndex > -1)
+                {
+                    parentTagName = parentTagName.Substring(0, parentBracketIndex - 1);
+                }
+                parentNode.Name = parentTagName;
+
+                newTag.Parent = parentNode;
+            }
+
+            
+
+
+            nodes.Add(newTag);
+        }
 
         onSuccess(nodes);
     }

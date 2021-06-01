@@ -24,5 +24,13 @@ namespace Valve.VR
                 return SteamVR_Actions.testing_Test;
             }
         }
+        
+        public virtual SteamVR_Action_Boolean TriggerTest
+        {
+            get
+            {
+                return SteamVR_Actions.testing_TriggerTest;
+            }
+        }
     }
 }
