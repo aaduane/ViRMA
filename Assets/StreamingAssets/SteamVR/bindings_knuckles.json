@@ -15,7 +15,26 @@
          "haptics" : [],
          "poses" : [],
          "skeleton" : [],
-         "sources" : []
+         "sources" : [
+            {
+               "inputs" : {
+                  "click" : {
+                     "output" : "/actions/cellnavigation/in/position"
+                  }
+               },
+               "mode" : "trigger",
+               "path" : "/user/hand/right/input/trigger"
+            },
+            {
+               "inputs" : {
+                  "click" : {
+                     "output" : "/actions/cellnavigation/in/rotate"
+                  }
+               },
+               "mode" : "trigger",
+               "path" : "/user/hand/left/input/trigger"
+            }
+         ]
       },
       "/actions/default" : {
          "chords" : [],
@@ -52,10 +71,6 @@
          "sources" : []
       },
       "/actions/menuinteraction" : {
-         "chords" : [],
-         "haptics" : [],
-         "poses" : [],
-         "skeleton" : [],
          "sources" : [
             {
                "inputs" : {
@@ -63,7 +78,7 @@
                      "output" : "/actions/menuinteraction/in/select"
                   }
                },
-               "mode" : "button",
+               "mode" : "trigger",
                "path" : "/user/hand/left/input/trigger"
             },
             {
@@ -72,7 +87,7 @@
                      "output" : "/actions/menuinteraction/in/select"
                   }
                },
-               "mode" : "button",
+               "mode" : "trigger",
                "path" : "/user/hand/right/input/trigger"
             },
             {
@@ -107,28 +122,39 @@
          "haptics" : [],
          "poses" : [],
          "skeleton" : [],
-         "sources" : []
-      },
-      "/actions/testing" : {
          "sources" : [
             {
                "inputs" : {
                   "click" : {
-                     "output" : "/actions/testing/in/test"
+                     "output" : "/actions/testactions/in/actionclicked"
                   }
                },
                "mode" : "button",
-               "path" : "/user/hand/left/input/b"
+               "path" : "/user/hand/left/input/a"
             },
             {
                "inputs" : {
                   "click" : {
-                     "output" : "/actions/testing/in/test"
+                     "output" : "/actions/testactions/in/actionclicked"
                   }
                },
                "mode" : "button",
-               "path" : "/user/hand/right/input/b"
+               "path" : "/user/hand/right/input/a"
             },
+            {
+               "inputs" : {},
+               "mode" : "trigger",
+               "path" : "/user/hand/left/input/trigger"
+            },
+            {
+               "inputs" : {},
+               "mode" : "trigger",
+               "path" : "/user/hand/right/input/trigger"
+            }
+         ]
+      },
+      "/actions/testing" : {
+         "sources" : [
             {
                "inputs" : {
                   "click" : {
@@ -150,10 +176,6 @@
          ]
       },
       "/actions/viznavigation" : {
-         "chords" : [],
-         "haptics" : [],
-         "poses" : [],
-         "skeleton" : [],
          "sources" : [
             {
                "inputs" : {

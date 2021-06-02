@@ -12,31 +12,34 @@ public class ViRMA_DimExplorer : MonoBehaviour
 
     public List<Rigidbody> verticalRigidbodies;
 
-    public Rigidbody verticalRigidbody;
+    public Rigidbody activeVerticalRigidbody;
+
+    public Bounds dimExBounds;
+
+    private bool boundLimitChecker;
 
     private void Awake()
     {
         globals = Player.instance.gameObject.GetComponent<ViRMA_GlobalsAndActions>();
+        horizontalRigidbody = GetComponent<Rigidbody>();
+        verticalRigidbodies = new List<Rigidbody>(horizontalRigidbody.gameObject.GetComponentsInChildren<Rigidbody>());
+        verticalRigidbodies.Remove(horizontalRigidbody);
 
         StartCoroutine(LateStart());
-
-        horizontalRigidbody = GameObject.Find("Horizontal").GetComponent<Rigidbody>();
-
-        verticalRigidbodies = new List<Rigidbody>();
-        foreach (Transform child in horizontalRigidbody.transform)
-        {
-            if (child.GetComponent<Rigidbody>())
-            {
-                verticalRigidbodies.Add(child.GetComponent<Rigidbody>());
-            }
-        }
     }
 
-    private void Update()
+    private void Start()
     {
+        CalculateBounds();
+    }
+
+    private void FixedUpdate()
+    {
+        DimExGroupLimiter();
+
         if (globals.testActions_triggerTest.GetState(SteamVR_Input_Sources.Any))
         {
-            if (verticalRigidbody == null)
+            if (activeVerticalRigidbody == null)
             {
                 horizontalRigidbody.velocity = Vector3.zero;
                 horizontalRigidbody.angularVelocity = Vector3.zero;
@@ -47,23 +50,26 @@ public class ViRMA_DimExplorer : MonoBehaviour
                 }
                 horizontalRigidbody.isKinematic = false;
 
-                Vector3 localVelocity = transform.InverseTransformDirection(Player.instance.rightHand.GetTrackedObjectVelocity());
-                localVelocity.y = 0;
-                localVelocity.z = 0;
-                horizontalRigidbody.velocity = transform.TransformDirection(localVelocity) * 2f;
+                if (!boundLimitChecker)
+                {
+                    Vector3 rightHandVelocity = transform.InverseTransformDirection(Player.instance.rightHand.GetTrackedObjectVelocity());
+                    rightHandVelocity.y = 0;
+                    rightHandVelocity.z = 0;
+                    horizontalRigidbody.velocity = transform.TransformDirection(rightHandVelocity);
+                }        
             }
             else
             {
-                verticalRigidbody.velocity = Vector3.zero;
-                verticalRigidbody.angularVelocity = Vector3.zero;
+                activeVerticalRigidbody.velocity = Vector3.zero;
+                activeVerticalRigidbody.angularVelocity = Vector3.zero;
 
                 horizontalRigidbody.isKinematic = true;
-                verticalRigidbody.isKinematic = false;
+                activeVerticalRigidbody.isKinematic = false;
 
-                Vector3 localVelocity = transform.InverseTransformDirection(Player.instance.rightHand.GetTrackedObjectVelocity());
-                localVelocity.x = 0;
-                localVelocity.z = 0;
-                verticalRigidbody.velocity = transform.TransformDirection(localVelocity) * 2f;
+                Vector3 rightHandVelocity = transform.InverseTransformDirection(Player.instance.rightHand.GetTrackedObjectVelocity());
+                rightHandVelocity.x = 0;
+                rightHandVelocity.z = 0;
+                activeVerticalRigidbody.velocity = transform.TransformDirection(rightHandVelocity);
             }
             
         }
@@ -95,7 +101,6 @@ public class ViRMA_DimExplorer : MonoBehaviour
         }
 
     }
-
     public void placeInFrontOfPlayer()
     {
         Vector3 flattenedVector = Player.instance.bodyDirectionGuess;
@@ -106,5 +111,52 @@ public class ViRMA_DimExplorer : MonoBehaviour
         transform.LookAt(2 * transform.position - Player.instance.hmdTransform.position);
     }
 
+    private void CalculateBounds()
+    {
+        Renderer[] meshes = GetComponentsInChildren<Renderer>();
+        Bounds bounds = new Bounds(transform.position, Vector3.zero);
+        foreach (Renderer mesh in meshes)
+        {
+            bounds.Encapsulate(mesh.bounds);
+        }
 
+        dimExBounds = bounds;
+
+        Debug.Log("Calculating bounds...");
+    }
+
+    private void DimExGroupLimiter()
+    {
+        if (Player.instance)
+        {
+            Vector3 adjustVelocity = horizontalRigidbody.velocity;
+
+            float maxDistanceX = dimExBounds.extents.x;
+
+            if (Vector3.Distance(transform.position, Player.instance.hmdTransform.transform.position) > maxDistanceX)
+            {
+
+                //adjustVelocity.x = 0;
+                //adjustVelocity.z = 0;
+
+                adjustVelocity.x = adjustVelocity.x * -0.2f;
+                adjustVelocity.z = adjustVelocity.z * -0.2f;
+
+                horizontalRigidbody.velocity = adjustVelocity;
+
+                boundLimitChecker = true;
+            }
+            else
+            {
+                boundLimitChecker = false;
+            }
+        }
+    }
+
+    void OnDrawGizmosSelected()
+    {
+        //CalculateBounds();
+        Gizmos.color = new Color(1, 0, 0, 0.5f);
+        Gizmos.DrawCube(transform.position, new Vector3(dimExBounds.size.x, dimExBounds.size.y, dimExBounds.size.z));
+    }
 }

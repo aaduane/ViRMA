@@ -40,13 +40,13 @@ public class ViRMA_Drumstick : MonoBehaviour
 
     private void OnTriggerEnter(Collider trigger)
     {
-        //Debug.Log("TRIGGER ENTER! " + trigger.gameObject.name);
+        Debug.Log("TRIGGER ENTER! " + trigger.gameObject.name);
 
         if (trigger.gameObject.GetComponent<Rigidbody>())
         {
             if (globals.dimExplorer.verticalRigidbodies.Contains(trigger.gameObject.GetComponent<Rigidbody>()))
             {
-                globals.dimExplorer.verticalRigidbody = trigger.gameObject.GetComponent<Rigidbody>();
+                globals.dimExplorer.activeVerticalRigidbody = trigger.gameObject.GetComponent<Rigidbody>();
             }
         }
 
@@ -59,13 +59,13 @@ public class ViRMA_Drumstick : MonoBehaviour
 
     private void OnTriggerExit(Collider trigger)
     {
-        //Debug.Log("TRIGGER EXIT! " + trigger.gameObject.name);
+        Debug.Log("TRIGGER EXIT! " + trigger.gameObject.name);
 
         if (trigger.gameObject.GetComponent<Rigidbody>())
         {
             if (globals.dimExplorer.verticalRigidbodies.Contains(trigger.gameObject.GetComponent<Rigidbody>()))
             {
-                globals.dimExplorer.verticalRigidbody = null;
+                globals.dimExplorer.activeVerticalRigidbody = null;
             }      
         }
 
