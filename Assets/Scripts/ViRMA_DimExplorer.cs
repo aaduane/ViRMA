@@ -18,8 +18,8 @@ public class ViRMA_DimExplorer : MonoBehaviour
 
     private Vector3 maxRight;
     private Vector3 maxLeft;
-    private float dist1;
-    private float dist2;
+    private float distToMaxRight;
+    private float distToMaxLeft;
 
     private void Awake()
     {
@@ -133,35 +133,36 @@ public class ViRMA_DimExplorer : MonoBehaviour
     {
         if (Player.instance)
         {
-            //float distanceFromPlayer = Vector3.Distance(transform.position, Player.instance.hmdTransform.transform.position);
-
 
             Vector3 adjustVelocity = horizontalRigidbody.velocity;
 
             int DimExPosChecker = 0;
 
-            float distTemp1 = Vector3.Distance(maxRight, transform.position);
-            if (distTemp1 < dist1)
+            // check if dim explorer is moving horizontally toward it's max right position
+            float distToMaxRightTemp = Vector3.Distance(maxRight, transform.position);
+            if (distToMaxRightTemp < distToMaxRight)
             {
-                dist1 = distTemp1;
+                distToMaxRight = distToMaxRightTemp;
             }
-            else if (distTemp1 > dist1)
+            else if (distToMaxRightTemp > distToMaxRight)
             {
-                dist1 = distTemp1;
+                distToMaxRight = distToMaxRightTemp;
                 DimExPosChecker++;
             }
 
-            float distTemp2 = Vector3.Distance(maxLeft, transform.position);
-            if (distTemp2 < dist2)
+            // check if dim explorer is moving horizontally toward it's max left position
+            float distToMaxLeftTemp = Vector3.Distance(maxLeft, transform.position);
+            if (distToMaxLeftTemp < distToMaxLeft)
             {
-                dist2 = distTemp2;
+                distToMaxLeft = distToMaxLeftTemp;
             }
-            else if (distTemp2 > dist2)
+            else if (distToMaxLeftTemp > distToMaxLeft)
             {
-                dist2 = distTemp2;
+                distToMaxLeft = distToMaxLeftTemp;
                 DimExPosChecker++;
             }
 
+            // if dim explorer is moving away from both it's max positions, set it's velocity to zero
             if (DimExPosChecker > 1)
             {
                 adjustVelocity = Vector3.zero;
