@@ -23,7 +23,6 @@ public class ViRMA_QueryController : MonoBehaviour
             }
         }));
 
-
         StartCoroutine(ViRMA_APIController.GetHierarchies((hierarchies) => {
             foreach (var hierarchy in hierarchies)
             {
@@ -32,19 +31,9 @@ public class ViRMA_QueryController : MonoBehaviour
         }));
         */
 
-        StartCoroutine(ViRMA_APIController.SearchHierachies("entity", (nodes) => {
+        StartCoroutine(ViRMA_APIController.SearchHierachies("computer", (nodes) => {
 
-            foreach (Tag node in nodes)
-            {
-                if (node.Parent == null)
-                {
-                    //Debug.Log("No parent!");
-                }
-                else
-                {
-                    //Debug.Log(node.Parent.Name);
-                }      
-            }
+            //globals.dimExplorer.LoadDimExplorer(nodes);
 
         }));
     }

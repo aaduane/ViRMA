@@ -9,13 +9,11 @@ public class ViRMA_DimExplorer : MonoBehaviour
     private ViRMA_GlobalsAndActions globals;
 
     Rigidbody horizontalRigidbody;
-
     public List<Rigidbody> verticalRigidbodies;
-
     public Rigidbody activeVerticalRigidbody;
 
+    public bool dimexplorerLoaded;
     public Bounds dimExBounds;
-
     private Vector3 maxRight;
     private Vector3 maxLeft;
     private float distToMaxRight;
@@ -26,66 +24,39 @@ public class ViRMA_DimExplorer : MonoBehaviour
         globals = Player.instance.gameObject.GetComponent<ViRMA_GlobalsAndActions>();
         horizontalRigidbody = GetComponent<Rigidbody>();
         verticalRigidbodies = new List<Rigidbody>(horizontalRigidbody.gameObject.GetComponentsInChildren<Rigidbody>());
-        verticalRigidbodies.Remove(horizontalRigidbody);
-
-        StartCoroutine(LateStart());
+        verticalRigidbodies.Remove(horizontalRigidbody);      
     }
 
     private void Start()
     {
-        CalculateBounds();
+        //CalculateBounds();
+
+        //StartCoroutine(LateStart());
     }
 
     private void FixedUpdate()
     {
-        DimExGroupLimiter();
-
-        if (globals.testActions_triggerTest.GetState(SteamVR_Input_Sources.Any))
+        if (dimexplorerLoaded)
         {
-            if (activeVerticalRigidbody == null)
-            {
-                horizontalRigidbody.velocity = Vector3.zero;
-                horizontalRigidbody.angularVelocity = Vector3.zero;
-
-                foreach (var verticalRigidbody in verticalRigidbodies)
-                {
-                    verticalRigidbody.isKinematic = true;
-                }
-                horizontalRigidbody.isKinematic = false;
-
-                Vector3 rightHandVelocity = transform.InverseTransformDirection(Player.instance.rightHand.GetTrackedObjectVelocity());
-                rightHandVelocity.y = 0;
-                rightHandVelocity.z = 0;
-                horizontalRigidbody.velocity = transform.TransformDirection(rightHandVelocity);
-            }
-            else
-            {
-                activeVerticalRigidbody.velocity = Vector3.zero;
-                activeVerticalRigidbody.angularVelocity = Vector3.zero;
-
-                horizontalRigidbody.isKinematic = true;
-                activeVerticalRigidbody.isKinematic = false;
-
-                Vector3 rightHandVelocity = transform.InverseTransformDirection(Player.instance.rightHand.GetTrackedObjectVelocity());
-                rightHandVelocity.x = 0;
-                rightHandVelocity.z = 0;
-                activeVerticalRigidbody.velocity = transform.TransformDirection(rightHandVelocity);
-            }
-            
-        }
+            DimExGroupLimiter();
+            DimExplorerMovement();
+        }    
     }
 
     IEnumerator LateStart()
     {
         yield return new WaitForSeconds(1);
 
-        placeInFrontOfPlayer();
+        PlaceInFrontOfPlayer();
     }
 
-    public void positionDimExplorer(SteamVR_Action_Boolean action, SteamVR_Input_Sources source)
+    // general
+    public void LoadDimExplorer(List<Tag> nodes)
     {
-        Debug.Log("Test!");
-
+        
+    }
+    public void PositionDimExplorer(SteamVR_Action_Boolean action, SteamVR_Input_Sources source)
+    {
         Vector3 flattenedVector = Player.instance.bodyDirectionGuess;
         flattenedVector.y = 0;
         flattenedVector.Normalize();
@@ -101,7 +72,7 @@ public class ViRMA_DimExplorer : MonoBehaviour
         }
 
     }
-    public void placeInFrontOfPlayer()
+    public void PlaceInFrontOfPlayer()
     {
         Vector3 flattenedVector = Player.instance.bodyDirectionGuess;
         flattenedVector.y = 0;
@@ -116,7 +87,6 @@ public class ViRMA_DimExplorer : MonoBehaviour
         maxRight = transform.position + movement;
         maxLeft = transform.position - movement;
     }
-
     private void CalculateBounds()
     {
         Renderer[] meshes = GetComponentsInChildren<Renderer>();
@@ -129,6 +99,7 @@ public class ViRMA_DimExplorer : MonoBehaviour
         dimExBounds = bounds;     
     }
 
+    // fixed update 
     private void DimExGroupLimiter()
     {
         if (Player.instance)
@@ -172,7 +143,44 @@ public class ViRMA_DimExplorer : MonoBehaviour
 
         }
     }
+    private void DimExplorerMovement()
+    {
+        if (globals.testActions_triggerTest.GetState(SteamVR_Input_Sources.Any))
+        {
+            if (activeVerticalRigidbody == null)
+            {
+                horizontalRigidbody.velocity = Vector3.zero;
+                horizontalRigidbody.angularVelocity = Vector3.zero;
 
+                foreach (var verticalRigidbody in verticalRigidbodies)
+                {
+                    verticalRigidbody.isKinematic = true;
+                }
+                horizontalRigidbody.isKinematic = false;
+
+                Vector3 rightHandVelocity = transform.InverseTransformDirection(Player.instance.rightHand.GetTrackedObjectVelocity());
+                rightHandVelocity.y = 0;
+                rightHandVelocity.z = 0;
+                horizontalRigidbody.velocity = transform.TransformDirection(rightHandVelocity);
+            }
+            else
+            {
+                activeVerticalRigidbody.velocity = Vector3.zero;
+                activeVerticalRigidbody.angularVelocity = Vector3.zero;
+
+                horizontalRigidbody.isKinematic = true;
+                activeVerticalRigidbody.isKinematic = false;
+
+                Vector3 rightHandVelocity = transform.InverseTransformDirection(Player.instance.rightHand.GetTrackedObjectVelocity());
+                rightHandVelocity.x = 0;
+                rightHandVelocity.z = 0;
+                activeVerticalRigidbody.velocity = transform.TransformDirection(rightHandVelocity);
+            }
+
+        }
+    }
+
+    // editor
     void OnDrawGizmosSelected()
     {
         //CalculateBounds();

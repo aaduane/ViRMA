@@ -256,8 +256,10 @@ public class ViRMA_APIController : MonoBehaviour
         {
             Tag newTag = new Tag();
 
+            // tag id
             newTag.Id = obj.Value["Id"];
 
+            // tag name
             string tagName = obj.Value["Name"];
             int bracketIndex = tagName.IndexOf("(");
             if (bracketIndex > -1) {
@@ -265,10 +267,15 @@ public class ViRMA_APIController : MonoBehaviour
             }
             newTag.Name = tagName;
 
+            // if tag has a parent
             if (obj.Value["ParentNode"] != null)
             {
                 Tag parentNode = new Tag();
+
+                // parent tag id
                 parentNode.Id = obj.Value["ParentNode"]["Id"];
+
+                // parent tag name
                 string parentTagName = obj.Value["ParentNode"]["Name"];
                 int parentBracketIndex = parentTagName.IndexOf("(");
                 if (parentBracketIndex > -1)
@@ -277,11 +284,9 @@ public class ViRMA_APIController : MonoBehaviour
                 }
                 parentNode.Name = parentTagName;
 
+                // attch parent tag info to new tag
                 newTag.Parent = parentNode;
             }
-
-            
-
 
             nodes.Add(newTag);
         }
