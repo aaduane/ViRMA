@@ -12,6 +12,7 @@ public class Tag
     public int Id { get; set; }
     public string Name { get; set; }
     public Tag Parent { get; set; }
+    public List<Tag> Siblings { get; set; }
     public List<Tag> Children { get; set; }
 }
 public class Cell
@@ -196,104 +197,8 @@ public class ViRMA_APIController : MonoBehaviour
             Debug.Log("PARSE TIME ~ ~ ~ ~ ~ " + (afterJsonParse - beforeJsonParse).ToString("n3") + " seconds");
         }
     }
-    public static IEnumerator GetTagsets(Action<List<Tag>> onSuccess)
-    {
-        yield return GetRequest("tagset", (response) =>
-        {
-            jsonData = response;
-        });
 
-        List<Tag> tagsets = new List<Tag>();
-        foreach (var obj in jsonData)
-        {
-            Tag newTag = new Tag
-            {
-                Id = obj.Value["Id"],
-                Name = obj.Value["Name"]
-            };
-            tagsets.Add(newTag);
-        }
-        onSuccess(tagsets);
-    }
-    public static IEnumerator GetHierarchies(Action<List<Tag>> onSuccess)
-    {
-        yield return GetRequest("hierarchy/6", (response) =>
-        {
-            jsonData = response;
-        });
-
-        /*
-        Debug.Log(jsonData["Id"]);
-        Debug.Log(jsonData["Name"]);
-        Debug.Log(jsonData["Nodes"]);
-        */
-
-        List<Tag> hierarchies = new List<Tag>();
-        foreach (var obj in jsonData)
-        {
-
-            ///Debug.Log(obj);
-
-            Tag newTag = new Tag
-            {
-                Id = obj.Value["Id"],
-                Name = obj.Value["Name"]
-            };
-            hierarchies.Add(newTag);
-        }
-        onSuccess(hierarchies);
-    }
-
-    public static IEnumerator SearchHierachies(string searchParam, Action<List<Tag>> onSuccess)
-    {
-        yield return GetRequest("node/name=" + searchParam, (response) =>
-        {
-            jsonData = response;
-        });
-
-        List<Tag> nodes = new List<Tag>();
-        foreach (var obj in jsonData)
-        {
-            Tag newTag = new Tag();
-
-            // tag id
-            newTag.Id = obj.Value["Id"];
-
-            // tag name
-            string tagName = obj.Value["Name"];
-            int bracketIndex = tagName.IndexOf("(");
-            if (bracketIndex > -1) {
-                tagName = tagName.Substring(0, bracketIndex - 1);
-            }
-            newTag.Name = tagName;
-
-            // if tag has a parent
-            if (obj.Value["ParentNode"] != null)
-            {
-                Tag parentNode = new Tag();
-
-                // parent tag id
-                parentNode.Id = obj.Value["ParentNode"]["Id"];
-
-                // parent tag name
-                string parentTagName = obj.Value["ParentNode"]["Name"];
-                int parentBracketIndex = parentTagName.IndexOf("(");
-                if (parentBracketIndex > -1)
-                {
-                    parentTagName = parentTagName.Substring(0, parentBracketIndex - 1);
-                }
-                parentNode.Name = parentTagName;
-
-                // attch parent tag info to new tag
-                newTag.Parent = parentNode;
-            }
-
-            nodes.Add(newTag);
-        }
-
-        onSuccess(nodes);
-    }
-
+    // viz
     public static IEnumerator GetCells(Query query, Action<List<Cell>> onSuccess)
     {
         // https://localhost:44317/api/cell?xAxis={'AxisType': 'Tagset', 'TagsetId': 3}&yAxis={'AxisType': 'Tagset', 'TagsetId': 7}&zAxis={'AxisType': 'Hierarchy', 'HierarchyNodeId': 77}&filters=[{'type': 'Tagset', 'tagId': 7},{'type': 'Hierarchy', 'nodeId': 5}]
@@ -327,7 +232,7 @@ public class ViRMA_APIController : MonoBehaviour
             url = url.Substring(0, url.Length - 1) + "]";
             url = url.Replace("\'", "\"");
         }
-       
+
         yield return GetRequest(url, (response) =>
         {
             jsonData = response;
@@ -393,10 +298,10 @@ public class ViRMA_APIController : MonoBehaviour
             }
             yield return GetRequest(type + "/" + query.X.Id, (response) =>
             {
-                (string name, List<KeyValuePair<string, int>> labels) = processLabelData(response);   
+                (string name, List<KeyValuePair<string, int>> labels) = processLabelData(response);
                 axisLabels.SetAxisLabsls("X", query.X.Id, type, name, labels);
             });
-        }   
+        }
 
         if (query.Y != null)
         {
@@ -425,8 +330,181 @@ public class ViRMA_APIController : MonoBehaviour
                 axisLabels.SetAxisLabsls("Z", query.Z.Id, type, name, labels);
             });
         }
-        
+
         onSuccess(axisLabels);
     }
 
-}
+    // all tagsets and hierarchies
+    public static IEnumerator GetTagsets(Action<List<Tag>> onSuccess)
+    {
+        yield return GetRequest("tagset", (response) =>
+        {
+            jsonData = response;
+        });
+
+        List<Tag> tagsets = new List<Tag>();
+        foreach (var obj in jsonData)
+        {
+            Tag newTag = new Tag
+            {
+                Id = obj.Value["Id"],
+                Name = obj.Value["Name"]
+            };
+            tagsets.Add(newTag);
+        }
+        onSuccess(tagsets);
+    }
+    public static IEnumerator GetHierarchies(Action<List<Tag>> onSuccess)
+    {
+        yield return GetRequest("hierarchy/6", (response) =>
+        {
+            jsonData = response;
+        });
+
+        /*
+        Debug.Log(jsonData["Id"]);
+        Debug.Log(jsonData["Name"]);
+        Debug.Log(jsonData["Nodes"]);
+        */
+
+        List<Tag> hierarchies = new List<Tag>();
+        foreach (var obj in jsonData)
+        {
+
+            ///Debug.Log(obj);
+
+            Tag newTag = new Tag
+            {
+                Id = obj.Value["Id"],
+                Name = obj.Value["Name"]
+            };
+            hierarchies.Add(newTag);
+        }
+        onSuccess(hierarchies);
+    }
+
+
+    // dimension explorer
+    public static IEnumerator SearchHierachies(string searchParam, Action<List<Tag>> onSuccess)
+    {
+        yield return GetRequest("node/name=" + searchParam, (response) =>
+        {
+            jsonData = response;
+        });
+
+        List<Tag> nodes = new List<Tag>();
+        foreach (var obj in jsonData)
+        {
+            Tag newTag = new Tag();
+
+            // tag id
+            newTag.Id = obj.Value["Id"];
+
+            // tag name
+            string tagName = obj.Value["Name"];
+            int bracketIndex = tagName.IndexOf("(");
+            if (bracketIndex > -1) {
+                tagName = tagName.Substring(0, bracketIndex - 1);
+            }
+            newTag.Name = tagName;
+
+            // if tag has a parent
+            if (obj.Value["ParentNode"] != null)
+            {
+                Tag parentNode = new Tag();
+
+                // parent tag id
+                parentNode.Id = obj.Value["ParentNode"]["Id"];
+
+                // parent tag name
+                string parentTagName = obj.Value["ParentNode"]["Name"];
+                int parentBracketIndex = parentTagName.IndexOf("(");
+                if (parentBracketIndex > -1)
+                {
+                    parentTagName = parentTagName.Substring(0, parentBracketIndex - 1);
+                }
+                parentNode.Name = parentTagName;
+
+                // attch parent tag info to new tag
+                newTag.Parent = parentNode;
+            }
+
+            nodes.Add(newTag);
+        }
+
+        foreach (var node in nodes)
+        {
+            // get children         
+            yield return GetRequest("node/" + node.Id.ToString() + "/children", (response) =>
+            {
+                jsonData = response;
+                node.Children = new List<Tag>();
+                foreach (var obj in jsonData)
+                {
+                    Tag newTag = new Tag();
+
+                    // tag id
+                    newTag.Id = obj.Value["Id"];
+
+                    // tag name
+                    string tagName = obj.Value["Name"];
+                    int bracketIndex = tagName.IndexOf("(");
+                    if (bracketIndex > -1)
+                    {
+                        tagName = tagName.Substring(0, bracketIndex - 1);
+                    }
+                    newTag.Name = tagName;
+                    node.Children.Add(newTag);
+                }
+                
+            });
+
+
+            // get siblings
+            if (node.Parent != null)
+            {
+                yield return GetRequest("node/" + node.Parent.Id.ToString() + "/children", (response) =>
+                {
+                    jsonData = response;
+                    node.Siblings = new List<Tag>();
+                    foreach (var obj in jsonData)
+                    {
+                        Tag newTag = new Tag();
+
+                        // tag id
+                        newTag.Id = obj.Value["Id"];
+
+                        // tag name
+                        string tagName = obj.Value["Name"];
+                        int bracketIndex = tagName.IndexOf("(");
+                        if (bracketIndex > -1)
+                        {
+                            tagName = tagName.Substring(0, bracketIndex - 1);
+                        }
+                        newTag.Name = tagName;
+                        node.Siblings.Add(newTag);
+                    }
+
+                });
+            }
+        }
+        onSuccess(nodes);
+    }
+    public static IEnumerator GetHierarchyChildren(int targetId)
+    {
+        yield return GetRequest("node/" + targetId.ToString() + "/children", (response) =>
+        {
+            jsonData = response;
+        });
+    }
+    public static IEnumerator GetHierarchyParent(int targetId)
+    {
+        yield return GetRequest("node/" + targetId.ToString() + "/parent", (response) =>
+        {
+            jsonData = response;
+        });
+    }
+     
+
+
+} 

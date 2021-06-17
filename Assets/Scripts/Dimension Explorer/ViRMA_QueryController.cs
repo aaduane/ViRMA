@@ -35,9 +35,18 @@ public class ViRMA_QueryController : MonoBehaviour
 
             //globals.dimExplorer.LoadDimExplorer(nodes);
 
+            Debug.Log(nodes.Count + " tags found  ");
+
+            foreach (var node in nodes)
+            {
+                Debug.Log("Name: " + node.Name + " ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ");
+                Debug.Log("Parent: " + node.Parent.Name);
+                Debug.Log("Sibling Count: " + node.Siblings.Count);
+                Debug.Log("Children Count: " + node.Children.Count);
+            }
+
         }));
     }
-
 
     public void testReloadViz(SteamVR_Action_Boolean action, SteamVR_Input_Sources source)
     {
