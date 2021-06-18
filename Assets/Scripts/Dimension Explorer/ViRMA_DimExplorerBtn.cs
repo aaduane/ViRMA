@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class ViRMA_DimExplorerBtn : MonoBehaviour
 {
-    public Tag tag;
+    public Tag tagData;
     public GameObject background;
     public GameObject textMesh;
 

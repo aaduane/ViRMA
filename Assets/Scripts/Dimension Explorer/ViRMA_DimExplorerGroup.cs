@@ -4,7 +4,7 @@ using Valve.VR.InteractionSystem;
 
 public class ViRMA_DimExplorerGroup : MonoBehaviour
 {
-    List<Tag> tagsInGroup;
+    public List<Tag> tagsInGroup;
 
     public Bounds dimExBounds;
     public BoxCollider dimExCollider;
@@ -12,11 +12,19 @@ public class ViRMA_DimExplorerGroup : MonoBehaviour
 
     private void Awake()
     {
-        dimExRigidbody = GetComponent<Rigidbody>();
+        gameObject.AddComponent<BoxCollider>();
+        gameObject.AddComponent<Rigidbody>();
+
+        dimExCollider = gameObject.GetComponent<BoxCollider>();
+
+        dimExRigidbody = gameObject.GetComponent<Rigidbody>();
+        dimExRigidbody.useGravity = false;
     }
 
     private void Start()
     {
+
+
         CalculateBounds();
     }
 

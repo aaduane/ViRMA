@@ -170,6 +170,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   verticalRigidbodies: []
   activeVerticalRigidbody: {fileID: 0}
+  dimexplorerLoaded: 0
   dimExBounds:
     m_Center: {x: 0, y: 0, z: 0}
     m_Extent: {x: 0, y: 0, z: 0}

@@ -33,17 +33,7 @@ public class ViRMA_QueryController : MonoBehaviour
 
         StartCoroutine(ViRMA_APIController.SearchHierachies("computer", (nodes) => {
 
-            //globals.dimExplorer.LoadDimExplorer(nodes);
-
-            Debug.Log(nodes.Count + " tags found  ");
-
-            foreach (var node in nodes)
-            {
-                Debug.Log("Name: " + node.Name + " ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ");
-                Debug.Log("Parent: " + node.Parent.Name);
-                Debug.Log("Sibling Count: " + node.Siblings.Count);
-                Debug.Log("Children Count: " + node.Children.Count);
-            }
+            globals.dimExplorer.LoadDimExplorer(nodes);
 
         }));
     }

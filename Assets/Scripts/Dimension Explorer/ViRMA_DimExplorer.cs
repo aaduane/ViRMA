@@ -53,7 +53,58 @@ public class ViRMA_DimExplorer : MonoBehaviour
     // general
     public void LoadDimExplorer(List<Tag> nodes)
     {
-        
+        //Debug.Log(nodes.Count + " tags found!");
+        foreach (var node in nodes)
+        {
+            //Debug.Log("Name: " + node.Name + " ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ");
+            //Debug.Log("Parent: " + node.Parent.Name);
+            //Debug.Log("Sibling Count: " + node.Siblings.Count);
+            //Debug.Log("Children Count: " + node.Children.Count);
+        }
+
+        // clear any current children
+        foreach (Transform child in transform)
+        {
+            Destroy(child.gameObject);
+        }
+
+        // create dimension explorer button groupings
+        float dimExGrpPos = 0;
+        foreach (var node in nodes)
+        {
+            // target tag's parent
+            if (node.Parent != null)
+            {
+                GameObject dimExpGrpParent = new GameObject("DimExpGrpParent");
+                dimExpGrpParent.transform.parent = transform;
+                dimExpGrpParent.transform.localPosition = new Vector3(dimExGrpPos, 0, 0);
+                dimExpGrpParent.AddComponent<ViRMA_DimExplorerGroup>().tagsInGroup = new List<Tag>() { node.Parent };
+            }
+            
+            // target tag and siblings
+            if (node.Siblings != null && node.Siblings.Count > 0)
+            {
+                dimExGrpPos += 0.2f;
+                GameObject dimExpSiblings = new GameObject("DimExpGrpSiblings");
+                dimExpSiblings.transform.parent = transform;
+                dimExpSiblings.transform.localPosition = new Vector3(dimExGrpPos, 0, 0);
+                dimExpSiblings.AddComponent<ViRMA_DimExplorerGroup>().tagsInGroup = node.Siblings;
+            }
+
+            // target tag's children
+            if (node.Children != null && node.Children.Count > 0)
+            {
+                dimExGrpPos += 0.2f;
+                GameObject dimExpChildren = new GameObject("DimExpGrpChildren");
+                dimExpChildren.transform.parent = transform;
+                dimExpChildren.transform.localPosition = new Vector3(dimExGrpPos, 0, 0);
+                dimExpChildren.AddComponent<ViRMA_DimExplorerGroup>().tagsInGroup = node.Children;
+            }
+
+            dimExGrpPos += 1;
+        }
+
+
     }
     public void PositionDimExplorer(SteamVR_Action_Boolean action, SteamVR_Input_Sources source)
     {
