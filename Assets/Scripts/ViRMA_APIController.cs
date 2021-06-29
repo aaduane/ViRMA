@@ -421,7 +421,7 @@ public class ViRMA_APIController : MonoBehaviour
                 int parentBracketIndex = parentTagName.IndexOf("(");
                 if (parentBracketIndex > -1)
                 {
-                    parentTagName = parentTagName.Substring(0, parentBracketIndex - 1);
+                    parentTagName = parentTagName.Substring(0, parentBracketIndex);
                 }
                 parentNode.Name = parentTagName;
 

@@ -22,9 +22,11 @@ public class ViRMA_DimExplorer : MonoBehaviour
     private void Awake()
     {
         globals = Player.instance.gameObject.GetComponent<ViRMA_GlobalsAndActions>();
+
         horizontalRigidbody = GetComponent<Rigidbody>();
-        verticalRigidbodies = new List<Rigidbody>(horizontalRigidbody.gameObject.GetComponentsInChildren<Rigidbody>());
-        verticalRigidbodies.Remove(horizontalRigidbody);      
+
+        //verticalRigidbodies = new List<Rigidbody>(horizontalRigidbody.gameObject.GetComponentsInChildren<Rigidbody>());
+        //verticalRigidbodies.Remove(horizontalRigidbody);      
     }
 
     private void Start()
@@ -47,20 +49,24 @@ public class ViRMA_DimExplorer : MonoBehaviour
     {
         yield return new WaitForSeconds(1);
 
+        CalculateBounds();
         PlaceInFrontOfPlayer();
+        dimexplorerLoaded = true;
     }
 
     // general
     public void LoadDimExplorer(List<Tag> nodes)
     {
-        //Debug.Log(nodes.Count + " tags found!");
+        /*
+        Debug.Log(nodes.Count + " tags found!");
         foreach (var node in nodes)
         {
-            //Debug.Log("Name: " + node.Name + " ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ");
-            //Debug.Log("Parent: " + node.Parent.Name);
-            //Debug.Log("Sibling Count: " + node.Siblings.Count);
-            //Debug.Log("Children Count: " + node.Children.Count);
+            Debug.Log("Name: " + node.Name + " ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ");
+            Debug.Log("Parent: " + node.Parent.Name);
+            Debug.Log("Sibling Count: " + node.Siblings.Count);
+            Debug.Log("Children Count: " + node.Children.Count);
         }
+        */
 
         // clear any current children
         foreach (Transform child in transform)
@@ -104,7 +110,13 @@ public class ViRMA_DimExplorer : MonoBehaviour
             dimExGrpPos += 1;
         }
 
+        foreach (Transform dimExGrp in transform)
+        {
+            verticalRigidbodies.Add(dimExGrp.GetComponent<Rigidbody>());
+        }
 
+
+        StartCoroutine(LateStart());
     }
     public void PositionDimExplorer(SteamVR_Action_Boolean action, SteamVR_Input_Sources source)
     {
@@ -138,7 +150,7 @@ public class ViRMA_DimExplorer : MonoBehaviour
         maxRight = transform.position + movement;
         maxLeft = transform.position - movement;
     }
-    private void CalculateBounds()
+    public void CalculateBounds()
     {
         Renderer[] meshes = GetComponentsInChildren<Renderer>();
         Bounds bounds = new Bounds(transform.position, Vector3.zero);
@@ -155,7 +167,6 @@ public class ViRMA_DimExplorer : MonoBehaviour
     {
         if (Player.instance)
         {
-
             Vector3 adjustVelocity = horizontalRigidbody.velocity;
 
             int DimExPosChecker = 0;

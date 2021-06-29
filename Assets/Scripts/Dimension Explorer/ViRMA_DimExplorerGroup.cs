@@ -23,7 +23,26 @@ public class ViRMA_DimExplorerGroup : MonoBehaviour
 
     private void Start()
     {
+        if (tagsInGroup != null && tagsInGroup.Count > 0)
+        {
+            float yPos = 0;
+            foreach (var tag in tagsInGroup)
+            {
+                GameObject dimExBtnPrefab = Resources.Load("Prefabs/DimExBtn") as GameObject;
+                //dimExBtnPrefab.GetComponent<ViRMA_DimExplorerBtn>().tagData = tag;
+                GameObject dimExBtn = Instantiate(dimExBtnPrefab);
 
+                dimExBtn.GetComponent<ViRMA_DimExplorerBtn>().LoadDimExButton(tag);
+
+                //dimExBtn.name = tag.Name;
+                dimExBtn.transform.parent = transform;
+
+                dimExBtn.transform.localRotation = Quaternion.identity;
+                dimExBtn.transform.localPosition = new Vector3(0, yPos, 0);
+
+                yPos += 0.1f;
+            }
+        }
 
         CalculateBounds();
     }
