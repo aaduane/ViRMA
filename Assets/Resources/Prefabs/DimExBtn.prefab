@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 5254511832674926411}
   - component: {fileID: 5254511832674926408}
   - component: {fileID: 5254511832674926409}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Background
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -105,7 +105,7 @@ GameObject:
   - component: {fileID: 5254511832904173537}
   - component: {fileID: 5254511832904173566}
   - component: {fileID: 5254511832904173567}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: TextMesh
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -278,7 +278,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5254511833202007634}
   - component: {fileID: 5254511833202007637}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: DimExBtn
   m_TagString: Untagged
   m_Icon: {fileID: 0}

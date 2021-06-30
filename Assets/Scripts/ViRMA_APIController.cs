@@ -456,7 +456,10 @@ public class ViRMA_APIController : MonoBehaviour
                     newTag.Name = tagName;
                     node.Children.Add(newTag);
                 }
-                
+
+                List<Tag> orderedList = node.Children.OrderBy(s => s.Name).ToList();
+                node.Children = orderedList;
+
             });
 
 
@@ -484,6 +487,9 @@ public class ViRMA_APIController : MonoBehaviour
                         newTag.Name = tagName;
                         node.Siblings.Add(newTag);
                     }
+
+                    List<Tag> orderedList = node.Siblings.OrderBy(s => s.Name).ToList();
+                    node.Siblings = orderedList;
 
                 });
             }

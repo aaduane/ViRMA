@@ -95,6 +95,7 @@ public class ViRMA_DimExplorer : MonoBehaviour
                 dimExpSiblings.transform.parent = transform;
                 dimExpSiblings.transform.localPosition = new Vector3(dimExGrpPos, 0, 0);
                 dimExpSiblings.AddComponent<ViRMA_DimExplorerGroup>().tagsInGroup = node.Siblings;
+                dimExpSiblings.GetComponent<ViRMA_DimExplorerGroup>().searchedForTag = node;
             }
 
             // target tag's children
@@ -144,11 +145,12 @@ public class ViRMA_DimExplorer : MonoBehaviour
         transform.position = spawnPos;
         transform.LookAt(2 * transform.position - Player.instance.hmdTransform.position);
 
-
         float maxDistanceX = dimExBounds.extents.x * 1.1f;
         Vector3 movement = transform.right * maxDistanceX;
-        maxRight = transform.position + movement;
-        maxLeft = transform.position - movement;
+        //maxRight = transform.position + movement;
+        //maxLeft = transform.position - movement;
+        maxRight = transform.position - (movement * 2);
+        maxLeft = transform.position;
     }
     public void CalculateBounds()
     {
