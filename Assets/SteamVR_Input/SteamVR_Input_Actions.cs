@@ -51,9 +51,9 @@ namespace Valve.VR
         
         private static SteamVR_Action_Boolean p_menuInteraction_MenuControl;
         
-        private static SteamVR_Action_Boolean p_testing_Test;
+        private static SteamVR_Action_Boolean p_dimExplorer_Select;
         
-        private static SteamVR_Action_Boolean p_testing_TriggerTest;
+        private static SteamVR_Action_Boolean p_dimExplorer_Scroll;
         
         public static SteamVR_Action_Boolean default_InteractUI
         {
@@ -191,19 +191,19 @@ namespace Valve.VR
             }
         }
         
-        public static SteamVR_Action_Boolean testing_Test
+        public static SteamVR_Action_Boolean dimExplorer_Select
         {
             get
             {
-                return SteamVR_Actions.p_testing_Test.GetCopy<SteamVR_Action_Boolean>();
+                return SteamVR_Actions.p_dimExplorer_Select.GetCopy<SteamVR_Action_Boolean>();
             }
         }
         
-        public static SteamVR_Action_Boolean testing_TriggerTest
+        public static SteamVR_Action_Boolean dimExplorer_Scroll
         {
             get
             {
-                return SteamVR_Actions.p_testing_TriggerTest.GetCopy<SteamVR_Action_Boolean>();
+                return SteamVR_Actions.p_dimExplorer_Scroll.GetCopy<SteamVR_Action_Boolean>();
             }
         }
         
@@ -227,8 +227,8 @@ namespace Valve.VR
                     SteamVR_Actions.vizNavigation_Scale,
                     SteamVR_Actions.menuInteraction_Select,
                     SteamVR_Actions.menuInteraction_MenuControl,
-                    SteamVR_Actions.testing_Test,
-                    SteamVR_Actions.testing_TriggerTest};
+                    SteamVR_Actions.dimExplorer_Select,
+                    SteamVR_Actions.dimExplorer_Scroll};
             Valve.VR.SteamVR_Input.actionsIn = new Valve.VR.ISteamVR_Action_In[] {
                     SteamVR_Actions.default_InteractUI,
                     SteamVR_Actions.default_Teleport,
@@ -246,8 +246,8 @@ namespace Valve.VR
                     SteamVR_Actions.vizNavigation_Scale,
                     SteamVR_Actions.menuInteraction_Select,
                     SteamVR_Actions.menuInteraction_MenuControl,
-                    SteamVR_Actions.testing_Test,
-                    SteamVR_Actions.testing_TriggerTest};
+                    SteamVR_Actions.dimExplorer_Select,
+                    SteamVR_Actions.dimExplorer_Scroll};
             Valve.VR.SteamVR_Input.actionsOut = new Valve.VR.ISteamVR_Action_Out[] {
                     SteamVR_Actions.default_Haptic};
             Valve.VR.SteamVR_Input.actionsVibration = new Valve.VR.SteamVR_Action_Vibration[] {
@@ -267,8 +267,8 @@ namespace Valve.VR
                     SteamVR_Actions.vizNavigation_Scale,
                     SteamVR_Actions.menuInteraction_Select,
                     SteamVR_Actions.menuInteraction_MenuControl,
-                    SteamVR_Actions.testing_Test,
-                    SteamVR_Actions.testing_TriggerTest};
+                    SteamVR_Actions.dimExplorer_Select,
+                    SteamVR_Actions.dimExplorer_Scroll};
             Valve.VR.SteamVR_Input.actionsSingle = new Valve.VR.SteamVR_Action_Single[] {
                     SteamVR_Actions.default_Squeeze};
             Valve.VR.SteamVR_Input.actionsVector2 = new Valve.VR.SteamVR_Action_Vector2[0];
@@ -290,8 +290,8 @@ namespace Valve.VR
                     SteamVR_Actions.vizNavigation_Scale,
                     SteamVR_Actions.menuInteraction_Select,
                     SteamVR_Actions.menuInteraction_MenuControl,
-                    SteamVR_Actions.testing_Test,
-                    SteamVR_Actions.testing_TriggerTest};
+                    SteamVR_Actions.dimExplorer_Select,
+                    SteamVR_Actions.dimExplorer_Scroll};
         }
         
         private static void PreInitActions()
@@ -313,8 +313,8 @@ namespace Valve.VR
             SteamVR_Actions.p_vizNavigation_Scale = ((SteamVR_Action_Boolean)(SteamVR_Action.Create<SteamVR_Action_Boolean>("/actions/VizNavigation/in/Scale")));
             SteamVR_Actions.p_menuInteraction_Select = ((SteamVR_Action_Boolean)(SteamVR_Action.Create<SteamVR_Action_Boolean>("/actions/MenuInteraction/in/Select")));
             SteamVR_Actions.p_menuInteraction_MenuControl = ((SteamVR_Action_Boolean)(SteamVR_Action.Create<SteamVR_Action_Boolean>("/actions/MenuInteraction/in/MenuControl")));
-            SteamVR_Actions.p_testing_Test = ((SteamVR_Action_Boolean)(SteamVR_Action.Create<SteamVR_Action_Boolean>("/actions/Testing/in/Test")));
-            SteamVR_Actions.p_testing_TriggerTest = ((SteamVR_Action_Boolean)(SteamVR_Action.Create<SteamVR_Action_Boolean>("/actions/Testing/in/TriggerTest")));
+            SteamVR_Actions.p_dimExplorer_Select = ((SteamVR_Action_Boolean)(SteamVR_Action.Create<SteamVR_Action_Boolean>("/actions/DimExplorer/in/Select")));
+            SteamVR_Actions.p_dimExplorer_Scroll = ((SteamVR_Action_Boolean)(SteamVR_Action.Create<SteamVR_Action_Boolean>("/actions/DimExplorer/in/Scroll")));
         }
     }
 }

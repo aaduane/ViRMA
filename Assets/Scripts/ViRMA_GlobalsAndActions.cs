@@ -22,10 +22,6 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
     public Material leftControllerNormalMaterial;
     public Material rightControllerNormalMaterial;
 
-    // test actions
-    public SteamVR_ActionSet testActions;
-    public SteamVR_Action_Boolean testActions_triggerTest;
-
     // default actions
     public SteamVR_ActionSet defaultAction;  
 
@@ -39,6 +35,11 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
     public SteamVR_Action_Boolean vizNav_Position;
     public SteamVR_Action_Boolean vizNav_Rotation;
 
+    // dimExplorer actions
+    public SteamVR_ActionSet dimExplorerActions;
+    public SteamVR_Action_Boolean dimExplorer_Select;
+    public SteamVR_Action_Boolean dimExplorer_Scroll;
+
     private void Awake()
     {
         // assign all global scripts
@@ -50,7 +51,7 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
         AssignAllActionSets();
 
         // assign specific actions to functionality in ViRMA scripts
-        AssignAllActions();
+        AssignAllCustomActions();
 
         // this is only used during testing
         ActiveDevelopmentTesting();
@@ -64,37 +65,37 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
     // actions
     private void AssignAllActionSets()
     {
-        // test action set
-        testActions = SteamVR_Input.GetActionSet("Testing");
-        testActions_triggerTest = SteamVR_Input.GetAction<SteamVR_Action_Boolean>("TriggerTest");
-
-
         // default action set 
         defaultAction = SteamVR_Input.GetActionSet("default");
 
         // ui interaction action set
         menuInteractionActions = SteamVR_Input.GetActionSet("MenuInteraction");
-        menuInteraction_Select = SteamVR_Input.GetAction<SteamVR_Action_Boolean>("Select");
-        menuInteraction_MenuControl = SteamVR_Input.GetAction<SteamVR_Action_Boolean>("MenuControl");
+        menuInteraction_Select = SteamVR_Input.GetActionFromPath<SteamVR_Action_Boolean>("/actions/MenuInteraction/in/Select");
+        menuInteraction_MenuControl = SteamVR_Input.GetAction<SteamVR_Action_Boolean>("/actions/MenuInteraction/in/MenuControl");
 
         // viz navigation action set
         vizNavActions = SteamVR_Input.GetActionSet("VizNavigation");
-        vizNav_Position = SteamVR_Input.GetAction<SteamVR_Action_Boolean>("Position");
-        vizNav_Rotation = SteamVR_Input.GetAction<SteamVR_Action_Boolean>("Rotation");
+        vizNav_Position = SteamVR_Input.GetAction<SteamVR_Action_Boolean>("/actions/VizNavigation/in/Position");
+        vizNav_Rotation = SteamVR_Input.GetAction<SteamVR_Action_Boolean>("/actions/VizNavigation/in/Rotation");
+
+        // dimension explorer action set
+        dimExplorerActions = SteamVR_Input.GetActionSet("DimExplorer");
+        dimExplorer_Select = SteamVR_Input.GetActionFromPath<SteamVR_Action_Boolean>("/actions/DimExplorer/in/Select");
+        dimExplorer_Scroll = SteamVR_Input.GetActionFromPath<SteamVR_Action_Boolean>("/actions/DimExplorer/in/Scroll");
 
         /*
-        Debug.Log(testActionSet.allActions);
-        foreach (var testAction in testActionSet.allActions)
+        Debug.Log(dimExplorerActions.allActions);
+        foreach (var action in dimExplorerActions.allActions)
         {
-            Debug.Log(testAction.GetShortName());
+            Debug.Log(action.GetShortName());
         }     
         */
     }
-    private void AssignAllActions()
+    private void AssignAllCustomActions()
     {
         // ui interaction actions
-        //menuInteraction_MenuControl[SteamVR_Input_Sources.Any].onStateDown += dimExplorer.positionDimExplorer; 
-        //menuInteraction_MenuControl[SteamVR_Input_Sources.Any].onStateDown += Foo;
+        //menuInteraction_MenuControl[SteamVR_Input_Sources.Any].onStateDown += TestAction;
+        dimExplorer_Select[SteamVR_Input_Sources.Any].onStateDown += dimExplorer.SubmitTagForTraversal;
     }
     public void ToggleOnlyThisActionSet(SteamVR_ActionSet targetActionSet)
     {
@@ -218,9 +219,10 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
         vizController.gameObject.SetActive(false);
 
         queryController.gameObject.SetActive(true);
-        ToggleOnlyThisActionSet(testActions);
+
+        ToggleOnlyThisActionSet(dimExplorerActions);
     }
-    private void Foo(SteamVR_Action_Boolean action, SteamVR_Input_Sources source)
+    private void TestAction(SteamVR_Action_Boolean action, SteamVR_Input_Sources source)
     {
         Debug.Log(action.GetShortName() + " | " + source);
     }

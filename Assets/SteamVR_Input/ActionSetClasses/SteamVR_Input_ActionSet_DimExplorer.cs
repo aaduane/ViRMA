@@ -14,22 +14,22 @@ namespace Valve.VR
     using UnityEngine;
     
     
-    public class SteamVR_Input_ActionSet_Testing : Valve.VR.SteamVR_ActionSet
+    public class SteamVR_Input_ActionSet_DimExplorer : Valve.VR.SteamVR_ActionSet
     {
         
-        public virtual SteamVR_Action_Boolean Test
+        public virtual SteamVR_Action_Boolean Select
         {
             get
             {
-                return SteamVR_Actions.testing_Test;
+                return SteamVR_Actions.dimExplorer_Select;
             }
         }
         
-        public virtual SteamVR_Action_Boolean TriggerTest
+        public virtual SteamVR_Action_Boolean Scroll
         {
             get
             {
-                return SteamVR_Actions.testing_TriggerTest;
+                return SteamVR_Actions.dimExplorer_Scroll;
             }
         }
     }

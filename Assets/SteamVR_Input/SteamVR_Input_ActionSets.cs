@@ -23,7 +23,7 @@ namespace Valve.VR
         
         private static SteamVR_Input_ActionSet_MenuInteraction p_MenuInteraction;
         
-        private static SteamVR_Input_ActionSet_Testing p_Testing;
+        private static SteamVR_Input_ActionSet_DimExplorer p_DimExplorer;
         
         public static SteamVR_Input_ActionSet_default _default
         {
@@ -49,11 +49,11 @@ namespace Valve.VR
             }
         }
         
-        public static SteamVR_Input_ActionSet_Testing Testing
+        public static SteamVR_Input_ActionSet_DimExplorer DimExplorer
         {
             get
             {
-                return SteamVR_Actions.p_Testing.GetCopy<SteamVR_Input_ActionSet_Testing>();
+                return SteamVR_Actions.p_DimExplorer.GetCopy<SteamVR_Input_ActionSet_DimExplorer>();
             }
         }
         
@@ -62,12 +62,12 @@ namespace Valve.VR
             SteamVR_Actions.p__default = ((SteamVR_Input_ActionSet_default)(SteamVR_ActionSet.Create<SteamVR_Input_ActionSet_default>("/actions/default")));
             SteamVR_Actions.p_VizNavigation = ((SteamVR_Input_ActionSet_VizNavigation)(SteamVR_ActionSet.Create<SteamVR_Input_ActionSet_VizNavigation>("/actions/VizNavigation")));
             SteamVR_Actions.p_MenuInteraction = ((SteamVR_Input_ActionSet_MenuInteraction)(SteamVR_ActionSet.Create<SteamVR_Input_ActionSet_MenuInteraction>("/actions/MenuInteraction")));
-            SteamVR_Actions.p_Testing = ((SteamVR_Input_ActionSet_Testing)(SteamVR_ActionSet.Create<SteamVR_Input_ActionSet_Testing>("/actions/Testing")));
+            SteamVR_Actions.p_DimExplorer = ((SteamVR_Input_ActionSet_DimExplorer)(SteamVR_ActionSet.Create<SteamVR_Input_ActionSet_DimExplorer>("/actions/DimExplorer")));
             Valve.VR.SteamVR_Input.actionSets = new Valve.VR.SteamVR_ActionSet[] {
                     SteamVR_Actions._default,
                     SteamVR_Actions.VizNavigation,
                     SteamVR_Actions.MenuInteraction,
-                    SteamVR_Actions.Testing};
+                    SteamVR_Actions.DimExplorer};
         }
     }
 }

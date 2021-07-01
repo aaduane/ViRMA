@@ -9,8 +9,6 @@ public class ViRMA_Hand : Hand
     protected override void Awake()
     {
         base.Awake();
-
-        //useControllerHoverComponent = false;
     }
 
     protected override void UpdateHovering()

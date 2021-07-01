@@ -74,11 +74,11 @@
       "type": "boolean"
     },
     {
-      "name": "/actions/Testing/in/Test",
+      "name": "/actions/DimExplorer/in/Select",
       "type": "boolean"
     },
     {
-      "name": "/actions/Testing/in/TriggerTest",
+      "name": "/actions/DimExplorer/in/Scroll",
       "type": "boolean"
     }
   ],
@@ -96,7 +96,7 @@
       "usage": "single"
     },
     {
-      "name": "/actions/Testing",
+      "name": "/actions/DimExplorer",
       "usage": "single"
     }
   ],

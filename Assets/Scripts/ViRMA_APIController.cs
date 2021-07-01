@@ -404,7 +404,7 @@ public class ViRMA_APIController : MonoBehaviour
             string tagName = obj.Value["Name"];
             int bracketIndex = tagName.IndexOf("(");
             if (bracketIndex > -1) {
-                tagName = tagName.Substring(0, bracketIndex - 1);
+                tagName = tagName.Substring(0, bracketIndex);
             }
             newTag.Name = tagName;
 
@@ -451,7 +451,7 @@ public class ViRMA_APIController : MonoBehaviour
                     int bracketIndex = tagName.IndexOf("(");
                     if (bracketIndex > -1)
                     {
-                        tagName = tagName.Substring(0, bracketIndex - 1);
+                        tagName = tagName.Substring(0, bracketIndex);
                     }
                     newTag.Name = tagName;
                     node.Children.Add(newTag);
@@ -461,7 +461,6 @@ public class ViRMA_APIController : MonoBehaviour
                 node.Children = orderedList;
 
             });
-
 
             // get siblings
             if (node.Parent != null)
@@ -482,7 +481,7 @@ public class ViRMA_APIController : MonoBehaviour
                         int bracketIndex = tagName.IndexOf("(");
                         if (bracketIndex > -1)
                         {
-                            tagName = tagName.Substring(0, bracketIndex - 1);
+                            tagName = tagName.Substring(0, bracketIndex);
                         }
                         newTag.Name = tagName;
                         node.Siblings.Add(newTag);

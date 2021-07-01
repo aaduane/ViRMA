@@ -8,7 +8,7 @@ public class ViRMA_DimExplorer : MonoBehaviour
 {
     private ViRMA_GlobalsAndActions globals;
 
-    Rigidbody horizontalRigidbody;
+    private Rigidbody horizontalRigidbody;
     public List<Rigidbody> verticalRigidbodies;
     public Rigidbody activeVerticalRigidbody;
 
@@ -19,21 +19,13 @@ public class ViRMA_DimExplorer : MonoBehaviour
     private float distToMaxRight;
     private float distToMaxLeft;
 
+    public Tag submittedTagForTraversal;
+
     private void Awake()
     {
         globals = Player.instance.gameObject.GetComponent<ViRMA_GlobalsAndActions>();
 
-        horizontalRigidbody = GetComponent<Rigidbody>();
-
-        //verticalRigidbodies = new List<Rigidbody>(horizontalRigidbody.gameObject.GetComponentsInChildren<Rigidbody>());
-        //verticalRigidbodies.Remove(horizontalRigidbody);      
-    }
-
-    private void Start()
-    {
-        //CalculateBounds();
-
-        //StartCoroutine(LateStart());
+        horizontalRigidbody = GetComponent<Rigidbody>();    
     }
 
     private void FixedUpdate()
@@ -50,13 +42,24 @@ public class ViRMA_DimExplorer : MonoBehaviour
         yield return new WaitForSeconds(1);
 
         CalculateBounds();
-        PlaceInFrontOfPlayer();
+        PositionDimExplorer();
         dimexplorerLoaded = true;
     }
 
     // general
-    public void LoadDimExplorer(List<Tag> nodes)
+    public IEnumerator ClearDimExplorer()
     {
+        transform.position = new Vector3(transform.position.x, 9999, transform.position.y);
+        foreach (Transform child in transform)
+        {
+            Destroy(child.gameObject);
+        }
+        yield return new WaitForEndOfFrame();
+    }
+    public IEnumerator LoadDimExplorer(List<Tag> nodes)
+    {
+        Debug.Log("LOADING DIM EXPLORER!");
+
         /*
         Debug.Log(nodes.Count + " tags found!");
         foreach (var node in nodes)
@@ -68,11 +71,10 @@ public class ViRMA_DimExplorer : MonoBehaviour
         }
         */
 
+        dimexplorerLoaded = false;
+
         // clear any current children
-        foreach (Transform child in transform)
-        {
-            Destroy(child.gameObject);
-        }
+        yield return StartCoroutine(ClearDimExplorer());
 
         // create dimension explorer button groupings
         float dimExGrpPos = 0;
@@ -84,6 +86,7 @@ public class ViRMA_DimExplorer : MonoBehaviour
                 GameObject dimExpGrpParent = new GameObject("DimExpGrpParent");
                 dimExpGrpParent.transform.parent = transform;
                 dimExpGrpParent.transform.localPosition = new Vector3(dimExGrpPos, 0, 0);
+                dimExpGrpParent.transform.localRotation = Quaternion.identity;
                 dimExpGrpParent.AddComponent<ViRMA_DimExplorerGroup>().tagsInGroup = new List<Tag>() { node.Parent };
             }
             
@@ -94,6 +97,7 @@ public class ViRMA_DimExplorer : MonoBehaviour
                 GameObject dimExpSiblings = new GameObject("DimExpGrpSiblings");
                 dimExpSiblings.transform.parent = transform;
                 dimExpSiblings.transform.localPosition = new Vector3(dimExGrpPos, 0, 0);
+                dimExpSiblings.transform.localRotation = Quaternion.identity;
                 dimExpSiblings.AddComponent<ViRMA_DimExplorerGroup>().tagsInGroup = node.Siblings;
                 dimExpSiblings.GetComponent<ViRMA_DimExplorerGroup>().searchedForTag = node;
             }
@@ -104,6 +108,7 @@ public class ViRMA_DimExplorer : MonoBehaviour
                 dimExGrpPos += 0.2f;
                 GameObject dimExpChildren = new GameObject("DimExpGrpChildren");
                 dimExpChildren.transform.parent = transform;
+                dimExpChildren.transform.localRotation = Quaternion.identity;
                 dimExpChildren.transform.localPosition = new Vector3(dimExGrpPos, 0, 0);
                 dimExpChildren.AddComponent<ViRMA_DimExplorerGroup>().tagsInGroup = node.Children;
             }
@@ -111,46 +116,13 @@ public class ViRMA_DimExplorer : MonoBehaviour
             dimExGrpPos += 1;
         }
 
+        verticalRigidbodies.Clear();
         foreach (Transform dimExGrp in transform)
         {
             verticalRigidbodies.Add(dimExGrp.GetComponent<Rigidbody>());
         }
 
-
         StartCoroutine(LateStart());
-    }
-    public void PositionDimExplorer(SteamVR_Action_Boolean action, SteamVR_Input_Sources source)
-    {
-        Vector3 flattenedVector = Player.instance.bodyDirectionGuess;
-        flattenedVector.y = 0;
-        flattenedVector.Normalize();
-        Vector3 spawnPos = Player.instance.hmdTransform.position + flattenedVector * 0.5f;
-        transform.position = spawnPos;
-        transform.LookAt(2 * transform.position - Player.instance.hmdTransform.position);
-
-        globals.vizNavActions.Deactivate();
-
-        foreach (Hand hand in Player.instance.hands)
-        {
-            //ControllerButtonHints.ShowButtonHint(hand, globals.actionClicked);
-        }
-
-    }
-    public void PlaceInFrontOfPlayer()
-    {
-        Vector3 flattenedVector = Player.instance.bodyDirectionGuess;
-        flattenedVector.y = 0;
-        flattenedVector.Normalize();
-        Vector3 spawnPos = Player.instance.hmdTransform.position + flattenedVector * 0.6f;
-        transform.position = spawnPos;
-        transform.LookAt(2 * transform.position - Player.instance.hmdTransform.position);
-
-        float maxDistanceX = dimExBounds.extents.x * 1.1f;
-        Vector3 movement = transform.right * maxDistanceX;
-        //maxRight = transform.position + movement;
-        //maxLeft = transform.position - movement;
-        maxRight = transform.position - (movement * 2);
-        maxLeft = transform.position;
     }
     public void CalculateBounds()
     {
@@ -160,8 +132,35 @@ public class ViRMA_DimExplorer : MonoBehaviour
         {
             bounds.Encapsulate(mesh.bounds);
         }
+        dimExBounds = bounds;
+    }
+    public void PositionDimExplorer()
+    {
+        // get position directly in front of the player at a specific distance
+        Vector3 flattenedVector = Player.instance.bodyDirectionGuess;
+        flattenedVector.y = 0;
+        flattenedVector.Normalize();
+        Vector3 spawnPos = Player.instance.hmdTransform.position + flattenedVector * 0.6f;
+        transform.position = spawnPos;
+        transform.LookAt(2 * transform.position - Player.instance.hmdTransform.position);
 
-        dimExBounds = bounds;     
+        // calculate max left and right positions of dimension explorer
+        float maxDistanceX = dimExBounds.extents.x;
+        Vector3 movement = transform.right * maxDistanceX;
+        maxRight = transform.position - (movement * 2);
+        maxLeft = transform.position;
+        //maxRight = transform.position + movement;
+        //maxLeft = transform.position - movement;
+    }
+    
+    public void SubmitTagForTraversal(SteamVR_Action_Boolean action, SteamVR_Input_Sources source)
+    {
+        if (submittedTagForTraversal != null)
+        {
+            StartCoroutine(ViRMA_APIController.SearchHierachies(submittedTagForTraversal.Name, (nodes) => {
+                StartCoroutine(LoadDimExplorer(nodes));
+            }));
+        }       
     }
 
     // fixed update 
@@ -209,7 +208,7 @@ public class ViRMA_DimExplorer : MonoBehaviour
     }
     private void DimExplorerMovement()
     {
-        if (globals.testActions_triggerTest.GetState(SteamVR_Input_Sources.Any))
+        if (globals.dimExplorer_Scroll.GetState(SteamVR_Input_Sources.Any))
         {
             if (activeVerticalRigidbody == null)
             {
@@ -218,7 +217,10 @@ public class ViRMA_DimExplorer : MonoBehaviour
 
                 foreach (var verticalRigidbody in verticalRigidbodies)
                 {
-                    verticalRigidbody.isKinematic = true;
+                    if (verticalRigidbody != null)
+                    {
+                        verticalRigidbody.isKinematic = true;
+                    }                
                 }
                 horizontalRigidbody.isKinematic = false;
 
@@ -240,7 +242,6 @@ public class ViRMA_DimExplorer : MonoBehaviour
                 rightHandVelocity.z = 0;
                 activeVerticalRigidbody.velocity = transform.TransformDirection(rightHandVelocity);
             }
-
         }
     }
 
@@ -248,7 +249,7 @@ public class ViRMA_DimExplorer : MonoBehaviour
     void OnDrawGizmosSelected()
     {
         //CalculateBounds();
-        Gizmos.color = new Color(1, 0, 0, 0.5f);
-        Gizmos.DrawCube(transform.position, new Vector3(dimExBounds.size.x, dimExBounds.size.y, dimExBounds.size.z));
+        //Gizmos.color = new Color(1, 0, 0, 0.5f);
+        //Gizmos.DrawCube(transform.position, new Vector3(dimExBounds.size.x, dimExBounds.size.y, dimExBounds.size.z));
     }
 }

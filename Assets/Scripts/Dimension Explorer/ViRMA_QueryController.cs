@@ -32,9 +32,7 @@ public class ViRMA_QueryController : MonoBehaviour
         */
 
         StartCoroutine(ViRMA_APIController.SearchHierachies("computer", (nodes) => {
-
-            globals.dimExplorer.LoadDimExplorer(nodes);
-
+            StartCoroutine(globals.dimExplorer.LoadDimExplorer(nodes));
         }));
     }
 

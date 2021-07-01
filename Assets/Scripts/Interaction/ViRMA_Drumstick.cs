@@ -28,19 +28,25 @@ public class ViRMA_Drumstick : MonoBehaviour
         }
     }
 
+    /*
     private void OnCollisionEnter(Collision collision)
     {
         Debug.Log("COLLISION ENTER!");
     }
-
     private void OnCollisionExit(Collision collision)
     {
         Debug.Log("COLLISION EXIT!");
     }
+    */
 
     private void OnTriggerEnter(Collider trigger)
     {
-        Debug.Log("TRIGGER ENTER! " + trigger.gameObject.name);
+        //Debug.Log("TRIGGER ENTER! " + trigger.gameObject.name);
+
+        if (trigger.transform.parent.GetComponent<ViRMA_DimExplorerBtn>())
+        {
+            globals.dimExplorer.submittedTagForTraversal = trigger.transform.parent.GetComponent<ViRMA_DimExplorerBtn>().tagData;
+        }
 
         if (trigger.gameObject.GetComponent<Rigidbody>())
         {
@@ -59,7 +65,12 @@ public class ViRMA_Drumstick : MonoBehaviour
 
     private void OnTriggerExit(Collider trigger)
     {
-        Debug.Log("TRIGGER EXIT! " + trigger.gameObject.name);
+        //Debug.Log("TRIGGER EXIT! " + trigger.gameObject.name);
+
+        if (trigger.transform.parent.GetComponent<ViRMA_DimExplorerBtn>())
+        {
+            globals.dimExplorer.submittedTagForTraversal = null;
+        }
 
         if (trigger.gameObject.GetComponent<Rigidbody>())
         {
@@ -73,6 +84,11 @@ public class ViRMA_Drumstick : MonoBehaviour
         {
             //trigger.gameObject.GetComponent<ViRMA_Cell>().OnHoverEnd(hand);
         }
+    }
+
+    private void OnTriggerStay(Collider other)
+    {
+
     }
 
 }

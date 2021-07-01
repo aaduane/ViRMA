@@ -15,20 +15,33 @@ public class ViRMA_DimExplorerGroup : MonoBehaviour
 
     public Vector3 searchForTagStartPos;
 
+    private Transform topMostChild;
+    private Transform bottomMostChild;
+
     private void Awake()
     {
         gameObject.AddComponent<BoxCollider>();
         gameObject.AddComponent<Rigidbody>();
-
         gameObject.layer = 9;
-
         dimExCollider = gameObject.GetComponent<BoxCollider>();
-
         dimExRigidbody = gameObject.GetComponent<Rigidbody>();
         dimExRigidbody.useGravity = false;  
     }
 
     private void Start()
+    {
+        LoadDimExplorerGroup();
+    }
+
+    private void Update()
+    {
+        if (fullyLoaded)
+        {
+            DimExGroupLimiter();
+        }     
+    }
+
+    private void LoadDimExplorerGroup()
     {
         GameObject dimExBtnPrefab = Resources.Load("Prefabs/DimExBtn") as GameObject;
         if (tagsInGroup != null && tagsInGroup.Count > 0)
@@ -90,26 +103,26 @@ public class ViRMA_DimExplorerGroup : MonoBehaviour
                     float yPos = yIndex * -0.1f;
                     dimExBtn.transform.localPosition = new Vector3(0, yPos, 0);
 
-                    yIndex++;           
+                    yIndex++;
                 }
             }
-         
+
         }
 
+        // calculate bounds of meshes
         CalculateBounds();
+
+        // create colliders based on bounds
         dimExCollider.size = new Vector3(dimExBounds.size.x, dimExBounds.size.y, dimExBounds.size.z);
         dimExCollider.center = new Vector3(0, dimExBounds.center.y - transform.parent.transform.position.y, 0);
+
+        // set topmost and bottommost children for scrolling limits
+        topMostChild = transform.GetChild(0);
+        bottomMostChild = transform.GetChild(transform.childCount - 1);
+
+        // start limiting scrolling
         fullyLoaded = true;
     }
-
-    private void Update()
-    {
-        if (fullyLoaded)
-        {
-            DimExGroupLimiter();
-        }     
-    }
-
     private void CalculateBounds()
     {
         Renderer[] meshes = GetComponentsInChildren<Renderer>();
@@ -120,41 +133,21 @@ public class ViRMA_DimExplorerGroup : MonoBehaviour
         }
         dimExBounds = bounds;     
     }
-
     private void DimExGroupLimiter()
     {
         if (Player.instance)
         {
             Vector3 adjustVelocity = dimExRigidbody.velocity;
 
-            /*
-            // y max
-            float maxDistanceY = Player.instance.eyeHeight + dimExBounds.size.y;
-            if (transform.position.y >= maxDistanceY && adjustVelocity.y > 0)
+            // prevent dim ex group from vertically scrolling too far down
+            if (topMostChild.position.y <= Player.instance.eyeHeight && adjustVelocity.y < 0)
             {
                 adjustVelocity.y = 0;
                 dimExRigidbody.velocity = adjustVelocity;
             }
 
-            // y min
-            float minDistanceY = Player.instance.eyeHeight - dimExBounds.size.y;
-            if (transform.position.y <= minDistanceY && adjustVelocity.y < 0)
-            {
-                adjustVelocity.y = 0;
-                dimExRigidbody.velocity = adjustVelocity;
-            }
-            */
-
-            Vector3 topTagPos = transform.GetChild(0).position;
-            Vector3 bottomTagPos = transform.GetChild(transform.childCount - 1).position;
-
-            if (topTagPos.y <= Player.instance.eyeHeight && adjustVelocity.y < 0)
-            {
-                adjustVelocity.y = 0;
-                dimExRigidbody.velocity = adjustVelocity;
-            }
-
-            if (bottomTagPos.y >= Player.instance.eyeHeight && adjustVelocity.y > 0)
+            // prevent dim ex group from vertically scrolling too far up
+            if (bottomMostChild.position.y >= Player.instance.eyeHeight && adjustVelocity.y > 0)
             {
                 adjustVelocity.y = 0;
                 dimExRigidbody.velocity = adjustVelocity;
