@@ -4,6 +4,8 @@ using Valve.VR.InteractionSystem;
 
 public class ViRMA_DimExplorerGroup : MonoBehaviour
 {
+    private ViRMA_GlobalsAndActions globals;
+
     public bool fullyLoaded = false;
 
     public List<Tag> tagsInGroup;
@@ -20,12 +22,14 @@ public class ViRMA_DimExplorerGroup : MonoBehaviour
 
     private void Awake()
     {
-        gameObject.AddComponent<BoxCollider>();
-        gameObject.AddComponent<Rigidbody>();
-        gameObject.layer = 9;
-        dimExCollider = gameObject.GetComponent<BoxCollider>();
-        dimExRigidbody = gameObject.GetComponent<Rigidbody>();
-        dimExRigidbody.useGravity = false;  
+        globals = Player.instance.gameObject.GetComponent<ViRMA_GlobalsAndActions>();
+
+        dimExCollider = gameObject.AddComponent<BoxCollider>();
+
+        dimExRigidbody = gameObject.AddComponent<Rigidbody>();
+        dimExRigidbody.useGravity = false;
+
+        gameObject.layer = 9;        
     }
 
     private void Start()
@@ -37,8 +41,28 @@ public class ViRMA_DimExplorerGroup : MonoBehaviour
     {
         if (fullyLoaded)
         {
-            DimExGroupLimiter();
+            DimExGroupMovementLimiter();
         }     
+    }
+
+    // triggers for UI drumsticks
+    private void OnTriggerEnter(Collider triggeredCol)
+    {
+        if (triggeredCol.GetComponent<ViRMA_Drumstick>())
+        {
+            globals.dimExplorer.activeVerticalRigidbody = dimExRigidbody;
+
+            HighlightDimExGroup(true);
+        }
+    }
+    private void OnTriggerExit(Collider triggeredCol)
+    {
+        if (triggeredCol.GetComponent<ViRMA_Drumstick>())
+        {
+            globals.dimExplorer.activeVerticalRigidbody = null;
+
+            HighlightDimExGroup(false);
+        }
     }
 
     private void LoadDimExplorerGroup()
@@ -113,8 +137,9 @@ public class ViRMA_DimExplorerGroup : MonoBehaviour
         CalculateBounds();
 
         // create colliders based on bounds
-        dimExCollider.size = new Vector3(dimExBounds.size.x, dimExBounds.size.y, dimExBounds.size.z);
-        dimExCollider.center = new Vector3(0, dimExBounds.center.y - transform.parent.transform.position.y, 0);
+        float colForwardThickness = dimExBounds.size.z * 7.5f;
+        dimExCollider.size = new Vector3(dimExBounds.size.x, dimExBounds.size.y, colForwardThickness);
+        dimExCollider.center = new Vector3(0, dimExBounds.center.y - transform.parent.transform.position.y, (colForwardThickness / 2) * -1);
 
         // set topmost and bottommost children for scrolling limits
         topMostChild = transform.GetChild(0);
@@ -133,7 +158,7 @@ public class ViRMA_DimExplorerGroup : MonoBehaviour
         }
         dimExBounds = bounds;     
     }
-    private void DimExGroupLimiter()
+    private void DimExGroupMovementLimiter()
     {
         if (Player.instance)
         {
@@ -154,5 +179,20 @@ public class ViRMA_DimExplorerGroup : MonoBehaviour
             }
         }
     }
-
+    private void HighlightDimExGroup(bool toHighlight)
+    {
+        ViRMA_DimExplorerBtn[] dimExGrpBtns = GetComponentsInChildren<ViRMA_DimExplorerBtn>();
+        foreach (ViRMA_DimExplorerBtn dimExGrpBtn in dimExGrpBtns)
+        {
+            if (toHighlight)
+            {
+                dimExGrpBtn.SetHighlightState();
+            }
+            else
+            {
+                dimExGrpBtn.SetDefaultState();
+            }
+            
+        }
+    }
 }

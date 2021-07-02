@@ -11,6 +11,12 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
     public ViRMA_QueryController queryController;
     public ViRMA_DimExplorer dimExplorer;
 
+    // colours
+    public Color flatRed = new Color32(192, 57, 43, 255);
+    public Color flatGreen = new Color32(39, 174, 96, 255);
+    public Color flatLightBlue = new Color32(52, 152, 219, 255);
+    public Color flatDarkBlue = new Color32(35, 99, 142, 255);
+
     // --- SteamVR action sets --- \\
 
     // Player hand/controller appearance
@@ -107,6 +113,7 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
     // controller appearance
     public void InitialiseSteamVRControllers()
     {
+        // right controller
         if (!rightControllerLoaded)
         {
             if (Player.instance.rightHand.mainRenderModel)
@@ -116,30 +123,32 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
                     GameObject controller = Player.instance.rightHand.mainRenderModel.transform.Find("controller(Clone)").gameObject;
                     if (controller.transform.Find("body"))
                     {
+                        // set controller initial appearance
                         rightControllerLoaded = true;
                         Player.instance.rightHand.HideSkeleton();
                         Player.instance.rightHand.ShowController();
 
+                        // save copy of material for fade in and out later
                         GameObject steamVRControllerBody = Player.instance.rightHand.mainRenderModel.transform.Find("controller(Clone)").Find("body").gameObject;
                         Renderer controllerRend = steamVRControllerBody.GetComponent<Renderer>();
                         rightControllerNormalMaterial = new Material(controllerRend.material);
 
-                        // add drumstick appendage to controller
+                        // add 'drumstick' to controller for Ui interaction
                         GameObject drumstick = GameObject.CreatePrimitive(PrimitiveType.Sphere);
                         drumstick.name = "RightHandDrumstick";
                         drumstick.transform.SetParent(controller.transform);
                         drumstick.transform.localScale = Vector3.one * 0.05f;
                         drumstick.transform.localPosition = new Vector3(0, 0, 0.05f);
-
-                        drumstick.GetComponent<Renderer>().material.color = Color.red;
-
                         drumstick.AddComponent<ViRMA_Drumstick>().hand = Player.instance.rightHand;
+
+                        // set drumstick in ViRMA Hand
                         Player.instance.rightHand.gameObject.GetComponent<ViRMA_Hand>().handDrumstick = drumstick;
                     }
                 }
             }
         }
 
+        // left controller
         if (!leftControllerLoaded)
         {
             if (Player.instance.leftHand.mainRenderModel)
@@ -149,24 +158,25 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
                     GameObject controller = Player.instance.leftHand.mainRenderModel.transform.Find("controller(Clone)").gameObject;
                     if (controller.transform.Find("body"))
                     {
+                        // set controller initial appearance
                         leftControllerLoaded = true;
                         Player.instance.leftHand.HideSkeleton();
                         Player.instance.leftHand.ShowController();
 
+                        // save copy of material for fade in and out later
                         GameObject steamVRControllerBody = Player.instance.leftHand.mainRenderModel.transform.Find("controller(Clone)").Find("body").gameObject;
                         Renderer controllerRend = steamVRControllerBody.GetComponent<Renderer>();
                         leftControllerNormalMaterial = new Material(controllerRend.material);
 
-                        // add drumstick appendage to controller
+                        // add 'drumstick' to controller for Ui interaction
                         GameObject drumstick = GameObject.CreatePrimitive(PrimitiveType.Sphere);
                         drumstick.name = "LeftHandDrumstick";
                         drumstick.transform.SetParent(controller.transform);
                         drumstick.transform.localScale = Vector3.one * 0.05f;
                         drumstick.transform.localPosition = new Vector3(0, 0, 0.05f);
-
-                        drumstick.GetComponent<Renderer>().material.color = Color.red;
-
                         drumstick.AddComponent<ViRMA_Drumstick>().hand = Player.instance.leftHand;
+
+                        // set drumstick in ViRMA Hand
                         Player.instance.leftHand.gameObject.GetComponent<ViRMA_Hand>().handDrumstick = drumstick;
                     }
                 }
@@ -216,7 +226,7 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
     // testing
     private void ActiveDevelopmentTesting()
     {
-        vizController.gameObject.SetActive(false);
+        vizController.gameObject.SetActive(true);
 
         queryController.gameObject.SetActive(true);
 

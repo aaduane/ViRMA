@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 5254511832674926406}
   - component: {fileID: 5254511832674926411}
   - component: {fileID: 5254511832674926408}
-  - component: {fileID: 5254511832674926409}
   m_Layer: 9
   m_Name: Background
   m_TagString: Untagged
@@ -59,7 +58,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 9a5091f39114a0a48950cc5e2db24c3d, type: 2}
+  - {fileID: 2100000, guid: 7fffe968268e47e449bc2517770ffa7d, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -80,19 +79,6 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
---- !u!65 &5254511832674926409
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5254511832674926407}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &5254511832904173565
 GameObject:
   m_ObjectHideFlags: 0
@@ -277,6 +263,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5254511833202007634}
+  - component: {fileID: 7848567739348940662}
+  - component: {fileID: 8428101073356336834}
   - component: {fileID: 5254511833202007637}
   m_Layer: 9
   m_Name: DimExBtn
@@ -301,6 +289,35 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &7848567739348940662
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5254511833202007635}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 0.1, y: 0.1, z: 0.01}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!54 &8428101073356336834
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5254511833202007635}
+  serializedVersion: 2
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_UseGravity: 0
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!114 &5254511833202007637
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -315,3 +332,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   background: {fileID: 5254511832674926407}
   textMesh: {fileID: 5254511832904173565}
+  col: {fileID: 0}

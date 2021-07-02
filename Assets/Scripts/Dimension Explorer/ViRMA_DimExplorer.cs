@@ -32,24 +32,16 @@ public class ViRMA_DimExplorer : MonoBehaviour
     {
         if (dimexplorerLoaded)
         {
-            DimExGroupLimiter();
+            DimExMovementLimiter();
             DimExplorerMovement();
         }    
-    }
-
-    IEnumerator LateStart()
-    {
-        yield return new WaitForSeconds(1);
-
-        CalculateBounds();
-        PositionDimExplorer();
-        dimexplorerLoaded = true;
     }
 
     // general
     public IEnumerator ClearDimExplorer()
     {
-        transform.position = new Vector3(transform.position.x, 9999, transform.position.y);
+        transform.position = new Vector3(0, 9999, 0);
+        transform.rotation = Quaternion.identity;
         foreach (Transform child in transform)
         {
             Destroy(child.gameObject);
@@ -58,22 +50,10 @@ public class ViRMA_DimExplorer : MonoBehaviour
     }
     public IEnumerator LoadDimExplorer(List<Tag> nodes)
     {
-        Debug.Log("LOADING DIM EXPLORER!");
-
-        /*
-        Debug.Log(nodes.Count + " tags found!");
-        foreach (var node in nodes)
-        {
-            Debug.Log("Name: " + node.Name + " ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ");
-            Debug.Log("Parent: " + node.Parent.Name);
-            Debug.Log("Sibling Count: " + node.Siblings.Count);
-            Debug.Log("Children Count: " + node.Children.Count);
-        }
-        */
-
+        // prevent any dim ex movement while loading
         dimexplorerLoaded = false;
 
-        // clear any current children
+        // clear any current children (must be in coroutine to ensure children are destroyed first
         yield return StartCoroutine(ClearDimExplorer());
 
         // create dimension explorer button groupings
@@ -122,7 +102,12 @@ public class ViRMA_DimExplorer : MonoBehaviour
             verticalRigidbodies.Add(dimExGrp.GetComponent<Rigidbody>());
         }
 
-        StartCoroutine(LateStart());
+        // wait for next frame so AABB is calculated correctly
+        yield return new WaitForEndOfFrame();
+
+        CalculateBounds();
+        PositionDimExplorer();
+        dimexplorerLoaded = true;
     }
     public void CalculateBounds()
     {
@@ -151,8 +136,7 @@ public class ViRMA_DimExplorer : MonoBehaviour
         maxLeft = transform.position;
         //maxRight = transform.position + movement;
         //maxLeft = transform.position - movement;
-    }
-    
+    }   
     public void SubmitTagForTraversal(SteamVR_Action_Boolean action, SteamVR_Input_Sources source)
     {
         if (submittedTagForTraversal != null)
@@ -164,7 +148,7 @@ public class ViRMA_DimExplorer : MonoBehaviour
     }
 
     // fixed update 
-    private void DimExGroupLimiter()
+    private void DimExMovementLimiter()
     {
         if (Player.instance)
         {
@@ -212,6 +196,7 @@ public class ViRMA_DimExplorer : MonoBehaviour
         {
             if (activeVerticalRigidbody == null)
             {
+                // enable horizontal movement
                 horizontalRigidbody.velocity = Vector3.zero;
                 horizontalRigidbody.angularVelocity = Vector3.zero;
 
@@ -231,6 +216,7 @@ public class ViRMA_DimExplorer : MonoBehaviour
             }
             else
             {
+                // enable vertical movement
                 activeVerticalRigidbody.velocity = Vector3.zero;
                 activeVerticalRigidbody.angularVelocity = Vector3.zero;
 
