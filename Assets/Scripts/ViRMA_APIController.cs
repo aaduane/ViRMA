@@ -459,7 +459,6 @@ public class ViRMA_APIController : MonoBehaviour
 
                 List<Tag> orderedList = node.Children.OrderBy(s => s.Name).ToList();
                 node.Children = orderedList;
-
             });
 
             // get siblings
@@ -489,24 +488,61 @@ public class ViRMA_APIController : MonoBehaviour
 
                     List<Tag> orderedList = node.Siblings.OrderBy(s => s.Name).ToList();
                     node.Siblings = orderedList;
-
                 });
             }
         }
         onSuccess(nodes);
     }
-    public static IEnumerator GetHierarchyChildren(int targetId)
+    public static IEnumerator GetHierarchyChildren(int targetId, Action<List<Tag>> onSuccess)
     {
         yield return GetRequest("node/" + targetId.ToString() + "/children", (response) =>
         {
             jsonData = response;
+            List<Tag> children = new List<Tag>();
+            foreach (var obj in jsonData)
+            {
+                Tag newTag = new Tag();
+
+                // tag id
+                newTag.Id = obj.Value["Id"];
+
+                // tag name
+                string tagName = obj.Value["Name"];
+                int bracketIndex = tagName.IndexOf("(");
+                if (bracketIndex > -1)
+                {
+                    tagName = tagName.Substring(0, bracketIndex);
+                }
+                newTag.Name = tagName;
+                children.Add(newTag);
+            }
+            onSuccess(children);
         });
     }
-    public static IEnumerator GetHierarchyParent(int targetId)
+    public static IEnumerator GetHierarchyParent(int targetId, Action<Tag> onSuccess)
     {
         yield return GetRequest("node/" + targetId.ToString() + "/parent", (response) =>
         {
             jsonData = response;
+
+            Tag parentTag = new Tag();
+
+            if (jsonData != null)
+            {
+                // tag id
+                parentTag.Id = jsonData["Id"];
+
+                // tag name
+                string tagName = jsonData["Name"];
+                int bracketIndex = tagName.IndexOf("(");
+                if (bracketIndex > -1)
+                {
+                    tagName = tagName.Substring(0, bracketIndex);
+                }
+                parentTag.Name = tagName;
+            }
+
+            onSuccess(parentTag);
         });
     }
      

@@ -20,6 +20,10 @@ public class ViRMA_DimExplorerGroup : MonoBehaviour
     private Transform topMostChild;
     private Transform bottomMostChild;
 
+    public GameObject parent;
+    public GameObject siblings;
+    public GameObject children;
+
     private void Awake()
     {
         globals = Player.instance.gameObject.GetComponent<ViRMA_GlobalsAndActions>();
@@ -50,8 +54,11 @@ public class ViRMA_DimExplorerGroup : MonoBehaviour
     {
         if (triggeredCol.GetComponent<ViRMA_Drumstick>())
         {
-            globals.dimExplorer.activeVerticalRigidbody = dimExRigidbody;
-
+            if (topMostChild != null && bottomMostChild != null)
+            {
+                globals.dimExplorer.activeVerticalRigidbody = dimExRigidbody;
+            }
+            
             HighlightDimExGroup(true);
         }
     }
@@ -142,9 +149,12 @@ public class ViRMA_DimExplorerGroup : MonoBehaviour
         dimExCollider.center = new Vector3(0, dimExBounds.center.y - transform.parent.transform.position.y, (colForwardThickness / 2) * -1);
 
         // set topmost and bottommost children for scrolling limits
-        topMostChild = transform.GetChild(0);
-        bottomMostChild = transform.GetChild(transform.childCount - 1);
-
+        if (transform.childCount > 1)
+        {
+            topMostChild = transform.GetChild(0);
+            bottomMostChild = transform.GetChild(transform.childCount - 1);
+        }
+        
         // start limiting scrolling
         fullyLoaded = true;
     }
@@ -160,7 +170,7 @@ public class ViRMA_DimExplorerGroup : MonoBehaviour
     }
     private void DimExGroupMovementLimiter()
     {
-        if (Player.instance)
+        if (Player.instance & topMostChild != null & bottomMostChild != null)
         {
             Vector3 adjustVelocity = dimExRigidbody.velocity;
 

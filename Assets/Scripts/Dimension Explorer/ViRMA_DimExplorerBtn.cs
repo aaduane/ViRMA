@@ -10,6 +10,7 @@ public class ViRMA_DimExplorerBtn : MonoBehaviour
     private ViRMA_GlobalsAndActions globals;
 
     public Tag tagData;
+
     public GameObject background;
     public GameObject textMesh;
     public BoxCollider col;
@@ -29,8 +30,6 @@ public class ViRMA_DimExplorerBtn : MonoBehaviour
         if (triggeredCol.GetComponent<ViRMA_Drumstick>())
         {
             globals.dimExplorer.submittedTagForTraversal = tagData;
-
-            SetFocusState();
         }
     }
     private void OnTriggerExit(Collider triggeredCol)
@@ -60,11 +59,6 @@ public class ViRMA_DimExplorerBtn : MonoBehaviour
         background.transform.localScale = adjustScale;
 
         col.size = adjustScale;
-    }
-
-    public void SubmitTagForTraversal()
-    {
-        globals.dimExplorer.submittedTagForTraversal = tagData;
     }
 
     public void SetDefaultState()

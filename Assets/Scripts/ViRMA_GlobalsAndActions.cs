@@ -226,7 +226,7 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
     // testing
     private void ActiveDevelopmentTesting()
     {
-        vizController.gameObject.SetActive(true);
+        vizController.gameObject.SetActive(false);
 
         queryController.gameObject.SetActive(true);
 

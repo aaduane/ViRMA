@@ -58,40 +58,51 @@ public class ViRMA_DimExplorer : MonoBehaviour
 
         // create dimension explorer button groupings
         float dimExGrpPos = 0;
+        float dimExGrpSpacing = 0.2f;
         foreach (var node in nodes)
         {
-            // target tag's parent
-            if (node.Parent != null)
-            {
-                GameObject dimExpGrpParent = new GameObject("DimExpGrpParent");
-                dimExpGrpParent.transform.parent = transform;
-                dimExpGrpParent.transform.localPosition = new Vector3(dimExGrpPos, 0, 0);
-                dimExpGrpParent.transform.localRotation = Quaternion.identity;
-                dimExpGrpParent.AddComponent<ViRMA_DimExplorerGroup>().tagsInGroup = new List<Tag>() { node.Parent };
-            }
-            
-            // target tag and siblings
-            if (node.Siblings != null && node.Siblings.Count > 0)
-            {
-                dimExGrpPos += 0.2f;
-                GameObject dimExpSiblings = new GameObject("DimExpGrpSiblings");
-                dimExpSiblings.transform.parent = transform;
-                dimExpSiblings.transform.localPosition = new Vector3(dimExGrpPos, 0, 0);
-                dimExpSiblings.transform.localRotation = Quaternion.identity;
-                dimExpSiblings.AddComponent<ViRMA_DimExplorerGroup>().tagsInGroup = node.Siblings;
-                dimExpSiblings.GetComponent<ViRMA_DimExplorerGroup>().searchedForTag = node;
-            }
+            // create gameobject group for parent
+            GameObject dimExpGrpParent = new GameObject("DimExpGrpParent");
+            dimExpGrpParent.transform.parent = transform;
+            dimExpGrpParent.transform.localPosition = new Vector3(dimExGrpPos, 0, 0);
+            dimExpGrpParent.transform.localRotation = Quaternion.identity;
+            dimExGrpPos += dimExGrpSpacing;
 
-            // target tag's children
-            if (node.Children != null && node.Children.Count > 0)
-            {
-                dimExGrpPos += 0.2f;
-                GameObject dimExpChildren = new GameObject("DimExpGrpChildren");
-                dimExpChildren.transform.parent = transform;
-                dimExpChildren.transform.localRotation = Quaternion.identity;
-                dimExpChildren.transform.localPosition = new Vector3(dimExGrpPos, 0, 0);
-                dimExpChildren.AddComponent<ViRMA_DimExplorerGroup>().tagsInGroup = node.Children;
-            }
+            // create gameobject group for siblings
+            GameObject dimExpSiblings = new GameObject("DimExpGrpSiblings");
+            dimExpSiblings.transform.parent = transform;
+            dimExpSiblings.transform.localPosition = new Vector3(dimExGrpPos, 0, 0);
+            dimExpSiblings.transform.localRotation = Quaternion.identity;
+            dimExGrpPos += dimExGrpSpacing;
+
+            // create gameobject group for children
+            GameObject dimExpChildren = new GameObject("DimExpGrpChildren");
+            dimExpChildren.transform.parent = transform;
+            dimExpChildren.transform.localRotation = Quaternion.identity;
+            dimExpChildren.transform.localPosition = new Vector3(dimExGrpPos, 0, 0);
+            dimExGrpPos += dimExGrpSpacing;
+
+            // assign tag's parent info
+            ViRMA_DimExplorerGroup dimExpGrpParentGrp = dimExpGrpParent.AddComponent<ViRMA_DimExplorerGroup>();
+            dimExpGrpParentGrp.tagsInGroup = new List<Tag>() { node.Parent };
+            dimExpGrpParentGrp.parent = gameObject;
+            dimExpGrpParentGrp.siblings = dimExpSiblings;
+            dimExpGrpParentGrp.children = dimExpChildren;
+
+            // assign tag and siblings info
+            ViRMA_DimExplorerGroup dimExpSiblingsGrp = dimExpSiblings.AddComponent<ViRMA_DimExplorerGroup>();
+            dimExpSiblingsGrp.tagsInGroup = node.Siblings;
+            dimExpSiblingsGrp.searchedForTag = node;
+            dimExpSiblingsGrp.parent = gameObject;
+            dimExpSiblingsGrp.siblings = dimExpSiblings;
+            dimExpSiblingsGrp.children = dimExpChildren;
+
+            // assign tag's children info
+            ViRMA_DimExplorerGroup dimExpChildrenGrp = dimExpChildren.AddComponent<ViRMA_DimExplorerGroup>();
+            dimExpChildrenGrp.tagsInGroup = node.Children;
+            dimExpChildrenGrp.parent = gameObject;
+            dimExpChildrenGrp.siblings = dimExpSiblings;
+            dimExpChildrenGrp.children = dimExpChildren;
 
             dimExGrpPos += 1;
         }
@@ -141,8 +152,34 @@ public class ViRMA_DimExplorer : MonoBehaviour
     {
         if (submittedTagForTraversal != null)
         {
+            /*
             StartCoroutine(ViRMA_APIController.SearchHierachies(submittedTagForTraversal.Name, (nodes) => {
                 StartCoroutine(LoadDimExplorer(nodes));
+            }));
+            */
+
+            /*
+            StartCoroutine(ViRMA_APIController.GetHierarchyParent(40, (parent) => {
+                if (parent.Name == null)
+                {
+                    Debug.Log("No parent!");
+                }
+                else
+                {
+                    Debug.Log(parent.Name);
+                }
+            }));
+            */
+
+            StartCoroutine(ViRMA_APIController.GetHierarchyChildren(7099, (children) => {
+                if (children.Count < 1)
+                {
+                    Debug.Log("No children!");
+                }
+                else
+                {
+                    Debug.Log(children.Count + " children!");
+                }
             }));
         }       
     }

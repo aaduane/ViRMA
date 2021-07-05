@@ -491,8 +491,6 @@ public class ViRMA_VizController : MonoBehaviour
                 previousDistanceBetweenHands = 0;
             }
         }
-
-
     }
     private void ToggleCellPositioning()
     {
