@@ -1,10 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using Valve.VR.InteractionSystem;
 
 public class ViRMA_DimExplorerGroup : MonoBehaviour
 {
     private ViRMA_GlobalsAndActions globals;
+    private GameObject dimExBtnPrefab;
 
     public bool fullyLoaded = false;
 
@@ -20,9 +22,9 @@ public class ViRMA_DimExplorerGroup : MonoBehaviour
     private Transform topMostChild;
     private Transform bottomMostChild;
 
-    public GameObject parent;
-    public GameObject siblings;
-    public GameObject children;
+    public GameObject parentDimExGrp;
+    public GameObject siblingsDimExGrp;
+    public GameObject childrenDimExGrp;
 
     private void Awake()
     {
@@ -33,11 +35,14 @@ public class ViRMA_DimExplorerGroup : MonoBehaviour
         dimExRigidbody = gameObject.AddComponent<Rigidbody>();
         dimExRigidbody.useGravity = false;
 
-        gameObject.layer = 9;        
+        gameObject.layer = 9;
+
+        dimExBtnPrefab = Resources.Load("Prefabs/DimExBtn") as GameObject;
     }
 
     private void Start()
     {
+        //StartCoroutine(LoadDimExplorerGroup());
         LoadDimExplorerGroup();
     }
 
@@ -72,14 +77,14 @@ public class ViRMA_DimExplorerGroup : MonoBehaviour
         }
     }
 
-    private void LoadDimExplorerGroup()
+    public void LoadDimExplorerGroup()
     {
-        GameObject dimExBtnPrefab = Resources.Load("Prefabs/DimExBtn") as GameObject;
+        ClearDimExplorerGroupTest();
+
         if (tagsInGroup != null && tagsInGroup.Count > 0)
         {
             if (searchedForTag != null)
             {
-
                 // get index of searched for tag in siblings
                 int starterIndex = 0;
                 for (int i = 0; i < tagsInGroup.Count; i++)
@@ -118,7 +123,6 @@ public class ViRMA_DimExplorerGroup : MonoBehaviour
                     dimExBtn.transform.localPosition = new Vector3(0, yPos, 0);
                     indexPlaceholderNeg++;
                 }
-
             }
             else
             {
@@ -158,6 +162,22 @@ public class ViRMA_DimExplorerGroup : MonoBehaviour
         // start limiting scrolling
         fullyLoaded = true;
     }
+    public IEnumerator ClearDimExplorerGroup()
+    {
+        foreach (Transform child in transform)
+        {
+            Destroy(child.gameObject);
+        }
+        yield return new WaitForEndOfFrame();
+    }
+    public void ClearDimExplorerGroupTest()
+    {
+        foreach (Transform child in transform)
+        {
+            Destroy(child.gameObject);
+        }
+    }
+
     private void CalculateBounds()
     {
         Renderer[] meshes = GetComponentsInChildren<Renderer>();

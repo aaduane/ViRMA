@@ -19,7 +19,7 @@ public class ViRMA_DimExplorer : MonoBehaviour
     private float distToMaxRight;
     private float distToMaxLeft;
 
-    public Tag submittedTagForTraversal;
+    public GameObject submittedTagForTraversal;
 
     private void Awake()
     {
@@ -85,24 +85,24 @@ public class ViRMA_DimExplorer : MonoBehaviour
             // assign tag's parent info
             ViRMA_DimExplorerGroup dimExpGrpParentGrp = dimExpGrpParent.AddComponent<ViRMA_DimExplorerGroup>();
             dimExpGrpParentGrp.tagsInGroup = new List<Tag>() { node.Parent };
-            dimExpGrpParentGrp.parent = gameObject;
-            dimExpGrpParentGrp.siblings = dimExpSiblings;
-            dimExpGrpParentGrp.children = dimExpChildren;
+            dimExpGrpParentGrp.parentDimExGrp = dimExpGrpParent;
+            dimExpGrpParentGrp.siblingsDimExGrp = dimExpSiblings;
+            dimExpGrpParentGrp.childrenDimExGrp = dimExpChildren;
 
             // assign tag and siblings info
             ViRMA_DimExplorerGroup dimExpSiblingsGrp = dimExpSiblings.AddComponent<ViRMA_DimExplorerGroup>();
             dimExpSiblingsGrp.tagsInGroup = node.Siblings;
             dimExpSiblingsGrp.searchedForTag = node;
-            dimExpSiblingsGrp.parent = gameObject;
-            dimExpSiblingsGrp.siblings = dimExpSiblings;
-            dimExpSiblingsGrp.children = dimExpChildren;
+            dimExpSiblingsGrp.parentDimExGrp = dimExpGrpParent;
+            dimExpSiblingsGrp.siblingsDimExGrp = dimExpSiblings;
+            dimExpSiblingsGrp.childrenDimExGrp = dimExpChildren;
 
             // assign tag's children info
             ViRMA_DimExplorerGroup dimExpChildrenGrp = dimExpChildren.AddComponent<ViRMA_DimExplorerGroup>();
             dimExpChildrenGrp.tagsInGroup = node.Children;
-            dimExpChildrenGrp.parent = gameObject;
-            dimExpChildrenGrp.siblings = dimExpSiblings;
-            dimExpChildrenGrp.children = dimExpChildren;
+            dimExpChildrenGrp.parentDimExGrp = dimExpGrpParent;
+            dimExpChildrenGrp.siblingsDimExGrp = dimExpSiblings;
+            dimExpChildrenGrp.childrenDimExGrp = dimExpChildren;
 
             dimExGrpPos += 1;
         }
@@ -152,6 +152,10 @@ public class ViRMA_DimExplorer : MonoBehaviour
     {
         if (submittedTagForTraversal != null)
         {
+
+            StartCoroutine(GetTraversalParent());
+            
+
             /*
             StartCoroutine(ViRMA_APIController.SearchHierachies(submittedTagForTraversal.Name, (nodes) => {
                 StartCoroutine(LoadDimExplorer(nodes));
@@ -169,7 +173,6 @@ public class ViRMA_DimExplorer : MonoBehaviour
                     Debug.Log(parent.Name);
                 }
             }));
-            */
 
             StartCoroutine(ViRMA_APIController.GetHierarchyChildren(7099, (children) => {
                 if (children.Count < 1)
@@ -181,6 +184,7 @@ public class ViRMA_DimExplorer : MonoBehaviour
                     Debug.Log(children.Count + " children!");
                 }
             }));
+            */
         }       
     }
 
@@ -265,6 +269,32 @@ public class ViRMA_DimExplorer : MonoBehaviour
                 rightHandVelocity.z = 0;
                 activeVerticalRigidbody.velocity = transform.TransformDirection(rightHandVelocity);
             }
+        }
+    }
+
+    private IEnumerator GetTraversalParent()
+    {
+        Tag submittedTagData = submittedTagForTraversal.GetComponent<ViRMA_DimExplorerBtn>().tagData;
+        GameObject parentGroup = submittedTagForTraversal.transform.parent.GetComponent<ViRMA_DimExplorerGroup>().parentDimExGrp;
+        ViRMA_DimExplorerGroup parentGroupScript = parentGroup.GetComponent<ViRMA_DimExplorerGroup>();
+        List<Tag> parentTagList = new List<Tag>();
+        Tag parentTagData = new Tag();
+
+        yield return StartCoroutine(ViRMA_APIController.GetHierarchyParent(submittedTagData.Id, (tagData) => {
+            parentTagData = tagData;
+        }));
+
+        if (parentTagData.Name == null)
+        {
+            //StartCoroutine(parentGroup.GetComponent<ViRMA_DimExplorerGroup>().ClearDimExplorerGroup());
+            parentGroupScript.ClearDimExplorerGroupTest();
+        }
+        else
+        {
+            parentTagList.Add(parentTagData);
+
+            parentGroupScript.tagsInGroup = parentTagList;
+            parentGroupScript.LoadDimExplorerGroup();
         }
     }
 

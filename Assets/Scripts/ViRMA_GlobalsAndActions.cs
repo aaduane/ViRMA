@@ -77,12 +77,12 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
         // ui interaction action set
         menuInteractionActions = SteamVR_Input.GetActionSet("MenuInteraction");
         menuInteraction_Select = SteamVR_Input.GetActionFromPath<SteamVR_Action_Boolean>("/actions/MenuInteraction/in/Select");
-        menuInteraction_MenuControl = SteamVR_Input.GetAction<SteamVR_Action_Boolean>("/actions/MenuInteraction/in/MenuControl");
+        menuInteraction_MenuControl = SteamVR_Input.GetActionFromPath<SteamVR_Action_Boolean>("/actions/MenuInteraction/in/MenuControl");
 
         // viz navigation action set
         vizNavActions = SteamVR_Input.GetActionSet("VizNavigation");
-        vizNav_Position = SteamVR_Input.GetAction<SteamVR_Action_Boolean>("/actions/VizNavigation/in/Position");
-        vizNav_Rotation = SteamVR_Input.GetAction<SteamVR_Action_Boolean>("/actions/VizNavigation/in/Rotation");
+        vizNav_Position = SteamVR_Input.GetActionFromPath<SteamVR_Action_Boolean>("/actions/VizNavigation/in/Position");
+        vizNav_Rotation = SteamVR_Input.GetActionFromPath<SteamVR_Action_Boolean>("/actions/VizNavigation/in/Rotation");
 
         // dimension explorer action set
         dimExplorerActions = SteamVR_Input.GetActionSet("DimExplorer");

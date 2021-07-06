@@ -29,7 +29,7 @@ public class ViRMA_DimExplorerBtn : MonoBehaviour
     {
         if (triggeredCol.GetComponent<ViRMA_Drumstick>())
         {
-            globals.dimExplorer.submittedTagForTraversal = tagData;
+            globals.dimExplorer.submittedTagForTraversal = gameObject;
         }
     }
     private void OnTriggerExit(Collider triggeredCol)

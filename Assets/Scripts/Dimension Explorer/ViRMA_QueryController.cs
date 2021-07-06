@@ -31,9 +31,11 @@ public class ViRMA_QueryController : MonoBehaviour
         }));
         */
 
+
         StartCoroutine(ViRMA_APIController.SearchHierachies("computer", (nodes) => {
             StartCoroutine(globals.dimExplorer.LoadDimExplorer(nodes));
         }));
+
     }
 
     public void testReloadViz(SteamVR_Action_Boolean action, SteamVR_Input_Sources source)
