@@ -19,7 +19,7 @@ public class ViRMA_DimExplorer : MonoBehaviour
     private float distToMaxRight;
     private float distToMaxLeft;
 
-    public GameObject submittedTagForTraversal;
+    public GameObject submittedBtnForTraversal;
 
     private void Awake()
     {
@@ -92,7 +92,7 @@ public class ViRMA_DimExplorer : MonoBehaviour
             // assign tag and siblings info
             ViRMA_DimExplorerGroup dimExpSiblingsGrp = dimExpSiblings.AddComponent<ViRMA_DimExplorerGroup>();
             dimExpSiblingsGrp.tagsInGroup = node.Siblings;
-            dimExpSiblingsGrp.searchedForTag = node;
+            dimExpSiblingsGrp.searchedForTagData = node;
             dimExpSiblingsGrp.parentDimExGrp = dimExpGrpParent;
             dimExpSiblingsGrp.siblingsDimExGrp = dimExpSiblings;
             dimExpSiblingsGrp.childrenDimExGrp = dimExpChildren;
@@ -113,8 +113,8 @@ public class ViRMA_DimExplorer : MonoBehaviour
             verticalRigidbodies.Add(dimExGrp.GetComponent<Rigidbody>());
         }
 
-        // wait for next frame so AABB is calculated correctly
-        yield return new WaitForEndOfFrame();
+        // wait a second for DimExGroups to finish loading so AABB is calculated correctly
+        yield return new WaitForSeconds(1);
 
         CalculateBounds();
         PositionDimExplorer();
@@ -150,42 +150,74 @@ public class ViRMA_DimExplorer : MonoBehaviour
     }   
     public void SubmitTagForTraversal(SteamVR_Action_Boolean action, SteamVR_Input_Sources source)
     {
-        if (submittedTagForTraversal != null)
+        if (submittedBtnForTraversal != null)
         {
-
-            StartCoroutine(GetTraversalParent());
-            
-
-            /*
-            StartCoroutine(ViRMA_APIController.SearchHierachies(submittedTagForTraversal.Name, (nodes) => {
-                StartCoroutine(LoadDimExplorer(nodes));
-            }));
-            */
-
-            /*
-            StartCoroutine(ViRMA_APIController.GetHierarchyParent(40, (parent) => {
-                if (parent.Name == null)
-                {
-                    Debug.Log("No parent!");
-                }
-                else
-                {
-                    Debug.Log(parent.Name);
-                }
-            }));
-
-            StartCoroutine(ViRMA_APIController.GetHierarchyChildren(7099, (children) => {
-                if (children.Count < 1)
-                {
-                    Debug.Log("No children!");
-                }
-                else
-                {
-                    Debug.Log(children.Count + " children!");
-                }
-            }));
-            */
+            Tag submittedTagData = submittedBtnForTraversal.GetComponent<ViRMA_DimExplorerBtn>().tagData;
+            StartCoroutine(GetTraversedHierarchyNodes(submittedTagData));
         }       
+    }
+    private IEnumerator GetTraversedHierarchyNodes(Tag submittedTagData)
+    {
+        // parent
+        GameObject parentGroupObj = submittedBtnForTraversal.transform.parent.GetComponent<ViRMA_DimExplorerGroup>().parentDimExGrp;
+        ViRMA_DimExplorerGroup parentGroup = parentGroupObj.GetComponent<ViRMA_DimExplorerGroup>();
+        Tag parentTagData = new Tag();
+
+        yield return StartCoroutine(ViRMA_APIController.GetHierarchyParent(submittedTagData.Id, (response) => {
+            parentTagData = response;
+        }));
+
+        if (parentTagData.Name == null)
+        {
+            parentGroup.ClearDimExplorerGroup();
+        }
+        else
+        {
+            parentGroup.tagsInGroup = new List<Tag>() { parentTagData };
+            StartCoroutine(parentGroup.LoadDimExplorerGroup());
+            //parentGroup.LoadDimExplorerGroup();
+        }
+
+        // siblings
+        GameObject siblingsGroupObj = submittedBtnForTraversal.transform.parent.GetComponent<ViRMA_DimExplorerGroup>().siblingsDimExGrp;
+        ViRMA_DimExplorerGroup siblingsGroup = siblingsGroupObj.GetComponent<ViRMA_DimExplorerGroup>();
+        List<Tag> siblingsTagData = new List<Tag>();
+
+        yield return StartCoroutine(ViRMA_APIController.GetHierarchyChildren(parentTagData.Id, (response) => {
+            siblingsTagData = response;
+        }));
+
+        if (siblingsTagData.Count < 1)
+        {
+            siblingsGroup.ClearDimExplorerGroup();
+        }
+        else
+        {
+            siblingsGroup.searchedForTagData = submittedTagData;
+            siblingsGroup.tagsInGroup = siblingsTagData;
+            StartCoroutine(siblingsGroup.LoadDimExplorerGroup());
+            //siblingsGroup.LoadDimExplorerGroup();
+        }
+
+        // children
+        GameObject childrenGroupObj = submittedBtnForTraversal.transform.parent.GetComponent<ViRMA_DimExplorerGroup>().childrenDimExGrp;
+        ViRMA_DimExplorerGroup childrenGroup = childrenGroupObj.GetComponent<ViRMA_DimExplorerGroup>();
+        List<Tag> childrenTagData = new List<Tag>();
+
+        yield return StartCoroutine(ViRMA_APIController.GetHierarchyChildren(submittedTagData.Id, (response) => {
+            childrenTagData = response;
+        }));
+
+        if (childrenTagData.Count < 1)
+        {
+            childrenGroup.ClearDimExplorerGroup();
+        }
+        else
+        {
+            childrenGroup.tagsInGroup = childrenTagData;
+            StartCoroutine(childrenGroup.LoadDimExplorerGroup());
+            //childrenGroup.LoadDimExplorerGroup();
+        }
     }
 
     // fixed update 
@@ -269,32 +301,6 @@ public class ViRMA_DimExplorer : MonoBehaviour
                 rightHandVelocity.z = 0;
                 activeVerticalRigidbody.velocity = transform.TransformDirection(rightHandVelocity);
             }
-        }
-    }
-
-    private IEnumerator GetTraversalParent()
-    {
-        Tag submittedTagData = submittedTagForTraversal.GetComponent<ViRMA_DimExplorerBtn>().tagData;
-        GameObject parentGroup = submittedTagForTraversal.transform.parent.GetComponent<ViRMA_DimExplorerGroup>().parentDimExGrp;
-        ViRMA_DimExplorerGroup parentGroupScript = parentGroup.GetComponent<ViRMA_DimExplorerGroup>();
-        List<Tag> parentTagList = new List<Tag>();
-        Tag parentTagData = new Tag();
-
-        yield return StartCoroutine(ViRMA_APIController.GetHierarchyParent(submittedTagData.Id, (tagData) => {
-            parentTagData = tagData;
-        }));
-
-        if (parentTagData.Name == null)
-        {
-            //StartCoroutine(parentGroup.GetComponent<ViRMA_DimExplorerGroup>().ClearDimExplorerGroup());
-            parentGroupScript.ClearDimExplorerGroupTest();
-        }
-        else
-        {
-            parentTagList.Add(parentTagData);
-
-            parentGroupScript.tagsInGroup = parentTagList;
-            parentGroupScript.LoadDimExplorerGroup();
         }
     }
 

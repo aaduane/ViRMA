@@ -8,6 +8,7 @@ using Valve.VR.InteractionSystem;
 public class ViRMA_DimExplorerBtn : MonoBehaviour
 {
     private ViRMA_GlobalsAndActions globals;
+    private ViRMA_DimExplorerGroup parentDimExGrp;
 
     public Tag tagData;
 
@@ -20,8 +21,16 @@ public class ViRMA_DimExplorerBtn : MonoBehaviour
         globals = Player.instance.gameObject.GetComponent<ViRMA_GlobalsAndActions>();
 
         col = GetComponent<BoxCollider>();
+    }
 
-        SetDefaultState();
+    private void Start()
+    {
+        parentDimExGrp = transform.parent.GetComponent<ViRMA_DimExplorerGroup>();
+    }
+
+    private void Update()
+    {
+        DimExBtnStateContoller();
     }
 
     // triggers for UI drumsticks
@@ -29,14 +38,17 @@ public class ViRMA_DimExplorerBtn : MonoBehaviour
     {
         if (triggeredCol.GetComponent<ViRMA_Drumstick>())
         {
-            globals.dimExplorer.submittedTagForTraversal = gameObject;
+            globals.dimExplorer.submittedBtnForTraversal = gameObject;
         }
     }
     private void OnTriggerExit(Collider triggeredCol)
     {
         if (triggeredCol.GetComponent<ViRMA_Drumstick>())
         {
-            globals.dimExplorer.submittedTagForTraversal = null;
+            if (globals.dimExplorer.submittedBtnForTraversal == gameObject)
+            {
+                globals.dimExplorer.submittedBtnForTraversal = null;
+            }          
         }
     }
 
@@ -61,6 +73,22 @@ public class ViRMA_DimExplorerBtn : MonoBehaviour
         col.size = adjustScale;
     }
 
+    // button state controls
+    private void DimExBtnStateContoller()
+    {
+        if (globals.dimExplorer.submittedBtnForTraversal == gameObject)
+        {
+            SetFocusedState();
+        }
+        else if (parentDimExGrp.groupIsHighlighted)
+        {
+            SetHighlightState();
+        }
+        else
+        {
+            SetDefaultState();
+        }
+    }
     public void SetDefaultState()
     {
         background.GetComponent<Renderer>().material.color = globals.flatDarkBlue;
@@ -68,6 +96,10 @@ public class ViRMA_DimExplorerBtn : MonoBehaviour
     public void SetHighlightState()
     {
         background.GetComponent<Renderer>().material.color = globals.flatLightBlue;
+    }
+    public void SetFocusedState()
+    {
+        background.GetComponent<Renderer>().material.color = globals.flatGreen;
     }
 
 }

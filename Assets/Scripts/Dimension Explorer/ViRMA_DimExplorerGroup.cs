@@ -11,7 +11,7 @@ public class ViRMA_DimExplorerGroup : MonoBehaviour
     public bool fullyLoaded = false;
 
     public List<Tag> tagsInGroup;
-    public Tag searchedForTag;
+    public Tag searchedForTagData;
 
     public Bounds dimExBounds;
     public BoxCollider dimExCollider;
@@ -26,6 +26,9 @@ public class ViRMA_DimExplorerGroup : MonoBehaviour
     public GameObject siblingsDimExGrp;
     public GameObject childrenDimExGrp;
 
+    public bool groupIsHighlighted;
+    public bool inTrigger;
+
     private void Awake()
     {
         globals = Player.instance.gameObject.GetComponent<ViRMA_GlobalsAndActions>();
@@ -34,6 +37,7 @@ public class ViRMA_DimExplorerGroup : MonoBehaviour
 
         dimExRigidbody = gameObject.AddComponent<Rigidbody>();
         dimExRigidbody.useGravity = false;
+        dimExRigidbody.drag = 0.5f;
 
         gameObject.layer = 9;
 
@@ -42,8 +46,8 @@ public class ViRMA_DimExplorerGroup : MonoBehaviour
 
     private void Start()
     {
-        //StartCoroutine(LoadDimExplorerGroup());
-        LoadDimExplorerGroup();
+        StartCoroutine(LoadDimExplorerGroup());
+        //LoadDimExplorerGroup();
     }
 
     private void Update()
@@ -52,6 +56,12 @@ public class ViRMA_DimExplorerGroup : MonoBehaviour
         {
             DimExGroupMovementLimiter();
         }     
+
+        if (inTrigger == false)
+        {
+            groupIsHighlighted = false;
+        }
+        inTrigger = false;
     }
 
     // triggers for UI drumsticks
@@ -62,10 +72,16 @@ public class ViRMA_DimExplorerGroup : MonoBehaviour
             if (topMostChild != null && bottomMostChild != null)
             {
                 globals.dimExplorer.activeVerticalRigidbody = dimExRigidbody;
+
+                groupIsHighlighted = true;
             }
-            
-            HighlightDimExGroup(true);
         }
+    }
+    private void OnTriggerStay(Collider triggeredCol)
+    {
+        inTrigger = true;
+
+        groupIsHighlighted = true;
     }
     private void OnTriggerExit(Collider triggeredCol)
     {
@@ -73,23 +89,30 @@ public class ViRMA_DimExplorerGroup : MonoBehaviour
         {
             globals.dimExplorer.activeVerticalRigidbody = null;
 
-            HighlightDimExGroup(false);
+            groupIsHighlighted = false;
         }
     }
 
-    public void LoadDimExplorerGroup()
+    public IEnumerator LoadDimExplorerGroup()
     {
-        ClearDimExplorerGroupTest();
+        ClearDimExplorerGroup();
+
+        yield return new WaitForEndOfFrame();
+
+        transform.localPosition = new Vector3(transform.localPosition.x, 0, transform.localPosition.z);
+        transform.localRotation = Quaternion.identity;
+        dimExRigidbody.velocity = Vector3.zero;
+
 
         if (tagsInGroup != null && tagsInGroup.Count > 0)
         {
-            if (searchedForTag != null)
+            if (searchedForTagData != null)
             {
                 // get index of searched for tag in siblings
                 int starterIndex = 0;
                 for (int i = 0; i < tagsInGroup.Count; i++)
                 {
-                    if (searchedForTag.Id == tagsInGroup[i].Id)
+                    if (searchedForTagData.Id == tagsInGroup[i].Id)
                     {
                         starterIndex = i;
                         break;
@@ -150,7 +173,7 @@ public class ViRMA_DimExplorerGroup : MonoBehaviour
         // create colliders based on bounds
         float colForwardThickness = dimExBounds.size.z * 7.5f;
         dimExCollider.size = new Vector3(dimExBounds.size.x, dimExBounds.size.y, colForwardThickness);
-        dimExCollider.center = new Vector3(0, dimExBounds.center.y - transform.parent.transform.position.y, (colForwardThickness / 2) * -1);
+        dimExCollider.center = new Vector3(dimExBounds.center.x, dimExBounds.center.y, (colForwardThickness / 2) * -1);
 
         // set topmost and bottommost children for scrolling limits
         if (transform.childCount > 1)
@@ -162,15 +185,7 @@ public class ViRMA_DimExplorerGroup : MonoBehaviour
         // start limiting scrolling
         fullyLoaded = true;
     }
-    public IEnumerator ClearDimExplorerGroup()
-    {
-        foreach (Transform child in transform)
-        {
-            Destroy(child.gameObject);
-        }
-        yield return new WaitForEndOfFrame();
-    }
-    public void ClearDimExplorerGroupTest()
+    public void ClearDimExplorerGroup()
     {
         foreach (Transform child in transform)
         {
@@ -180,13 +195,22 @@ public class ViRMA_DimExplorerGroup : MonoBehaviour
 
     private void CalculateBounds()
     {
+        Vector3 savePosition = transform.position;
+        Quaternion saveRotation = transform.rotation;
+
+        transform.position = Vector3.zero;
+        transform.rotation = Quaternion.identity;
+
         Renderer[] meshes = GetComponentsInChildren<Renderer>();
         Bounds bounds = new Bounds(transform.position, Vector3.zero);
         foreach (Renderer mesh in meshes)
         {
             bounds.Encapsulate(mesh.bounds);
         }
-        dimExBounds = bounds;     
+        dimExBounds = bounds;
+
+        transform.position = savePosition;
+        transform.rotation = saveRotation;
     }
     private void DimExGroupMovementLimiter()
     {
@@ -209,20 +233,5 @@ public class ViRMA_DimExplorerGroup : MonoBehaviour
             }
         }
     }
-    private void HighlightDimExGroup(bool toHighlight)
-    {
-        ViRMA_DimExplorerBtn[] dimExGrpBtns = GetComponentsInChildren<ViRMA_DimExplorerBtn>();
-        foreach (ViRMA_DimExplorerBtn dimExGrpBtn in dimExGrpBtns)
-        {
-            if (toHighlight)
-            {
-                dimExGrpBtn.SetHighlightState();
-            }
-            else
-            {
-                dimExGrpBtn.SetDefaultState();
-            }
-            
-        }
-    }
+
 }
