@@ -80,7 +80,7 @@ public class ViRMA_DimExplorerBtn : MonoBehaviour
         {
             SetFocusedState();
         }
-        else if (parentDimExGrp.groupIsHighlighted)
+        else if (globals.dimExplorer.activeVerticalRigidbody == parentDimExGrp.dimExRigidbody)
         {
             SetHighlightState();
         }

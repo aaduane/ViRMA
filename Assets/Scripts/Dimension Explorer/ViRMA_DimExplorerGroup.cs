@@ -8,7 +8,7 @@ public class ViRMA_DimExplorerGroup : MonoBehaviour
     private ViRMA_GlobalsAndActions globals;
     private GameObject dimExBtnPrefab;
 
-    public bool fullyLoaded = false;
+    public bool dimensionExpLorerGroupLoaded;
 
     public List<Tag> tagsInGroup;
     public Tag searchedForTagData;
@@ -26,9 +26,6 @@ public class ViRMA_DimExplorerGroup : MonoBehaviour
     public GameObject siblingsDimExGrp;
     public GameObject childrenDimExGrp;
 
-    public bool groupIsHighlighted;
-    public bool inTrigger;
-
     private void Awake()
     {
         globals = Player.instance.gameObject.GetComponent<ViRMA_GlobalsAndActions>();
@@ -41,6 +38,8 @@ public class ViRMA_DimExplorerGroup : MonoBehaviour
 
         gameObject.layer = 9;
 
+        dimensionExpLorerGroupLoaded = false;
+
         dimExBtnPrefab = Resources.Load("Prefabs/DimExBtn") as GameObject;
     }
 
@@ -52,16 +51,10 @@ public class ViRMA_DimExplorerGroup : MonoBehaviour
 
     private void Update()
     {
-        if (fullyLoaded)
+        if (dimensionExpLorerGroupLoaded)
         {
             DimExGroupMovementLimiter();
         }     
-
-        if (inTrigger == false)
-        {
-            groupIsHighlighted = false;
-        }
-        inTrigger = false;
     }
 
     // triggers for UI drumsticks
@@ -69,32 +62,24 @@ public class ViRMA_DimExplorerGroup : MonoBehaviour
     {
         if (triggeredCol.GetComponent<ViRMA_Drumstick>())
         {
-            if (topMostChild != null && bottomMostChild != null)
-            {
-                globals.dimExplorer.activeVerticalRigidbody = dimExRigidbody;
-
-                groupIsHighlighted = true;
-            }
+            globals.dimExplorer.activeVerticalRigidbody = dimExRigidbody;
         }
-    }
-    private void OnTriggerStay(Collider triggeredCol)
-    {
-        inTrigger = true;
-
-        groupIsHighlighted = true;
     }
     private void OnTriggerExit(Collider triggeredCol)
     {
         if (triggeredCol.GetComponent<ViRMA_Drumstick>())
         {
-            globals.dimExplorer.activeVerticalRigidbody = null;
-
-            groupIsHighlighted = false;
+            if (globals.dimExplorer.activeVerticalRigidbody == dimExRigidbody)
+            {
+                globals.dimExplorer.activeVerticalRigidbody = null;
+            }         
         }
     }
 
     public IEnumerator LoadDimExplorerGroup()
     {
+        dimensionExpLorerGroupLoaded = false;
+
         ClearDimExplorerGroup();
 
         yield return new WaitForEndOfFrame();
@@ -102,7 +87,6 @@ public class ViRMA_DimExplorerGroup : MonoBehaviour
         transform.localPosition = new Vector3(transform.localPosition.x, 0, transform.localPosition.z);
         transform.localRotation = Quaternion.identity;
         dimExRigidbody.velocity = Vector3.zero;
-
 
         if (tagsInGroup != null && tagsInGroup.Count > 0)
         {
@@ -171,7 +155,7 @@ public class ViRMA_DimExplorerGroup : MonoBehaviour
         CalculateBounds();
 
         // create colliders based on bounds
-        float colForwardThickness = dimExBounds.size.z * 7.5f;
+        float colForwardThickness = dimExBounds.size.z * 10f;
         dimExCollider.size = new Vector3(dimExBounds.size.x, dimExBounds.size.y, colForwardThickness);
         dimExCollider.center = new Vector3(dimExBounds.center.x, dimExBounds.center.y, (colForwardThickness / 2) * -1);
 
@@ -183,7 +167,7 @@ public class ViRMA_DimExplorerGroup : MonoBehaviour
         }
         
         // start limiting scrolling
-        fullyLoaded = true;
+        dimensionExpLorerGroupLoaded = true;
     }
     public void ClearDimExplorerGroup()
     {
@@ -214,22 +198,29 @@ public class ViRMA_DimExplorerGroup : MonoBehaviour
     }
     private void DimExGroupMovementLimiter()
     {
-        if (Player.instance & topMostChild != null & bottomMostChild != null)
+        if (Player.instance)
         {
-            Vector3 adjustVelocity = dimExRigidbody.velocity;
-
-            // prevent dim ex group from vertically scrolling too far down
-            if (topMostChild.position.y <= Player.instance.eyeHeight && adjustVelocity.y < 0)
+            if (topMostChild != null && bottomMostChild != null)
             {
-                adjustVelocity.y = 0;
-                dimExRigidbody.velocity = adjustVelocity;
-            }
+                Vector3 adjustVelocity = dimExRigidbody.velocity;
 
-            // prevent dim ex group from vertically scrolling too far up
-            if (bottomMostChild.position.y >= Player.instance.eyeHeight && adjustVelocity.y > 0)
+                // prevent dim ex group from vertically scrolling too far down
+                if (topMostChild.position.y <= Player.instance.eyeHeight && adjustVelocity.y < 0)
+                {
+                    adjustVelocity.y = 0;
+                    dimExRigidbody.velocity = adjustVelocity;
+                }
+
+                // prevent dim ex group from vertically scrolling too far up
+                if (bottomMostChild.position.y >= Player.instance.eyeHeight && adjustVelocity.y > 0)
+                {
+                    adjustVelocity.y = 0;
+                    dimExRigidbody.velocity = adjustVelocity;
+                }
+            } 
+            else
             {
-                adjustVelocity.y = 0;
-                dimExRigidbody.velocity = adjustVelocity;
+                dimExRigidbody.velocity = Vector3.zero; 
             }
         }
     }

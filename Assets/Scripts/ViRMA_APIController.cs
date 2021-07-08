@@ -491,7 +491,9 @@ public class ViRMA_APIController : MonoBehaviour
                 });
             }
         }
-        onSuccess(nodes);
+
+        List<Tag> orderedNodes = nodes.OrderBy(s => s.Id).ToList();
+        onSuccess(orderedNodes);
     }
     public static IEnumerator GetHierarchyChildren(int targetId, Action<List<Tag>> onSuccess)
     {
@@ -516,7 +518,9 @@ public class ViRMA_APIController : MonoBehaviour
                 newTag.Name = tagName;
                 children.Add(newTag);
             }
-            onSuccess(children);
+
+            List<Tag> orderedList = children.OrderBy(s => s.Name).ToList();
+            onSuccess(orderedList);
         });
     }
     public static IEnumerator GetHierarchyParent(int targetId, Action<Tag> onSuccess)
@@ -541,7 +545,6 @@ public class ViRMA_APIController : MonoBehaviour
                 }
                 parentTag.Name = tagName;
             }
-
             onSuccess(parentTag);
         });
     }

@@ -11,13 +11,14 @@ public class ViRMA_DimExplorer : MonoBehaviour
     private Rigidbody horizontalRigidbody;
     public List<Rigidbody> verticalRigidbodies;
     public Rigidbody activeVerticalRigidbody;
-
-    public bool dimexplorerLoaded;
+    
     public Bounds dimExBounds;
     private Vector3 maxRight;
     private Vector3 maxLeft;
     private float distToMaxRight;
     private float distToMaxLeft;
+
+    public bool dimensionExpLorerLoaded;
 
     public GameObject submittedBtnForTraversal;
 
@@ -25,12 +26,14 @@ public class ViRMA_DimExplorer : MonoBehaviour
     {
         globals = Player.instance.gameObject.GetComponent<ViRMA_GlobalsAndActions>();
 
-        horizontalRigidbody = GetComponent<Rigidbody>();    
+        horizontalRigidbody = GetComponent<Rigidbody>();
+
+        dimensionExpLorerLoaded = false;
     }
 
     private void FixedUpdate()
     {
-        if (dimexplorerLoaded)
+        if (dimensionExpLorerLoaded)
         {
             DimExMovementLimiter();
             DimExplorerMovement();
@@ -50,8 +53,7 @@ public class ViRMA_DimExplorer : MonoBehaviour
     }
     public IEnumerator LoadDimExplorer(List<Tag> nodes)
     {
-        // prevent any dim ex movement while loading
-        dimexplorerLoaded = false;
+        dimensionExpLorerLoaded = false;
 
         // clear any current children (must be in coroutine to ensure children are destroyed first
         yield return StartCoroutine(ClearDimExplorer());
@@ -118,7 +120,8 @@ public class ViRMA_DimExplorer : MonoBehaviour
 
         CalculateBounds();
         PositionDimExplorer();
-        dimexplorerLoaded = true;
+
+        dimensionExpLorerLoaded = true;
     }
     public void CalculateBounds()
     {
@@ -158,15 +161,43 @@ public class ViRMA_DimExplorer : MonoBehaviour
     }
     private IEnumerator GetTraversedHierarchyNodes(Tag submittedTagData)
     {
-        // parent
+        dimensionExpLorerLoaded = false;
+
+        // assign parent groupings
         GameObject parentGroupObj = submittedBtnForTraversal.transform.parent.GetComponent<ViRMA_DimExplorerGroup>().parentDimExGrp;
         ViRMA_DimExplorerGroup parentGroup = parentGroupObj.GetComponent<ViRMA_DimExplorerGroup>();
         Tag parentTagData = new Tag();
 
+
+        // assign children groupings
+        GameObject childrenGroupObj = submittedBtnForTraversal.transform.parent.GetComponent<ViRMA_DimExplorerGroup>().childrenDimExGrp;
+        ViRMA_DimExplorerGroup childrenGroup = childrenGroupObj.GetComponent<ViRMA_DimExplorerGroup>();
+        List<Tag> childrenTagData = new List<Tag>();
+
+
+        // assign siblings groupings
+        GameObject siblingsGroupObj = submittedBtnForTraversal.transform.parent.GetComponent<ViRMA_DimExplorerGroup>().siblingsDimExGrp;
+        ViRMA_DimExplorerGroup siblingsGroup = siblingsGroupObj.GetComponent<ViRMA_DimExplorerGroup>();
+        List<Tag> siblingsTagData = new List<Tag>();
+
+
+        // fetch and wait for parent data
         yield return StartCoroutine(ViRMA_APIController.GetHierarchyParent(submittedTagData.Id, (response) => {
             parentTagData = response;
         }));
 
+        // fetch and wait for children data
+        yield return StartCoroutine(ViRMA_APIController.GetHierarchyChildren(submittedTagData.Id, (response) => {
+            childrenTagData = response;
+        }));
+
+        // fetch and wait for sibling data
+        yield return StartCoroutine(ViRMA_APIController.GetHierarchyChildren(parentTagData.Id, (response) => {
+            siblingsTagData = response;
+        }));
+
+        
+        // reload parent dim ex grouo
         if (parentTagData.Name == null)
         {
             parentGroup.ClearDimExplorerGroup();
@@ -178,15 +209,19 @@ public class ViRMA_DimExplorer : MonoBehaviour
             //parentGroup.LoadDimExplorerGroup();
         }
 
-        // siblings
-        GameObject siblingsGroupObj = submittedBtnForTraversal.transform.parent.GetComponent<ViRMA_DimExplorerGroup>().siblingsDimExGrp;
-        ViRMA_DimExplorerGroup siblingsGroup = siblingsGroupObj.GetComponent<ViRMA_DimExplorerGroup>();
-        List<Tag> siblingsTagData = new List<Tag>();
+        // reload childen dim ex grouo
+        if (childrenTagData.Count < 1)
+        {
+            childrenGroup.ClearDimExplorerGroup();
+        }
+        else
+        {
+            childrenGroup.tagsInGroup = childrenTagData;
+            StartCoroutine(childrenGroup.LoadDimExplorerGroup());
+            //childrenGroup.LoadDimExplorerGroup();
+        }
 
-        yield return StartCoroutine(ViRMA_APIController.GetHierarchyChildren(parentTagData.Id, (response) => {
-            siblingsTagData = response;
-        }));
-
+        // reload sibling dim ex grouo
         if (siblingsTagData.Count < 1)
         {
             siblingsGroup.ClearDimExplorerGroup();
@@ -199,25 +234,7 @@ public class ViRMA_DimExplorer : MonoBehaviour
             //siblingsGroup.LoadDimExplorerGroup();
         }
 
-        // children
-        GameObject childrenGroupObj = submittedBtnForTraversal.transform.parent.GetComponent<ViRMA_DimExplorerGroup>().childrenDimExGrp;
-        ViRMA_DimExplorerGroup childrenGroup = childrenGroupObj.GetComponent<ViRMA_DimExplorerGroup>();
-        List<Tag> childrenTagData = new List<Tag>();
-
-        yield return StartCoroutine(ViRMA_APIController.GetHierarchyChildren(submittedTagData.Id, (response) => {
-            childrenTagData = response;
-        }));
-
-        if (childrenTagData.Count < 1)
-        {
-            childrenGroup.ClearDimExplorerGroup();
-        }
-        else
-        {
-            childrenGroup.tagsInGroup = childrenTagData;
-            StartCoroutine(childrenGroup.LoadDimExplorerGroup());
-            //childrenGroup.LoadDimExplorerGroup();
-        }
+        dimensionExpLorerLoaded = true;
     }
 
     // fixed update 
@@ -260,7 +277,6 @@ public class ViRMA_DimExplorer : MonoBehaviour
             }
 
             horizontalRigidbody.velocity = adjustVelocity;
-
         }
     }
     private void DimExplorerMovement()
@@ -303,6 +319,7 @@ public class ViRMA_DimExplorer : MonoBehaviour
             }
         }
     }
+
 
     // editor
     void OnDrawGizmosSelected()
