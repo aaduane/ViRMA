@@ -330,6 +330,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc0d3e97c5ab6c340baf078d405003f7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  searchedForTag: 0
   background: {fileID: 5254511832674926407}
   textMesh: {fileID: 5254511832904173565}
-  col: {fileID: 0}
+  col: {fileID: 7848567739348940662}
+  bgRend: {fileID: 5254511832674926408}

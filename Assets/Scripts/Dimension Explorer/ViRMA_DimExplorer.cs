@@ -20,7 +20,7 @@ public class ViRMA_DimExplorer : MonoBehaviour
 
     public bool dimensionExpLorerLoaded;
 
-    public GameObject submittedBtnForTraversal;
+    public GameObject tagBtnHoveredByUser;
 
     private void Awake()
     {
@@ -31,8 +31,10 @@ public class ViRMA_DimExplorer : MonoBehaviour
         dimensionExpLorerLoaded = false;
     }
 
-    private void FixedUpdate()
+    private void Update()
     {
+        //Debug.Log(dimensionExpLorerLoaded);
+
         if (dimensionExpLorerLoaded)
         {
             DimExMovementLimiter();
@@ -153,9 +155,11 @@ public class ViRMA_DimExplorer : MonoBehaviour
     }   
     public void SubmitTagForTraversal(SteamVR_Action_Boolean action, SteamVR_Input_Sources source)
     {
-        if (submittedBtnForTraversal != null)
+        if (tagBtnHoveredByUser != null)
         {
-            Tag submittedTagData = submittedBtnForTraversal.GetComponent<ViRMA_DimExplorerBtn>().tagData;
+            Debug.Log("Loading traversed tags..."); // testing
+
+            Tag submittedTagData = tagBtnHoveredByUser.GetComponent<ViRMA_DimExplorerBtn>().tagData;
             StartCoroutine(GetTraversedHierarchyNodes(submittedTagData));
         }       
     }
@@ -164,19 +168,19 @@ public class ViRMA_DimExplorer : MonoBehaviour
         dimensionExpLorerLoaded = false;
 
         // assign parent groupings
-        GameObject parentGroupObj = submittedBtnForTraversal.transform.parent.GetComponent<ViRMA_DimExplorerGroup>().parentDimExGrp;
+        GameObject parentGroupObj = tagBtnHoveredByUser.transform.parent.GetComponent<ViRMA_DimExplorerGroup>().parentDimExGrp;
         ViRMA_DimExplorerGroup parentGroup = parentGroupObj.GetComponent<ViRMA_DimExplorerGroup>();
         Tag parentTagData = new Tag();
 
 
         // assign children groupings
-        GameObject childrenGroupObj = submittedBtnForTraversal.transform.parent.GetComponent<ViRMA_DimExplorerGroup>().childrenDimExGrp;
+        GameObject childrenGroupObj = tagBtnHoveredByUser.transform.parent.GetComponent<ViRMA_DimExplorerGroup>().childrenDimExGrp;
         ViRMA_DimExplorerGroup childrenGroup = childrenGroupObj.GetComponent<ViRMA_DimExplorerGroup>();
         List<Tag> childrenTagData = new List<Tag>();
 
 
         // assign siblings groupings
-        GameObject siblingsGroupObj = submittedBtnForTraversal.transform.parent.GetComponent<ViRMA_DimExplorerGroup>().siblingsDimExGrp;
+        GameObject siblingsGroupObj = tagBtnHoveredByUser.transform.parent.GetComponent<ViRMA_DimExplorerGroup>().siblingsDimExGrp;
         ViRMA_DimExplorerGroup siblingsGroup = siblingsGroupObj.GetComponent<ViRMA_DimExplorerGroup>();
         List<Tag> siblingsTagData = new List<Tag>();
 
@@ -235,6 +239,40 @@ public class ViRMA_DimExplorer : MonoBehaviour
         }
 
         dimensionExpLorerLoaded = true;
+    }
+    public void SubmitTagForContextMenu(SteamVR_Action_Boolean action, SteamVR_Input_Sources source)
+    {
+        if (tagBtnHoveredByUser != null)
+        {
+            Debug.Log("Loading context menu..."); // testing
+
+            GameObject submuttedTagBtn = tagBtnHoveredByUser;
+            tagBtnHoveredByUser = null;
+
+            ToggleDimExFade(true);
+
+            submuttedTagBtn.GetComponent<ViRMA_DimExplorerBtn>().LoadContextMenu();
+        }    
+    }
+    public void ToggleDimExFade(bool toFade)
+    {
+        toFade = !toFade;
+
+        // stop all movement and prevent any further movement
+        dimensionExpLorerLoaded = toFade;
+
+        horizontalRigidbody.velocity = Vector3.zero;
+        horizontalRigidbody.angularVelocity = Vector3.zero;
+        activeVerticalRigidbody.velocity = Vector3.zero;
+        activeVerticalRigidbody.angularVelocity = Vector3.zero;
+        activeVerticalRigidbody = null;
+       
+        // disable all other dim ex colliders
+        BoxCollider[] dimExColliders = GetComponentsInChildren<BoxCollider>();
+        foreach (var dimExCollider in dimExColliders)
+        {
+            dimExCollider.enabled = toFade;
+        }
     }
 
     // fixed update 

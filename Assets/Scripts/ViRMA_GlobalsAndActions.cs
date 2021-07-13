@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections;
-using UnityEngine;
+﻿using UnityEngine;
 using Valve.VR;
 using Valve.VR.InteractionSystem;
 
@@ -101,7 +99,8 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
     {
         // ui interaction actions
         //menuInteraction_MenuControl[SteamVR_Input_Sources.Any].onStateDown += TestAction;
-        dimExplorer_Select[SteamVR_Input_Sources.Any].onStateDown += dimExplorer.SubmitTagForTraversal;
+        dimExplorer_Scroll[SteamVR_Input_Sources.Any].onStateDown += dimExplorer.SubmitTagForTraversal;
+        dimExplorer_Select[SteamVR_Input_Sources.Any].onStateDown += dimExplorer.SubmitTagForContextMenu;
     }
     public void ToggleOnlyThisActionSet(SteamVR_ActionSet targetActionSet)
     {

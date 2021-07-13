@@ -126,6 +126,11 @@ public class ViRMA_DimExplorerGroup : MonoBehaviour
                     dimExBtn.transform.parent = transform;
                     dimExBtn.transform.localRotation = Quaternion.identity;
 
+                    if (i == starterIndex)
+                    {
+                        dimExBtn.GetComponent<ViRMA_DimExplorerBtn>().searchedForTag = true;
+                    }
+
                     float yPos = indexPlaceholderNeg * -0.1f;
                     dimExBtn.transform.localPosition = new Vector3(0, yPos, 0);
                     indexPlaceholderNeg++;

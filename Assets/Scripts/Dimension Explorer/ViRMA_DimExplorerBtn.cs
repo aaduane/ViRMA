@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using TMPro;
+﻿using TMPro;
 using UnityEngine;
 using Valve.VR;
 using Valve.VR.InteractionSystem;
@@ -9,18 +7,20 @@ public class ViRMA_DimExplorerBtn : MonoBehaviour
 {
     private ViRMA_GlobalsAndActions globals;
     private ViRMA_DimExplorerGroup parentDimExGrp;
+    public bool searchedForTag;
+    public bool contextMenuActiveOnBtn;
 
     public Tag tagData;
 
+    // already assigned in prefab
     public GameObject background;
     public GameObject textMesh;
     public BoxCollider col;
+    public Renderer bgRend;
 
     private void Awake()
     {
         globals = Player.instance.gameObject.GetComponent<ViRMA_GlobalsAndActions>();
-
-        col = GetComponent<BoxCollider>();
     }
 
     private void Start()
@@ -38,16 +38,16 @@ public class ViRMA_DimExplorerBtn : MonoBehaviour
     {
         if (triggeredCol.GetComponent<ViRMA_Drumstick>())
         {
-            globals.dimExplorer.submittedBtnForTraversal = gameObject;
+            globals.dimExplorer.tagBtnHoveredByUser = gameObject;
         }
     }
     private void OnTriggerExit(Collider triggeredCol)
     {
         if (triggeredCol.GetComponent<ViRMA_Drumstick>())
         {
-            if (globals.dimExplorer.submittedBtnForTraversal == gameObject)
+            if (globals.dimExplorer.tagBtnHoveredByUser == gameObject)
             {
-                globals.dimExplorer.submittedBtnForTraversal = null;
+                globals.dimExplorer.tagBtnHoveredByUser = null;
             }          
         }
     }
@@ -72,11 +72,18 @@ public class ViRMA_DimExplorerBtn : MonoBehaviour
 
         col.size = adjustScale;
     }
+    public void LoadContextMenu()
+    {
+        contextMenuActiveOnBtn = true;
+
+
+    }
 
     // button state controls
     private void DimExBtnStateContoller()
     {
-        if (globals.dimExplorer.submittedBtnForTraversal == gameObject)
+        // controls appearance of button in various states
+        if (globals.dimExplorer.tagBtnHoveredByUser == gameObject || searchedForTag)
         {
             SetFocusedState();
         }
@@ -88,18 +95,30 @@ public class ViRMA_DimExplorerBtn : MonoBehaviour
         {
             SetDefaultState();
         }
+
+        // if collider is disabled, fade the buttons, unless it's context menu is active
+        if (col.enabled == false && contextMenuActiveOnBtn == false)
+        {
+            SetFadedState();
+        }
     }
     public void SetDefaultState()
     {
-        background.GetComponent<Renderer>().material.color = globals.flatDarkBlue;
+        bgRend.material.color = globals.flatDarkBlue;
     }
     public void SetHighlightState()
     {
-        background.GetComponent<Renderer>().material.color = globals.flatLightBlue;
+        bgRend.material.color = globals.flatLightBlue;
     }
     public void SetFocusedState()
     {
-        background.GetComponent<Renderer>().material.color = globals.flatGreen;
+        bgRend.material.color = globals.flatGreen;
+    }
+    public void SetFadedState()
+    {
+        Color colourToFade = bgRend.material.color;
+        colourToFade.a = 0.5f;
+        bgRend.material.color = colourToFade;
     }
 
 }
