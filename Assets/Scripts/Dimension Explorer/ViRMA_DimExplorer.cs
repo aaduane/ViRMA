@@ -21,6 +21,7 @@ public class ViRMA_DimExplorer : MonoBehaviour
     public bool dimensionExpLorerLoaded;
 
     public GameObject tagBtnHoveredByUser;
+    public GameObject filterBtnHoveredByUser;
 
     private void Awake()
     {
@@ -254,6 +255,16 @@ public class ViRMA_DimExplorer : MonoBehaviour
             submuttedTagBtn.GetComponent<ViRMA_DimExplorerBtn>().LoadContextMenu();
         }    
     }
+    public void SubmitFilterBtnForQuery(SteamVR_Action_Boolean action, SteamVR_Input_Sources source)
+    {
+        if (filterBtnHoveredByUser != null)
+        {
+            string axisQueryType = filterBtnHoveredByUser.GetComponent<ViRMA_DimExplorerContextMenuBtn>().axisQueryType;
+            Tag tagQueryData = filterBtnHoveredByUser.GetComponent<ViRMA_DimExplorerContextMenuBtn>().tagQueryData;
+
+            Debug.Log(axisQueryType + " | " + tagQueryData.Name);
+        }
+    }
     public void ToggleDimExFade(bool toFade)
     {
         toFade = !toFade;
@@ -263,9 +274,13 @@ public class ViRMA_DimExplorer : MonoBehaviour
 
         horizontalRigidbody.velocity = Vector3.zero;
         horizontalRigidbody.angularVelocity = Vector3.zero;
-        activeVerticalRigidbody.velocity = Vector3.zero;
-        activeVerticalRigidbody.angularVelocity = Vector3.zero;
-        activeVerticalRigidbody = null;
+
+        if (activeVerticalRigidbody)
+        {
+            activeVerticalRigidbody.velocity = Vector3.zero;
+            activeVerticalRigidbody.angularVelocity = Vector3.zero;
+            activeVerticalRigidbody = null;
+        }       
        
         // disable all other dim ex colliders
         BoxCollider[] dimExColliders = GetComponentsInChildren<BoxCollider>();

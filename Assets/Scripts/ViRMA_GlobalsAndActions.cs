@@ -101,6 +101,7 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
         //menuInteraction_MenuControl[SteamVR_Input_Sources.Any].onStateDown += TestAction;
         dimExplorer_Scroll[SteamVR_Input_Sources.Any].onStateDown += dimExplorer.SubmitTagForTraversal;
         dimExplorer_Select[SteamVR_Input_Sources.Any].onStateDown += dimExplorer.SubmitTagForContextMenu;
+        dimExplorer_Select[SteamVR_Input_Sources.Any].onStateDown += dimExplorer.SubmitFilterBtnForQuery;
     }
     public void ToggleOnlyThisActionSet(SteamVR_ActionSet targetActionSet)
     {

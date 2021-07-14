@@ -1,30 +1,24 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
+using Valve.VR.InteractionSystem;
 
 public class ViRMA_DimExplorerContextMenu : MonoBehaviour
 {
-    GameObject targetDimExBtn;
+    private ViRMA_GlobalsAndActions globals;
 
-    private void LoadContextMenu(GameObject submittedDimExBtn)
+    private void Awake()
     {
-        targetDimExBtn = submittedDimExBtn;
-
-
+        globals = Player.instance.gameObject.GetComponent<ViRMA_GlobalsAndActions>();
     }
 
-    private void OnTriggerEnter(Collider triggeredCol)
-    {
-        if (triggeredCol.GetComponent<ViRMA_Drumstick>())
-        {
-
-        }
-    }
     private void OnTriggerExit(Collider triggeredCol)
     {
         if (triggeredCol.GetComponent<ViRMA_Drumstick>())
         {
+            globals.dimExplorer.ToggleDimExFade(false);
 
+            transform.parent.GetComponent<ViRMA_DimExplorerBtn>().contextMenuActiveOnBtn = false;
+
+            Destroy(gameObject);
         }
     }
 

@@ -12,7 +12,7 @@ public class ViRMA_DimExplorerBtn : MonoBehaviour
 
     public Tag tagData;
 
-    // already assigned in prefab
+    // assigned inside prefab
     public GameObject background;
     public GameObject textMesh;
     public BoxCollider col;
@@ -75,8 +75,44 @@ public class ViRMA_DimExplorerBtn : MonoBehaviour
     public void LoadContextMenu()
     {
         contextMenuActiveOnBtn = true;
+        GameObject contextMenuBtnPrefab = Resources.Load("Prefabs/ContextMenuBtn") as GameObject;
 
+        GameObject contextMenu = new GameObject("DimExContextMenu");
+        contextMenu.AddComponent<ViRMA_DimExplorerContextMenu>();
 
+        contextMenu.transform.parent = transform;
+        contextMenu.transform.localPosition = Vector3.zero;
+        contextMenu.transform.localRotation = Quaternion.identity;
+
+        contextMenu.AddComponent<Rigidbody>().useGravity = false;
+
+        contextMenu.AddComponent<BoxCollider>().isTrigger = true;
+        contextMenu.GetComponent<BoxCollider>().size = new Vector3(col.size.x * 2f, col.size.y * 3f, col.size.z * 10f);
+        contextMenu.GetComponent<BoxCollider>().center = new Vector3(col.center.x, col.center.y, (col.size.z * 10f / 2f) * -1);
+
+        GameObject directFilterBtn = Instantiate(contextMenuBtnPrefab, contextMenu.transform);
+        directFilterBtn.transform.localPosition = new Vector3(0, -0.05f, -0.025f);
+        directFilterBtn.transform.localScale = directFilterBtn.transform.localScale * 0.5f;
+        directFilterBtn.GetComponent<ViRMA_DimExplorerContextMenuBtn>().tagQueryData = tagData;
+        directFilterBtn.GetComponent<ViRMA_DimExplorerContextMenuBtn>().LoadContextMenuBtn("filter");
+
+        GameObject xFilterBtn = Instantiate(contextMenuBtnPrefab, contextMenu.transform);
+        xFilterBtn.transform.localPosition = new Vector3(-0.12f, 0.05f, -0.025f);
+        xFilterBtn.transform.localScale = xFilterBtn.transform.localScale * 0.5f;
+        xFilterBtn.GetComponent<ViRMA_DimExplorerContextMenuBtn>().tagQueryData = tagData;
+        xFilterBtn.GetComponent<ViRMA_DimExplorerContextMenuBtn>().LoadContextMenuBtn("X");
+
+        GameObject yFilterBtn = Instantiate(contextMenuBtnPrefab, contextMenu.transform);
+        yFilterBtn.transform.localPosition = new Vector3(0, 0.05f, -0.025f);
+        yFilterBtn.transform.localScale = yFilterBtn.transform.localScale * 0.5f;
+        yFilterBtn.GetComponent<ViRMA_DimExplorerContextMenuBtn>().tagQueryData = tagData;
+        yFilterBtn.GetComponent<ViRMA_DimExplorerContextMenuBtn>().LoadContextMenuBtn("Y");
+
+        GameObject zFilterBtn = Instantiate(contextMenuBtnPrefab, contextMenu.transform);
+        zFilterBtn.transform.localPosition = new Vector3(0.12f, 0.05f, -0.025f);
+        zFilterBtn.transform.localScale = zFilterBtn.transform.localScale * 0.5f;
+        zFilterBtn.GetComponent<ViRMA_DimExplorerContextMenuBtn>().tagQueryData = tagData;
+        zFilterBtn.GetComponent<ViRMA_DimExplorerContextMenuBtn>().LoadContextMenuBtn("Z");
     }
 
     // button state controls
