@@ -10,10 +10,26 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
     public ViRMA_DimExplorer dimExplorer;
 
     // colours
-    public Color flatRed = new Color32(192, 57, 43, 255);
-    public Color flatGreen = new Color32(39, 174, 96, 255);
-    public Color flatLightBlue = new Color32(52, 152, 219, 255);
-    public Color flatDarkBlue = new Color32(35, 99, 142, 255);
+    public Color32 axisRed = new Color32(192, 57, 43, 255);
+    public Color32 axisGreen = new Color32(39, 174, 96, 255);
+    public Color32 axisBlue = new Color32(35, 99, 142, 255); 
+    public Color32 lightBlack = new Color32(52, 73, 94, 255);
+    public Color32 lightBlue = new Color32(52, 152, 219, 255);
+
+    public Color32 BrightenColor(Color32 colorToBrighten)
+    {
+        float H, S, V;
+        Color.RGBToHSV(colorToBrighten, out H, out S, out V);
+        Color32 brighterColor = Color.HSVToRGB(H, S * 0.70f, V / 0.70f);
+        return brighterColor;
+    }
+    public Color32 DarkenColor(Color32 colorToDarken)
+    {
+        float H, S, V;
+        Color.RGBToHSV(colorToDarken, out H, out S, out V);
+        Color32 darkerColor = Color.HSVToRGB(H, S / 0.70f, V * 0.70f);
+        return darkerColor;
+    }
 
     // --- SteamVR action sets --- \\
 
@@ -97,8 +113,9 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
     }
     private void AssignAllCustomActions()
     {
-        // ui interaction actions
-        //menuInteraction_MenuControl[SteamVR_Input_Sources.Any].onStateDown += TestAction;
+        // --- SteamVR custom action assignments --- \\
+
+        // dimension explorer 
         dimExplorer_Scroll[SteamVR_Input_Sources.Any].onStateDown += dimExplorer.SubmitTagForTraversal;
         dimExplorer_Select[SteamVR_Input_Sources.Any].onStateDown += dimExplorer.SubmitTagForContextMenu;
         dimExplorer_Select[SteamVR_Input_Sources.Any].onStateDown += dimExplorer.SubmitFilterBtnForQuery;
@@ -134,15 +151,22 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
                         rightControllerNormalMaterial = new Material(controllerRend.material);
 
                         // add 'drumstick' to controller for Ui interaction
+
+                        //GameObject drumstick = new GameObject("RightHandDrumstick");
+                        //drumstick.transform.SetParent(controller.transform);
+                        //drumstick.AddComponent<ViRMA_Drumstick>().hand = Player.instance.rightHand;
+
+                        
                         GameObject drumstick = GameObject.CreatePrimitive(PrimitiveType.Sphere);
                         drumstick.name = "RightHandDrumstick";
                         drumstick.transform.SetParent(controller.transform);
                         drumstick.transform.localScale = Vector3.one * 0.05f;
                         drumstick.transform.localPosition = new Vector3(0, 0, 0.05f);
                         drumstick.AddComponent<ViRMA_Drumstick>().hand = Player.instance.rightHand;
-
-                        // set drumstick in ViRMA Hand
+                        
                         Player.instance.rightHand.gameObject.GetComponent<ViRMA_Hand>().handDrumstick = drumstick;
+
+
                     }
                 }
             }
@@ -169,15 +193,22 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
                         leftControllerNormalMaterial = new Material(controllerRend.material);
 
                         // add 'drumstick' to controller for Ui interaction
+
+                        //GameObject drumstick = new GameObject("LeftHandDrumstick");
+                        //drumstick.transform.SetParent(controller.transform);
+                        //drumstick.AddComponent<ViRMA_Drumstick>().hand = Player.instance.leftHand;
+
+                        
                         GameObject drumstick = GameObject.CreatePrimitive(PrimitiveType.Sphere);
                         drumstick.name = "LeftHandDrumstick";
                         drumstick.transform.SetParent(controller.transform);
                         drumstick.transform.localScale = Vector3.one * 0.05f;
                         drumstick.transform.localPosition = new Vector3(0, 0, 0.05f);
                         drumstick.AddComponent<ViRMA_Drumstick>().hand = Player.instance.leftHand;
-
-                        // set drumstick in ViRMA Hand
+                        
                         Player.instance.leftHand.gameObject.GetComponent<ViRMA_Hand>().handDrumstick = drumstick;
+
+
                     }
                 }
             }
@@ -226,9 +257,9 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
     // testing
     private void ActiveDevelopmentTesting()
     {
-        vizController.gameObject.SetActive(false);
+        vizController.gameObject.SetActive(true);
 
-        queryController.gameObject.SetActive(true);
+        queryController.gameObject.SetActive(false);
 
         ToggleOnlyThisActionSet(dimExplorerActions);
     }

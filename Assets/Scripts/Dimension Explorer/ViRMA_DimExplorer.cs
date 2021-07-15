@@ -34,8 +34,6 @@ public class ViRMA_DimExplorer : MonoBehaviour
 
     private void Update()
     {
-        //Debug.Log(dimensionExpLorerLoaded);
-
         if (dimensionExpLorerLoaded)
         {
             DimExMovementLimiter();

@@ -6,8 +6,13 @@ using Valve.VR.InteractionSystem;
 public class ViRMA_Drumstick : MonoBehaviour
 {
     private ViRMA_GlobalsAndActions globals;
+
     public Hand hand; // assigned at creation
-    private Collider col; 
+
+    private Collider col;
+
+    //public GameObject drumstickSphere;  
+    //private SphereCollider drumstickSphereCollider; 
 
     private void Awake()
     {
@@ -20,6 +25,24 @@ public class ViRMA_Drumstick : MonoBehaviour
 
     void Start()
     {
+        /*
+        transform.localPosition = new Vector3(0, 0, 0.05f);
+
+        drumstickSphereCollider = gameObject.AddComponent<SphereCollider>();
+        drumstickSphereCollider.radius = 0.05f;
+        drumstickSphereCollider.center = Vector3.zero;
+        drumstickSphereCollider.isTrigger = true;
+        hand.gameObject.GetComponent<ViRMA_Hand>().drumstickCollider = drumstickSphereCollider;
+
+
+        GameObject drumstickSphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        drumstickSphere.transform.parent = transform;
+        drumstickSphere.transform.localScale = Vector3.one * drumstickSphereCollider.radius;
+        drumstickSphere.transform.localPosition = Vector3.zero;
+        drumstickSphere.transform.localRotation = Quaternion.identity;
+        drumstickSphere.GetComponent<Renderer>().material.color = Color.red;
+        */
+
         if (hand.gameObject.transform.Find("HoverPoint"))
         {
             GameObject steamVRHoverPoint = hand.gameObject.transform.Find("HoverPoint").gameObject;
@@ -28,7 +51,7 @@ public class ViRMA_Drumstick : MonoBehaviour
 
         col.isTrigger = true;
 
-        GetComponent<Renderer>().material.color = Color.red;        
+        GetComponent<Renderer>().material.color = Color.red;
     }
 
     private void OnTriggerEnter(Collider triggeredCol)

@@ -235,10 +235,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 221794464a508b9499edad2790ba088a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  textMesh: {fileID: 9172760626233992163}
+  textMesh: {fileID: 9172760626233992161}
   col: {fileID: 6578705010877600616}
   outerBgRend: {fileID: 9172760625466973014}
   innerBgRend: {fileID: 7481332715273071743}
+  activeColor: {r: 0, g: 0, b: 0, a: 0}
+  axisQueryType: 
 --- !u!1 &9172760626233992163
 GameObject:
   m_ObjectHideFlags: 0

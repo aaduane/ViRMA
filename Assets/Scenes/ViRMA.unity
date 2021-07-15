@@ -172,6 +172,7 @@ MonoBehaviour:
     m_Extent: {x: 0, y: 0, z: 0}
   dimensionExpLorerLoaded: 0
   tagBtnHoveredByUser: {fileID: 0}
+  filterBtnHoveredByUser: {fileID: 0}
 --- !u!54 &68203182
 Rigidbody:
   m_ObjectHideFlags: 0

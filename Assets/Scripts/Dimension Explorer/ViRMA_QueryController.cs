@@ -36,6 +36,7 @@ public class ViRMA_QueryController : MonoBehaviour
             StartCoroutine(globals.dimExplorer.LoadDimExplorer(nodes));
         }));
 
+
     }
 
     public void testReloadViz(SteamVR_Action_Boolean action, SteamVR_Input_Sources source)

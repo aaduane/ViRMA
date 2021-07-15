@@ -46,7 +46,6 @@ public class ViRMA_DimExplorerGroup : MonoBehaviour
     private void Start()
     {
         StartCoroutine(LoadDimExplorerGroup());
-        //LoadDimExplorerGroup();
     }
 
     private void Update()

@@ -7,11 +7,13 @@ public class ViRMA_DimExplorerContextMenuBtn : MonoBehaviour
     private ViRMA_GlobalsAndActions globals;
 
     // assigned inside prefab
-    public GameObject textMesh;
+    public TextMeshPro textMesh;
     public BoxCollider col;
     public Renderer outerBgRend;
     public Renderer innerBgRend;
     public Color activeColor;
+    public MaterialPropertyBlock outerBgPropBlock;
+    public MaterialPropertyBlock innerBgPropBlock;
 
     // query info
     public Tag tagQueryData;
@@ -20,6 +22,9 @@ public class ViRMA_DimExplorerContextMenuBtn : MonoBehaviour
     private void Awake()
     {
         globals = Player.instance.gameObject.GetComponent<ViRMA_GlobalsAndActions>();
+
+        outerBgPropBlock = new MaterialPropertyBlock();
+        innerBgPropBlock = new MaterialPropertyBlock();
     }
 
     public void LoadContextMenuBtn(string axisType)
@@ -28,51 +33,64 @@ public class ViRMA_DimExplorerContextMenuBtn : MonoBehaviour
 
         if (axisType == "filter")
         {
-            textMesh.GetComponent<TextMeshPro>().text = "Apply as Filter";
+            textMesh.text = "Apply as Filter";
             activeColor = Color.black;          
         }
         else
         {
-            textMesh.GetComponent<TextMeshPro>().text = "Project to " + axisType + " Axis";
+            textMesh.text = "Project to " + axisType + " Axis";
             if (axisType == "X")
             {
-                activeColor = Color.red;
+                activeColor = globals.axisRed;
             }
             if (axisType == "Y")
             {
-                activeColor = Color.green;
+                activeColor = globals.axisGreen;
             }
             if (axisType == "Z")
             {
-                activeColor = Color.blue;
+                activeColor = globals.axisBlue;
             }
         }
 
-        textMesh.GetComponent<TextMeshPro>().color = activeColor;
-        outerBgRend.material.color = activeColor;
+        textMesh.color = Color.white;
+
+        outerBgRend.GetPropertyBlock(outerBgPropBlock);
+        outerBgPropBlock.SetColor("_Color", activeColor);
+        outerBgRend.SetPropertyBlock(outerBgPropBlock);
+
+        innerBgRend.GetPropertyBlock(innerBgPropBlock);
+        innerBgPropBlock.SetColor("_Color", activeColor);
+        innerBgRend.SetPropertyBlock(innerBgPropBlock);
     }
 
     private void OnTriggerEnter(Collider triggeredCol)
     {
         if (triggeredCol.GetComponent<ViRMA_Drumstick>())
         {
-            innerBgRend.material.color = new Color(0.75f, 0.75f, 0.75f, 1f);
-            textMesh.GetComponent<TextMeshPro>().color = Color.white;
-
             globals.dimExplorer.filterBtnHoveredByUser = gameObject;
+
+            innerBgRend.GetPropertyBlock(innerBgPropBlock);
+            innerBgPropBlock.SetColor("_Color", Color.white);
+            innerBgRend.SetPropertyBlock(innerBgPropBlock);
+
+            textMesh.color = activeColor;      
         }
     }
     private void OnTriggerExit(Collider triggeredCol)
     {
         if (triggeredCol.GetComponent<ViRMA_Drumstick>())
         {
-            innerBgRend.material.color = Color.white;
-            textMesh.GetComponent<TextMeshPro>().color = activeColor;
-
             if (globals.dimExplorer.filterBtnHoveredByUser == gameObject)
             {
                 globals.dimExplorer.filterBtnHoveredByUser = null;
-            }       
+            }
+
+            innerBgRend.GetPropertyBlock(innerBgPropBlock);
+            innerBgPropBlock.SetColor("_Color", activeColor);
+            innerBgRend.SetPropertyBlock(innerBgPropBlock);
+
+            textMesh.color = Color.white;            
         }
     }
 

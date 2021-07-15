@@ -14,18 +14,22 @@ public class ViRMA_DimExplorerBtn : MonoBehaviour
 
     // assigned inside prefab
     public GameObject background;
-    public GameObject textMesh;
+    public GameObject innerBackground;
+    public TextMeshPro textMesh;
     public BoxCollider col;
     public Renderer bgRend;
+    public MaterialPropertyBlock matPropBlock;    
 
     private void Awake()
     {
         globals = Player.instance.gameObject.GetComponent<ViRMA_GlobalsAndActions>();
+
+        matPropBlock = new MaterialPropertyBlock();
     }
 
     private void Start()
     {
-        parentDimExGrp = transform.parent.GetComponent<ViRMA_DimExplorerGroup>();
+        parentDimExGrp = transform.parent.GetComponent<ViRMA_DimExplorerGroup>();       
     }
 
     private void Update()
@@ -58,12 +62,12 @@ public class ViRMA_DimExplorerBtn : MonoBehaviour
 
         gameObject.name = tagData.Name;
 
-        textMesh.GetComponent<TextMeshPro>().text = tagData.Name;
+        textMesh.text = tagData.Name;
 
-        textMesh.GetComponent<TextMeshPro>().ForceMeshUpdate();
+        textMesh.ForceMeshUpdate();
 
-        float textWidth = textMesh.GetComponent<TextMeshPro>().textBounds.size.x * 0.011f;
-        float textHeight = textMesh.GetComponent<TextMeshPro>().textBounds.size.y * 0.02f;
+        float textWidth = textMesh.textBounds.size.x * 0.011f;
+        float textHeight = textMesh.textBounds.size.y * 0.02f;
 
         Vector3 adjustScale = background.transform.localScale;
         adjustScale.x = textWidth;
@@ -74,11 +78,10 @@ public class ViRMA_DimExplorerBtn : MonoBehaviour
     }
     public void LoadContextMenu()
     {
-        contextMenuActiveOnBtn = true;
-        GameObject contextMenuBtnPrefab = Resources.Load("Prefabs/ContextMenuBtn") as GameObject;
+        contextMenuActiveOnBtn = true;      
 
         GameObject contextMenu = new GameObject("DimExContextMenu");
-        contextMenu.AddComponent<ViRMA_DimExplorerContextMenu>();
+        contextMenu.AddComponent<ViRMA_DimExplorerContextMenu>().tagData = tagData;
 
         contextMenu.transform.parent = transform;
         contextMenu.transform.localPosition = Vector3.zero;
@@ -87,39 +90,23 @@ public class ViRMA_DimExplorerBtn : MonoBehaviour
         contextMenu.AddComponent<Rigidbody>().useGravity = false;
 
         contextMenu.AddComponent<BoxCollider>().isTrigger = true;
-        contextMenu.GetComponent<BoxCollider>().size = new Vector3(col.size.x * 2f, col.size.y * 3f, col.size.z * 10f);
-        contextMenu.GetComponent<BoxCollider>().center = new Vector3(col.center.x, col.center.y, (col.size.z * 10f / 2f) * -1);
-
-        GameObject directFilterBtn = Instantiate(contextMenuBtnPrefab, contextMenu.transform);
-        directFilterBtn.transform.localPosition = new Vector3(0, -0.05f, -0.025f);
-        directFilterBtn.transform.localScale = directFilterBtn.transform.localScale * 0.5f;
-        directFilterBtn.GetComponent<ViRMA_DimExplorerContextMenuBtn>().tagQueryData = tagData;
-        directFilterBtn.GetComponent<ViRMA_DimExplorerContextMenuBtn>().LoadContextMenuBtn("filter");
-
-        GameObject xFilterBtn = Instantiate(contextMenuBtnPrefab, contextMenu.transform);
-        xFilterBtn.transform.localPosition = new Vector3(-0.12f, 0.05f, -0.025f);
-        xFilterBtn.transform.localScale = xFilterBtn.transform.localScale * 0.5f;
-        xFilterBtn.GetComponent<ViRMA_DimExplorerContextMenuBtn>().tagQueryData = tagData;
-        xFilterBtn.GetComponent<ViRMA_DimExplorerContextMenuBtn>().LoadContextMenuBtn("X");
-
-        GameObject yFilterBtn = Instantiate(contextMenuBtnPrefab, contextMenu.transform);
-        yFilterBtn.transform.localPosition = new Vector3(0, 0.05f, -0.025f);
-        yFilterBtn.transform.localScale = yFilterBtn.transform.localScale * 0.5f;
-        yFilterBtn.GetComponent<ViRMA_DimExplorerContextMenuBtn>().tagQueryData = tagData;
-        yFilterBtn.GetComponent<ViRMA_DimExplorerContextMenuBtn>().LoadContextMenuBtn("Y");
-
-        GameObject zFilterBtn = Instantiate(contextMenuBtnPrefab, contextMenu.transform);
-        zFilterBtn.transform.localPosition = new Vector3(0.12f, 0.05f, -0.025f);
-        zFilterBtn.transform.localScale = zFilterBtn.transform.localScale * 0.5f;
-        zFilterBtn.GetComponent<ViRMA_DimExplorerContextMenuBtn>().tagQueryData = tagData;
-        zFilterBtn.GetComponent<ViRMA_DimExplorerContextMenuBtn>().LoadContextMenuBtn("Z");
+        contextMenu.GetComponent<BoxCollider>().size = new Vector3(col.size.x * 3f, col.size.y * 4f, col.size.z * 10f);
+        contextMenu.GetComponent<BoxCollider>().center = new Vector3(col.center.x, col.center.y, (col.size.z * 10f / 2f) * -1);     
     }
 
     // button state controls
     private void DimExBtnStateContoller()
     {
+        // clear border for focused states
+        if (innerBackground)
+        {
+            Destroy(innerBackground);
+            innerBackground = null;
+        }
+
         // controls appearance of button in various states
-        if (globals.dimExplorer.tagBtnHoveredByUser == gameObject || searchedForTag)
+        bgRend.GetPropertyBlock(matPropBlock);
+        if (globals.dimExplorer.tagBtnHoveredByUser == gameObject || searchedForTag || contextMenuActiveOnBtn)
         {
             SetFocusedState();
         }
@@ -131,8 +118,9 @@ public class ViRMA_DimExplorerBtn : MonoBehaviour
         {
             SetDefaultState();
         }
+        bgRend.SetPropertyBlock(matPropBlock);
 
-        // if collider is disabled, fade the buttons, unless it's context menu is active
+        // if collider on button is disabled, fade the buttons, unless it's context menu is active
         if (col.enabled == false && contextMenuActiveOnBtn == false)
         {
             SetFadedState();
@@ -140,21 +128,33 @@ public class ViRMA_DimExplorerBtn : MonoBehaviour
     }
     public void SetDefaultState()
     {
-        bgRend.material.color = globals.flatDarkBlue;
+        matPropBlock.SetColor("_Color", globals.lightBlack);
+        textMesh.color = Color.white;
     }
     public void SetHighlightState()
     {
-        bgRend.material.color = globals.flatLightBlue;
+        matPropBlock.SetColor("_Color", globals.BrightenColor(globals.lightBlack));
+        textMesh.color = Color.white;
     }
     public void SetFocusedState()
     {
-        bgRend.material.color = globals.flatGreen;
+        if (innerBackground == null)
+        {
+            matPropBlock.SetColor("_Color", globals.lightBlack);
+            textMesh.color = globals.lightBlack;
+
+            innerBackground = Instantiate(background, background.transform.parent);
+
+            float borderThickness = innerBackground.transform.localScale.y * 0.1f;
+            innerBackground.transform.localScale = new Vector3(innerBackground.transform.localScale.x - borderThickness, innerBackground.transform.localScale.y - borderThickness, innerBackground.transform.localScale.z - borderThickness);
+            innerBackground.transform.localPosition = new Vector3(innerBackground.transform.localPosition.x, innerBackground.transform.localPosition.y, innerBackground.transform.localPosition.z - 0.003f);            
+        }
     }
     public void SetFadedState()
     {
-        Color colourToFade = bgRend.material.color;
+        Color colourToFade = matPropBlock.GetColor("_Color");
         colourToFade.a = 0.5f;
-        bgRend.material.color = colourToFade;
+        matPropBlock.SetColor("_Color", colourToFade);       
     }
 
 }

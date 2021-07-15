@@ -6,6 +6,8 @@ public class ViRMA_Hand : Hand
 {
     public GameObject handDrumstick;
 
+    //public SphereCollider drumstickCollider;
+
     protected override void Awake()
     {
         base.Awake();
@@ -40,9 +42,14 @@ public class ViRMA_Hand : Hand
             // substituted drumstick functionality
             if (handDrumstick != null)
             {
+                
                 Vector3 drumstickPosition = handDrumstick.transform.position;
                 float drumstickSize = handDrumstick.transform.lossyScale.x;
                 CheckHoveringForTransform(drumstickPosition, drumstickSize / 2f, ref closestDistance, ref closestInteractable, Color.blue);
+                
+
+                //CheckHoveringForTransform(drumstickCollider.transform.position, drumstickCollider.radius, ref closestDistance, ref closestInteractable, Color.blue);
+
             }
             else
             {
