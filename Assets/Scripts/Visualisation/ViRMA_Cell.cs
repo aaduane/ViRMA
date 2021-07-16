@@ -1,35 +1,100 @@
 ﻿using TMPro;
 using UnityEngine;
-using Valve.VR;
 using Valve.VR.InteractionSystem;
+
 public class ViRMA_Cell : MonoBehaviour
 {
-    public Cell thisCellData;
-    private Mesh thisCellMesh;
     private ViRMA_GlobalsAndActions globals;
+
+    public Cell thisCellData;
+
+    private Renderer thisCellRend;
+    private Mesh thisCellMesh;
     private GameObject axesLabels;
+
+    public MaterialPropertyBlock cellRendPropBlock;
 
     private void Awake()
     {
-        thisCellMesh = GetComponent<MeshFilter>().mesh;
         globals = Player.instance.gameObject.GetComponent<ViRMA_GlobalsAndActions>();
+
+        thisCellRend = GetComponent<Renderer>();
+        thisCellMesh = GetComponent<MeshFilter>().mesh;
+
+        cellRendPropBlock = new MaterialPropertyBlock();
     }
     private void Start()
     {
         if (thisCellData.Filtered)
         {
+            // destroy the cell gameobject if the result has been filtered
             Destroy(gameObject);
         }
         else
         {
-            GetComponent<MeshRenderer>().material = thisCellData.TextureArrayMaterial;
+            // set material with texture array containing many images
+            thisCellRend.material = thisCellData.TextureArrayMaterial;
+
+            // use id to only show relevant image on the mesh from the material texture array
             SetTextureFromArray(thisCellData.TextureArrayId);
         }
     }
+    private void Update()
+    {
+        CellStateController();
+    }
+
+    private void OnTriggerEnter(Collider triggeredCol)
+    {
+        if (triggeredCol.GetComponent<ViRMA_Drumstick>())
+        {
+            globals.vizController.focusedCell = gameObject;
+
+            globals.ToggleControllerFade(triggeredCol.GetComponent<ViRMA_Drumstick>().hand, true);
+        }
+    }
+
+    private void OnTriggerExit(Collider triggeredCol)
+    {
+        if (triggeredCol.GetComponent<ViRMA_Drumstick>())
+        {
+            if (globals.vizController.focusedCell == gameObject)
+            {
+                globals.vizController.focusedCell = null;
+
+                globals.ToggleControllerFade(triggeredCol.GetComponent<ViRMA_Drumstick>().hand, false);
+            }
+        }
+    }
+
+    // update
+    private void CellStateController()
+    {
+        if (globals.vizController.focusedCell == null)
+        {
+            ToggleFade(false);
+            ToggleAxesLabels(false);
+        }
+        else
+        {
+            if (globals.vizController.focusedCell == gameObject)
+            {
+                ToggleFade(false);
+                ToggleAxesLabels(true);
+            }
+            else
+            {
+                ToggleFade(true);
+                ToggleAxesLabels(false);
+            }
+        }
+    }
+
+    // general
     public void SetTextureFromArray(int textureIndexInArray)
     {
         Vector2[] UVs = new Vector2[thisCellMesh.vertices.Length];
-        int totalTexturesInArray = thisCellData.TextureArraySize;   
+        int totalTexturesInArray = thisCellData.TextureArraySize;
         float textureOffset = 1.0f / totalTexturesInArray;
         float textureLocationInArray = textureIndexInArray * textureOffset;
         if (textureIndexInArray >= totalTexturesInArray)
@@ -47,37 +112,37 @@ public class ViRMA_Cell : MonoBehaviour
         // front of cube
         UVs[2] = bottomLeftOfTexture;
         UVs[3] = bottomRightOfTexture;
-        UVs[0] = topLeftOfTexture;              
-        UVs[1] = topRightOfTexture;                                 
+        UVs[0] = topLeftOfTexture;
+        UVs[1] = topRightOfTexture;
 
         // top of cube
-        UVs[8] = topLeftOfTexture;          
-        UVs[9] = topRightOfTexture;          
-        UVs[4] = bottomLeftOfTexture;        
+        UVs[8] = topLeftOfTexture;
+        UVs[9] = topRightOfTexture;
+        UVs[4] = bottomLeftOfTexture;
         UVs[5] = bottomRightOfTexture;
 
         // back of cube
-        UVs[10] = bottomRightOfTexture;        
-        UVs[11] = bottomLeftOfTexture;         
-        UVs[6] = topRightOfTexture;          
+        UVs[10] = bottomRightOfTexture;
+        UVs[11] = bottomLeftOfTexture;
+        UVs[6] = topRightOfTexture;
         UVs[7] = topLeftOfTexture;
 
         // bottom of cube
-        UVs[14] = bottomLeftOfTexture;        
-        UVs[15] = topLeftOfTexture;           
-        UVs[12] = topRightOfTexture;          
+        UVs[14] = bottomLeftOfTexture;
+        UVs[15] = topLeftOfTexture;
+        UVs[12] = topRightOfTexture;
         UVs[13] = bottomRightOfTexture;
 
         // left of cube
-        UVs[18] = bottomLeftOfTexture;        
-        UVs[19] = topLeftOfTexture;           
-        UVs[16] = topRightOfTexture;          
+        UVs[18] = bottomLeftOfTexture;
+        UVs[19] = topLeftOfTexture;
+        UVs[16] = topRightOfTexture;
         UVs[17] = bottomRightOfTexture;
 
         // right of cube
-        UVs[22] = bottomLeftOfTexture;        
-        UVs[23] = topLeftOfTexture;           
-        UVs[20] = topRightOfTexture;          
+        UVs[22] = bottomLeftOfTexture;
+        UVs[23] = topLeftOfTexture;
+        UVs[20] = topRightOfTexture;
         UVs[21] = bottomRightOfTexture;
 
         /* - - - - - - - JPG Images - - - - - - - -*/
@@ -124,8 +189,6 @@ public class ViRMA_Cell : MonoBehaviour
     }
     public void ToggleFade(bool toFade)
     {
-        Material mat = GetComponent<Renderer>().material;
-        Color oldColor = mat.color;
         float alpha = 0;
         if (toFade)
         {
@@ -135,13 +198,60 @@ public class ViRMA_Cell : MonoBehaviour
         {
             alpha = 1.0f;
         }
-        Color newColorWithFade = new Color(oldColor.r, oldColor.g, oldColor.b, alpha);
-        mat.SetColor("_Color", newColorWithFade);
+        Color32 newColorWithFade = new Color(1.0f, 1.0f, 1.0f, alpha);
+        thisCellRend.GetPropertyBlock(cellRendPropBlock);
+        cellRendPropBlock.SetColor("_Color", newColorWithFade);
+        thisCellRend.SetPropertyBlock(cellRendPropBlock);
+    }
+    public void ToggleAxesLabels(bool showHide)
+    {
+        if (showHide)
+        {
+            if (axesLabels == null)
+            {
+                // x 
+                int xAxisPointIndex = (int)thisCellData.Coordinates.x;
+                GameObject xAxisPointObj = globals.vizController.axisXPointObjs[xAxisPointIndex];
+                string xAxisPointLabel = xAxisPointObj.GetComponent<ViRMA_AxisPoint>().axisPointLabel;
+
+                // y
+                int yAxisPointIndex = (int)thisCellData.Coordinates.y;
+                GameObject yAxisPointObj = globals.vizController.axisYPointObjs[yAxisPointIndex];
+                string yAxisPointLabel = yAxisPointObj.GetComponent<ViRMA_AxisPoint>().axisPointLabel;
+
+                // z 
+                int zAxisPointIndex = (int)thisCellData.Coordinates.z;
+                GameObject zAxisPointObj = globals.vizController.axisZPointObjs[zAxisPointIndex];
+                string zAxisPointLabel = zAxisPointObj.GetComponent<ViRMA_AxisPoint>().axisPointLabel;
+
+                axesLabels = Instantiate(Resources.Load("Prefabs/AxesLabels")) as GameObject;
+                axesLabels.transform.SetParent(transform.parent.transform);
+                axesLabels.transform.localScale = Vector3.one * 0.3f;
+                axesLabels.transform.localPosition = new Vector3(transform.localPosition.x, transform.localPosition.y + 3f, transform.localPosition.z);
+                axesLabels.transform.LookAt(2 * axesLabels.transform.position - Player.instance.hmdTransform.position);
+
+                axesLabels.transform.GetChild(0).GetComponent<TextMeshPro>().text = xAxisPointLabel;
+                axesLabels.transform.GetChild(1).GetComponent<TextMeshPro>().text = yAxisPointLabel;
+                axesLabels.transform.GetChild(2).GetComponent<TextMeshPro>().text = zAxisPointLabel;
+            }
+        }
+        else
+        {
+            if (axesLabels != null)
+            {
+                Destroy(axesLabels);
+                axesLabels = null;
+            }
+
+        }
     }
 
-    // SteamVR controller hover functions
+
+    /*
     private void OnHandHoverBegin(Hand hand)
     {
+        Debug.Log("Old A");
+
         globals.ToggleControllerFade(hand, true);
 
         //globals.vizController.focusedCell = gameObject;
@@ -160,6 +270,8 @@ public class ViRMA_Cell : MonoBehaviour
     }
     private void OnHandHoverEnd(Hand hand)
     {
+        Debug.Log("Old B");
+
         globals.ToggleControllerFade(hand, false);
 
         //globals.vizController.focusedCell = globals.vizController.axisXPointObjs[0];
@@ -176,10 +288,11 @@ public class ViRMA_Cell : MonoBehaviour
             }
         }
     }
-
-    // custom 'drumstick' controller hover functions
+    
     public void OnHoverStart(Hand hand)
     {
+        Debug.Log("New A");
+
         globals.ToggleControllerFade(hand, true);
 
         globals.vizController.focusedCell = gameObject;
@@ -197,6 +310,8 @@ public class ViRMA_Cell : MonoBehaviour
     }
     public void OnHoverEnd(Hand hand)
     {
+        Debug.Log("New B");
+
         globals.ToggleControllerFade(hand, false);
 
         globals.vizController.focusedCell = globals.vizController.axisXPointObjs[0];
@@ -212,41 +327,7 @@ public class ViRMA_Cell : MonoBehaviour
             }
         }
     }
-    public void ToggleAxesLabels(bool showHide)
-    {
-        if (showHide)
-        {
-            // x 
-            int xAxisPointIndex = (int)thisCellData.Coordinates.x;
-            GameObject xAxisPointObj = globals.vizController.axisXPointObjs[xAxisPointIndex];
-            string xAxisPointLabel = xAxisPointObj.GetComponent<ViRMA_AxisPoint>().axisPointLabel;
+    */
 
-            // y
-            int yAxisPointIndex = (int)thisCellData.Coordinates.y;
-            GameObject yAxisPointObj = globals.vizController.axisYPointObjs[yAxisPointIndex];
-            string yAxisPointLabel = yAxisPointObj.GetComponent<ViRMA_AxisPoint>().axisPointLabel;
-
-            // z 
-            int zAxisPointIndex = (int)thisCellData.Coordinates.z;
-            GameObject zAxisPointObj = globals.vizController.axisZPointObjs[zAxisPointIndex];
-            string zAxisPointLabel = zAxisPointObj.GetComponent<ViRMA_AxisPoint>().axisPointLabel;
-
-            axesLabels = Instantiate(Resources.Load("Prefabs/AxesLabels")) as GameObject;
-            axesLabels.transform.SetParent(transform.parent.transform);
-            axesLabels.transform.localScale = Vector3.one * 0.3f;
-            axesLabels.transform.localPosition = new Vector3(transform.localPosition.x, transform.localPosition.y + 3f, transform.localPosition.z);
-            axesLabels.transform.LookAt(2 * axesLabels.transform.position - Player.instance.hmdTransform.position);
-
-            axesLabels.transform.GetChild(0).GetComponent<TextMeshPro>().text = xAxisPointLabel;
-            axesLabels.transform.GetChild(1).GetComponent<TextMeshPro>().text = yAxisPointLabel;
-            axesLabels.transform.GetChild(2).GetComponent<TextMeshPro>().text = zAxisPointLabel;
-        }
-        else
-        {
-            Destroy(axesLabels);
-        }
-
-        
-    }
 
 }

@@ -243,8 +243,6 @@ public class ViRMA_DimExplorer : MonoBehaviour
     {
         if (tagBtnHoveredByUser != null)
         {
-            Debug.Log("Loading context menu..."); // testing
-
             GameObject submuttedTagBtn = tagBtnHoveredByUser;
             tagBtnHoveredByUser = null;
 
@@ -253,14 +251,29 @@ public class ViRMA_DimExplorer : MonoBehaviour
             submuttedTagBtn.GetComponent<ViRMA_DimExplorerBtn>().LoadContextMenu();
         }    
     }
-    public void SubmitFilterBtnForQuery(SteamVR_Action_Boolean action, SteamVR_Input_Sources source)
+    public void SubmitContextBtnForQuery(SteamVR_Action_Boolean action, SteamVR_Input_Sources source)
     {
         if (filterBtnHoveredByUser != null)
         {
+            // grab data from context menu
             string axisQueryType = filterBtnHoveredByUser.GetComponent<ViRMA_DimExplorerContextMenuBtn>().axisQueryType;
             Tag tagQueryData = filterBtnHoveredByUser.GetComponent<ViRMA_DimExplorerContextMenuBtn>().tagQueryData;
 
-            Debug.Log(axisQueryType + " | " + tagQueryData.Name);
+            // push data to query controller
+            Query currentQuery = globals.queryController.activeQuery;
+            if (axisQueryType == "filter")
+            {
+                currentQuery.AddFilter(tagQueryData.Id, "Hierarchy");
+            }
+            else
+            {
+                currentQuery.SetAxis(axisQueryType, tagQueryData.Id, "Hieratchy");
+            }
+
+            // destroy context menu and return dimension explorer to normal state
+            ToggleDimExFade(false);
+            filterBtnHoveredByUser.transform.parent.transform.parent.GetComponent<ViRMA_DimExplorerBtn>().contextMenuActiveOnBtn = false;
+            Destroy(filterBtnHoveredByUser.transform.parent.gameObject);
         }
     }
     public void ToggleDimExFade(bool toFade)
@@ -332,7 +345,21 @@ public class ViRMA_DimExplorer : MonoBehaviour
     }
     private void DimExplorerMovement()
     {
-        if (globals.dimExplorer_Scroll.GetState(SteamVR_Input_Sources.Any))
+        Hand activeHand = null;
+        if (globals.dimExplorer_Scroll.GetState(SteamVR_Input_Sources.RightHand))
+        {
+            activeHand = Player.instance.rightHand;
+        }
+        if (globals.dimExplorer_Scroll.GetState(SteamVR_Input_Sources.LeftHand))
+        {
+            activeHand = Player.instance.leftHand;
+        }
+        if (globals.dimExplorer_Scroll.GetState(SteamVR_Input_Sources.RightHand) && globals.dimExplorer_Scroll.GetState(SteamVR_Input_Sources.LeftHand))
+        {
+            activeHand = null;
+        }
+
+        if (activeHand)
         {
             if (activeVerticalRigidbody == null)
             {
@@ -349,7 +376,7 @@ public class ViRMA_DimExplorer : MonoBehaviour
                 }
                 horizontalRigidbody.isKinematic = false;
 
-                Vector3 rightHandVelocity = transform.InverseTransformDirection(Player.instance.rightHand.GetTrackedObjectVelocity());
+                Vector3 rightHandVelocity = transform.InverseTransformDirection(activeHand.GetTrackedObjectVelocity());
                 rightHandVelocity.y = 0;
                 rightHandVelocity.z = 0;
                 horizontalRigidbody.velocity = transform.TransformDirection(rightHandVelocity);
@@ -363,7 +390,7 @@ public class ViRMA_DimExplorer : MonoBehaviour
                 horizontalRigidbody.isKinematic = true;
                 activeVerticalRigidbody.isKinematic = false;
 
-                Vector3 rightHandVelocity = transform.InverseTransformDirection(Player.instance.rightHand.GetTrackedObjectVelocity());
+                Vector3 rightHandVelocity = transform.InverseTransformDirection(activeHand.GetTrackedObjectVelocity());
                 rightHandVelocity.x = 0;
                 rightHandVelocity.z = 0;
                 activeVerticalRigidbody.velocity = transform.TransformDirection(rightHandVelocity);

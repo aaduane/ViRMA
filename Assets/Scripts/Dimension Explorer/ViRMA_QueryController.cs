@@ -5,6 +5,7 @@ using Valve.VR.InteractionSystem;
 public class ViRMA_QueryController : MonoBehaviour
 {
     private ViRMA_GlobalsAndActions globals;
+    public Query activeQuery;
     [HideInInspector] public bool queryLoading;
 
     private void Awake()
@@ -15,6 +16,8 @@ public class ViRMA_QueryController : MonoBehaviour
 
     private void Start()
     {
+        activeQuery = new Query();
+
         /*
         StartCoroutine(ViRMA_APIController.GetTagsets((tagsets) => {
             foreach (var tagset in tagsets)
@@ -39,22 +42,33 @@ public class ViRMA_QueryController : MonoBehaviour
 
     }
 
-    public void testReloadViz(SteamVR_Action_Boolean action, SteamVR_Input_Sources source)
+    private void Update()
     {
-        Debug.Log("Test action fired!");
+        if (activeQuery.X != null)
+        {
+            Debug.Log("X: " + activeQuery.X.Id);
+        }
+        if (activeQuery.Y != null)
+        {
+            Debug.Log("Y: " + activeQuery.Y.Id);
+        }
+        if (activeQuery.Z != null)
+        {
+            Debug.Log("Z: " + activeQuery.Z.Id);
+        }
+    }
+
+    public void ReloadViz()
+    {
+        Debug.Log("Reloading viz...");
+
         if (queryLoading == false)
         {
             queryLoading = true;
 
-            Query dummyQuery = new Query();
-            dummyQuery.SetAxis("X", 3, "Tagset");
-            dummyQuery.SetAxis("Y", 7, "Tagset");
-            //dummyQuery.SetAxis("Z", 77, "Hierarchy");
-            //dummyQuery.AddFilter(115, "Hierarchy");
-            //dummyQuery.AddFilter(116, "Hierarchy");
-
             globals.vizController.GetComponent<ViRMA_VizController>().ClearViz();
-            StartCoroutine(globals.vizController.SubmitVizQuery(dummyQuery));
+
+            StartCoroutine(globals.vizController.SubmitVizQuery(activeQuery));
         }
     }
 

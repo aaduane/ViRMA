@@ -4,9 +4,8 @@ using Valve.VR.InteractionSystem;
 
 public class ViRMA_Hand : Hand
 {
-    public GameObject handDrumstick;
-
-    //public SphereCollider drumstickCollider;
+    public GameObject drumstick;
+    public bool isFaded;
 
     protected override void Awake()
     {
@@ -39,17 +38,15 @@ public class ViRMA_Hand : Hand
         {
             float scaledHoverRadius = controllerHoverRadius * Mathf.Abs(SteamVR_Utils.GetLossyScale(this.transform));
 
-            // substituted drumstick functionality
-            if (handDrumstick != null)
-            {
-                
-                Vector3 drumstickPosition = handDrumstick.transform.position;
-                float drumstickSize = handDrumstick.transform.lossyScale.x;
-                CheckHoveringForTransform(drumstickPosition, drumstickSize / 2f, ref closestDistance, ref closestInteractable, Color.blue);
-                
+            // substitute drumstick object in place of SteamVR's HoverPoint
+            if (drumstick != null)
+            {       
+                // get position and radius of drumstick
+                Vector3 drumstickPosition = drumstick.transform.position;
+                float drumstickRadius = drumstick.transform.lossyScale.x / 2f;
 
-                //CheckHoveringForTransform(drumstickCollider.transform.position, drumstickCollider.radius, ref closestDistance, ref closestInteractable, Color.blue);
-
+                // use SteamVR's method to detect if interactable component overlaps with drumstick size and position
+                CheckHoveringForTransform(drumstickPosition, drumstickRadius, ref closestDistance, ref closestInteractable, Color.blue);
             }
             else
             {
@@ -78,12 +75,12 @@ public class ViRMA_Hand : Hand
 
         if (useControllerHoverComponent && mainRenderModel != null && mainRenderModel.IsControllerVisibile())
         {
-            // substituted drumstick functionality
-            if (handDrumstick != null)
+            // draw gizmo to verify that it matches the size and shape of the drumstick accurately
+            if (drumstick != null)
             {
                 Gizmos.color = Color.blue;
-                Vector3 drumstickPosition = handDrumstick.transform.position;
-                float drumstickSize = handDrumstick.transform.lossyScale.x;
+                Vector3 drumstickPosition = drumstick.transform.position;
+                float drumstickSize = drumstick.transform.lossyScale.x;
                 Gizmos.DrawWireSphere(drumstickPosition, drumstickSize / 2);
             }
             else

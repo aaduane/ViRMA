@@ -348,7 +348,7 @@ MonoBehaviour:
   showDebugText: 0
   spewDebugText: 0
   showDebugInteractables: 0
-  handDrumstick: {fileID: 0}
+  drumstick: {fileID: 0}
 --- !u!4 &1460822940 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1121785442129399390, guid: c8124a8574da71a4eaae9f4ca12a86a8,

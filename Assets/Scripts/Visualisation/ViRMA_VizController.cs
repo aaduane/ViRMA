@@ -15,7 +15,6 @@ public class ViRMA_VizController : MonoBehaviour
     [HideInInspector] public List<GameObject> cellObjs, axisXPointObjs, axisYPointObjs, axisZPointObjs;
     [HideInInspector] public LineRenderer axisXLine, axisYLine, axisZLine;
     public GameObject focusedCell;
-    public Quaternion focusedCellAxisLabelRotation;
 
     /*--- private --- */
 

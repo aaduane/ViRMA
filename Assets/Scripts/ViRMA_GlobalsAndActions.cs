@@ -118,7 +118,7 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
         // dimension explorer 
         dimExplorer_Scroll[SteamVR_Input_Sources.Any].onStateDown += dimExplorer.SubmitTagForTraversal;
         dimExplorer_Select[SteamVR_Input_Sources.Any].onStateDown += dimExplorer.SubmitTagForContextMenu;
-        dimExplorer_Select[SteamVR_Input_Sources.Any].onStateDown += dimExplorer.SubmitFilterBtnForQuery;
+        dimExplorer_Select[SteamVR_Input_Sources.Any].onStateDown += dimExplorer.SubmitContextBtnForQuery;
     }
     public void ToggleOnlyThisActionSet(SteamVR_ActionSet targetActionSet)
     {
@@ -130,6 +130,8 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
     // controller appearance
     public void InitialiseSteamVRControllers()
     {
+        GameObject drumstickPrefab = Resources.Load("Prefabs/Drumstick") as GameObject;
+
         // right controller
         if (!rightControllerLoaded)
         {
@@ -151,22 +153,11 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
                         rightControllerNormalMaterial = new Material(controllerRend.material);
 
                         // add 'drumstick' to controller for Ui interaction
-
-                        //GameObject drumstick = new GameObject("RightHandDrumstick");
-                        //drumstick.transform.SetParent(controller.transform);
-                        //drumstick.AddComponent<ViRMA_Drumstick>().hand = Player.instance.rightHand;
-
-                        
-                        GameObject drumstick = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                        GameObject drumstick = Instantiate(drumstickPrefab, controller.transform);                  
+                        drumstick.transform.localPosition = new Vector3(0, 0, 0.04f);
+                        drumstick.GetComponent<ViRMA_Drumstick>().hand = Player.instance.rightHand;
                         drumstick.name = "RightHandDrumstick";
-                        drumstick.transform.SetParent(controller.transform);
-                        drumstick.transform.localScale = Vector3.one * 0.05f;
-                        drumstick.transform.localPosition = new Vector3(0, 0, 0.05f);
-                        drumstick.AddComponent<ViRMA_Drumstick>().hand = Player.instance.rightHand;
-                        
-                        Player.instance.rightHand.gameObject.GetComponent<ViRMA_Hand>().handDrumstick = drumstick;
-
-
+                        Player.instance.rightHand.gameObject.GetComponent<ViRMA_Hand>().drumstick = drumstick;
                     }
                 }
             }
@@ -193,22 +184,11 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
                         leftControllerNormalMaterial = new Material(controllerRend.material);
 
                         // add 'drumstick' to controller for Ui interaction
-
-                        //GameObject drumstick = new GameObject("LeftHandDrumstick");
-                        //drumstick.transform.SetParent(controller.transform);
-                        //drumstick.AddComponent<ViRMA_Drumstick>().hand = Player.instance.leftHand;
-
-                        
-                        GameObject drumstick = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                        GameObject drumstick = Instantiate(drumstickPrefab, controller.transform);
+                        drumstick.transform.localPosition = new Vector3(0, 0, 0.04f);
+                        drumstick.GetComponent<ViRMA_Drumstick>().hand = Player.instance.leftHand;
                         drumstick.name = "LeftHandDrumstick";
-                        drumstick.transform.SetParent(controller.transform);
-                        drumstick.transform.localScale = Vector3.one * 0.05f;
-                        drumstick.transform.localPosition = new Vector3(0, 0, 0.05f);
-                        drumstick.AddComponent<ViRMA_Drumstick>().hand = Player.instance.leftHand;
-                        
-                        Player.instance.leftHand.gameObject.GetComponent<ViRMA_Hand>().handDrumstick = drumstick;
-
-
+                        Player.instance.leftHand.gameObject.GetComponent<ViRMA_Hand>().drumstick = drumstick;
                     }
                 }
             }
@@ -221,7 +201,7 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
             Renderer[] renderers = hand.mainRenderModel.GetComponentsInChildren<Renderer>();
             foreach (var rend in renderers)
             {
-                if (rend.transform.parent.name == "controller(Clone)")
+                if (rend.transform.parent.name == "controller(Clone)" && !rend.gameObject.GetComponent<ViRMA_Drumstick>())
                 {
                     if (toFade)
                     {
@@ -257,9 +237,9 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
     // testing
     private void ActiveDevelopmentTesting()
     {
-        vizController.gameObject.SetActive(true);
+        vizController.gameObject.SetActive(false);
 
-        queryController.gameObject.SetActive(false);
+        queryController.gameObject.SetActive(true);
 
         ToggleOnlyThisActionSet(dimExplorerActions);
     }

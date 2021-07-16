@@ -63,7 +63,7 @@ public class ViRMA_AxisPoint : MonoBehaviour
 
     private void Update()
     {
-        MoveAxesToFocusedCell();
+        //MoveAxesToFocusedCell();
     }
 
     private void MoveAxesToFocusedCell()
