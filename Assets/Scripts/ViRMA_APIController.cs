@@ -387,14 +387,23 @@ public class ViRMA_APIController : MonoBehaviour
     // dimension explorer
     public static IEnumerator SearchHierachies(string searchParam, Action<List<Tag>> onSuccess)
     {
+        Debug.Log("Submitting... node/name=" + searchParam);
+
         yield return GetRequest("node/name=" + searchParam, (response) =>
         {
             jsonData = response;
         });
 
+        int limitCounter = 0;
         List<Tag> nodes = new List<Tag>();
         foreach (var obj in jsonData)
         {
+            if (limitCounter > 30)
+            {
+                Debug.Log("Too many results. Limiting to top 30.");
+                break;
+            }
+
             Tag newTag = new Tag();
 
             // tag id
@@ -430,6 +439,8 @@ public class ViRMA_APIController : MonoBehaviour
             }
 
             nodes.Add(newTag);
+
+            limitCounter++;
         }
 
         foreach (var node in nodes)
@@ -491,6 +502,8 @@ public class ViRMA_APIController : MonoBehaviour
                 });
             }
         }
+
+        Debug.Log(nodes.Count + " results found!");
 
         List<Tag> orderedNodes = nodes.OrderBy(s => s.Id).ToList();
         onSuccess(orderedNodes);

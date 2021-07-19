@@ -29,7 +29,7 @@ public class ViRMA_DimExplorerBtn : MonoBehaviour
 
     private void Start()
     {
-        parentDimExGrp = transform.parent.GetComponent<ViRMA_DimExplorerGroup>();       
+        parentDimExGrp = transform.parent.GetComponent<ViRMA_DimExplorerGroup>();
     }
 
     private void Update()
@@ -75,6 +75,17 @@ public class ViRMA_DimExplorerBtn : MonoBehaviour
         background.transform.localScale = adjustScale;
 
         col.size = adjustScale;
+
+        bgRend.GetPropertyBlock(matPropBlock);
+        if (searchedForTag)
+        {
+            SetFocusedState();
+        }
+        else
+        {
+            SetDefaultState();
+        }
+        bgRend.SetPropertyBlock(matPropBlock);
     }
     public void LoadContextMenu()
     {
@@ -97,34 +108,37 @@ public class ViRMA_DimExplorerBtn : MonoBehaviour
     // button state controls
     private void DimExBtnStateContoller()
     {
-        // clear border for focused states
-        if (innerBackground)
+        if (globals.dimExplorerActions.IsActive())
         {
-            Destroy(innerBackground);
-            innerBackground = null;
-        }
+            // controls appearance of button in various states
+            bgRend.GetPropertyBlock(matPropBlock);
+            if (globals.dimExplorer.tagBtnHoveredByUser == gameObject || searchedForTag || contextMenuActiveOnBtn)
+            {
+                SetFocusedState();
+            }
+            else if (globals.dimExplorer.activeVerticalRigidbody == parentDimExGrp.dimExRigidbody)
+            {
+                SetHighlightState();
+            }
+            else
+            {
+                SetDefaultState();
+            }
+            bgRend.SetPropertyBlock(matPropBlock);
 
-        // controls appearance of button in various states
-        bgRend.GetPropertyBlock(matPropBlock);
-        if (globals.dimExplorer.tagBtnHoveredByUser == gameObject || searchedForTag || contextMenuActiveOnBtn)
-        {
-            SetFocusedState();
-        }
-        else if (globals.dimExplorer.activeVerticalRigidbody == parentDimExGrp.dimExRigidbody)
-        {
-            SetHighlightState();
-        }
-        else
-        {
-            SetDefaultState();
-        }
-        bgRend.SetPropertyBlock(matPropBlock);
+            // if collider on button is disabled, fade the buttons, unless it's context menu is active
+            if (col.enabled == false && contextMenuActiveOnBtn == false)
+            {
+                SetFadedState();
+            }
 
-        // if collider on button is disabled, fade the buttons, unless it's context menu is active
-        if (col.enabled == false && contextMenuActiveOnBtn == false)
-        {
-            SetFadedState();
-        }
+            // clear border for focused states
+            if (innerBackground)
+            {
+                Destroy(innerBackground);
+                innerBackground = null;
+            }
+        }  
     }
     public void SetDefaultState()
     {

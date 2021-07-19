@@ -7,24 +7,21 @@ using Valve.VR.InteractionSystem;
 public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler, IPointerUpHandler, IPointerClickHandler
 {
 	// SteamVR: used for UI interaction with controller
+	private ViRMA_GlobalsAndActions globals;
+
 	public CustomEvents.UnityEventHand onHandClick;
 	protected Hand currentHand;
 
 	// used for custom UI interaction button states
-	Image image;
-	private Color32 normalColor = Color.white;
-	private Color32 hoverColor = Color.grey;
-	private Color32 downColor = Color.green;
+	private Image btnBackground;
+	private Text btnText;
 	
-
 	protected virtual void Awake()
 	{
-		// set default color of button
-		image = GetComponent<Image>();
-		if (image)
-        {
-			image.color = normalColor;
-		}
+		globals = Player.instance.gameObject.GetComponent<ViRMA_GlobalsAndActions>();
+
+		btnBackground = GetComponent<Image>();
+		btnText = GetComponentInChildren<Text>();
 
 		// SteamVR: assign function to button when it is clicked by hand script
 		Button button = GetComponent<Button>();
@@ -40,9 +37,15 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 		}
 	}
 
+    private void Start()
+    {
+		// set default color of button
+		SetKeyboardBtnNormalState();
+	}
 
-	// --- SteamVR: UI interaction with Hand script --- \\
-	protected virtual void OnHandHoverBegin(Hand hand)
+
+    // --- SteamVR: UI interaction with Hand script --- \\
+    protected virtual void OnHandHoverBegin(Hand hand)
 	{
 		// assign howevered hand as current hand
 		currentHand = hand;
@@ -51,7 +54,7 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 		ViRMA_InputModule.instance.HoverBegin(gameObject);
 
 		// trigger controller hint for UI interaction
-		ControllerButtonHints.ShowButtonHint(hand, hand.uiInteractAction);
+		//ControllerButtonHints.ShowButtonHint(hand, globals.menuInteraction_Select); // not highlighting any button
 	}
 	protected virtual void OnHandHoverEnd(Hand hand)
 	{
@@ -59,7 +62,7 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 		ViRMA_InputModule.instance.HoverEnd(gameObject);
 
 		// hide controller hint for UI interaction
-		ControllerButtonHints.HideButtonHint(hand, hand.uiInteractAction);
+		//ControllerButtonHints.HideButtonHint(hand, globals.menuInteraction_Select); // not highlighting any button
 
 		// clear current hand status
 		currentHand = null;
@@ -72,7 +75,7 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 			ViRMA_InputModule.instance.Submit(gameObject);
 
 			// SteamVR: hide controller hint
-			ControllerButtonHints.HideButtonHint(hand, hand.uiInteractAction);
+			// ControllerButtonHints.HideButtonHint(hand, globals.menuInteraction_Select); // not highlighting any button
 		}
 
 		// force SteamVR UI hand interation states to match custom pointer UI interaction states
@@ -80,11 +83,11 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
         {
 			if (hand.uiInteractAction.stateDown)
 			{
-				image.color = downColor;
+				SetKeyboardBtnDownState();
 			}
 			if (hand.uiInteractAction.stateUp)
 			{
-				image.color = normalColor;
+				SetKeyboardBtnNormalState();
 			}
 		}
 
@@ -99,11 +102,11 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 	// --- custom interaction states for pointer and SteamVR hand --- \\
     public void OnPointerEnter(PointerEventData eventData)
     {
-		image.color = hoverColor;
+		SetKeyboardBtnHighlightState();
 	}
     public void OnPointerExit(PointerEventData eventData)
     {
-		image.color = normalColor;
+		SetKeyboardBtnNormalState();
 	}
     public void OnPointerUp(PointerEventData eventData)
     {
@@ -111,10 +114,28 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 	}
 	public void OnPointerDown(PointerEventData eventData)
 	{
-		image.color = downColor;
+		SetKeyboardBtnDownState();
 	}
 	public void OnPointerClick(PointerEventData eventData)
     {
-		image.color = normalColor;
+		SetKeyboardBtnNormalState();
+	}
+
+
+	// button states
+	private void SetKeyboardBtnNormalState()
+    {
+		btnBackground.color = globals.lightBlack;
+		btnText.color = Color.white;
+    }
+	private void SetKeyboardBtnHighlightState()
+    {
+		btnBackground.color = globals.BrightenColor(globals.lightBlack);
+		btnText.color = Color.white;
+	}
+	private void SetKeyboardBtnDownState()
+    {
+		btnBackground.color = Color.white;
+		btnText.color = globals.lightBlack;
 	}
 }

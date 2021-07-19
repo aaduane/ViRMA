@@ -15,7 +15,6 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
     public Color32 axisBlue = new Color32(35, 99, 142, 255); 
     public Color32 lightBlack = new Color32(52, 73, 94, 255);
     public Color32 lightBlue = new Color32(52, 152, 219, 255);
-
     public Color32 BrightenColor(Color32 colorToBrighten)
     {
         float H, S, V;
@@ -241,7 +240,7 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
 
         queryController.gameObject.SetActive(true);
 
-        ToggleOnlyThisActionSet(dimExplorerActions);
+        //ToggleOnlyThisActionSet(menuInteractionActions);
     }
     private void TestAction(SteamVR_Action_Boolean action, SteamVR_Input_Sources source)
     {

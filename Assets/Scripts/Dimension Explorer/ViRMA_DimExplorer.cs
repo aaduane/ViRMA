@@ -123,6 +123,8 @@ public class ViRMA_DimExplorer : MonoBehaviour
         PositionDimExplorer();
 
         dimensionExpLorerLoaded = true;
+
+        globals.dimExplorerActions.Activate();
     }
     public void CalculateBounds()
     {
@@ -156,8 +158,6 @@ public class ViRMA_DimExplorer : MonoBehaviour
     {
         if (tagBtnHoveredByUser != null)
         {
-            Debug.Log("Loading traversed tags..."); // testing
-
             Tag submittedTagData = tagBtnHoveredByUser.GetComponent<ViRMA_DimExplorerBtn>().tagData;
             StartCoroutine(GetTraversedHierarchyNodes(submittedTagData));
         }       

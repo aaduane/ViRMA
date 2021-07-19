@@ -121,14 +121,15 @@ public class ViRMA_DimExplorerGroup : MonoBehaviour
                 for (int i = starterIndex; i < tagsInGroup.Count; i++)
                 {
                     GameObject dimExBtn = Instantiate(dimExBtnPrefab);
-                    dimExBtn.GetComponent<ViRMA_DimExplorerBtn>().LoadDimExButton(tagsInGroup[i]);
-                    dimExBtn.transform.parent = transform;
-                    dimExBtn.transform.localRotation = Quaternion.identity;
-
                     if (i == starterIndex)
                     {
                         dimExBtn.GetComponent<ViRMA_DimExplorerBtn>().searchedForTag = true;
                     }
+                    dimExBtn.GetComponent<ViRMA_DimExplorerBtn>().LoadDimExButton(tagsInGroup[i]);
+                    dimExBtn.transform.parent = transform;
+                    dimExBtn.transform.localRotation = Quaternion.identity;
+
+                    
 
                     float yPos = indexPlaceholderNeg * -0.1f;
                     dimExBtn.transform.localPosition = new Vector3(0, yPos, 0);
