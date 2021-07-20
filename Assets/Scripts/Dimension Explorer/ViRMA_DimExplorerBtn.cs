@@ -110,6 +110,13 @@ public class ViRMA_DimExplorerBtn : MonoBehaviour
     {
         if (globals.dimExplorerActions.IsActive())
         {
+            // clear border for focused states
+            if (innerBackground)
+            {
+                Destroy(innerBackground);
+                innerBackground = null;
+            }
+
             // controls appearance of button in various states
             bgRend.GetPropertyBlock(matPropBlock);
             if (globals.dimExplorer.tagBtnHoveredByUser == gameObject || searchedForTag || contextMenuActiveOnBtn)
@@ -131,13 +138,6 @@ public class ViRMA_DimExplorerBtn : MonoBehaviour
             {
                 SetFadedState();
             }
-
-            // clear border for focused states
-            if (innerBackground)
-            {
-                Destroy(innerBackground);
-                innerBackground = null;
-            }
         }  
     }
     public void SetDefaultState()
@@ -155,7 +155,7 @@ public class ViRMA_DimExplorerBtn : MonoBehaviour
         if (innerBackground == null)
         {
             matPropBlock.SetColor("_Color", globals.lightBlack);
-            textMesh.color = globals.lightBlack;
+            textMesh.color = globals.DarkenColor(globals.lightBlack);
 
             innerBackground = Instantiate(background, background.transform.parent);
 

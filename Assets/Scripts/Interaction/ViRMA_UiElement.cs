@@ -89,15 +89,12 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 			{
 				SetKeyboardBtnNormalState();
 			}
-		}
-
-		
+		}	
 	}
 	protected virtual void OnButtonClick()
 	{
 		onHandClick.Invoke(currentHand);
 	}
-
 
 	// --- custom interaction states for pointer and SteamVR hand --- \\
     public void OnPointerEnter(PointerEventData eventData)
@@ -125,17 +122,39 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 	// button states
 	private void SetKeyboardBtnNormalState()
     {
-		btnBackground.color = globals.lightBlack;
-		btnText.color = Color.white;
+		if (btnText.gameObject.transform.parent.name == "CLEAR")
+		{
+			btnBackground.color = new Color32(192, 57, 43, 255);
+			btnText.color = Color.white;
+		}
+		else if (btnText.gameObject.transform.parent.name == "DELETE")
+		{
+			btnBackground.color = new Color32(211, 84, 0, 255);
+			btnText.color = Color.white;
+		}
+		else
+		{
+			btnBackground.color = globals.lightBlack;
+			btnText.color = Color.white;
+		}	
     }
 	private void SetKeyboardBtnHighlightState()
     {
-		btnBackground.color = globals.BrightenColor(globals.lightBlack);
-		btnText.color = Color.white;
+		//btnBackground.color = globals.BrightenColor(globals.lightBlack);
+		//btnText.color = Color.white;
+
+		btnBackground.color = globals.BrightenColor(btnBackground.color);
+		btnText.color = globals.BrightenColor(btnText.color);
 	}
 	private void SetKeyboardBtnDownState()
     {
-		btnBackground.color = Color.white;
-		btnText.color = globals.lightBlack;
+		//btnBackground.color = Color.white;
+		//btnText.color = globals.lightBlack;
+
+		Color32 originalBgColor = btnBackground.color;
+		Color32 originalTextColor = btnText.color;
+
+		btnBackground.color = originalTextColor;
+		btnText.color = originalBgColor;
 	}
 }

@@ -1,4 +1,6 @@
 ﻿using System.Collections;
+using System.Globalization;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using Valve.VR.InteractionSystem;
@@ -7,8 +9,10 @@ public class ViRMA_Keyboard : MonoBehaviour
 {
     private ViRMA_GlobalsAndActions globals;
 
-    Button[] keys;
-    public string typedString = "";
+    private Button[] keys;
+    public string typedWordString = "";
+    public GameObject typedWordObj;
+    
 
     private void Awake()
     {
@@ -25,6 +29,8 @@ public class ViRMA_Keyboard : MonoBehaviour
 
             SetKeyColliderSize(key);
         }
+
+        typedWordObj.GetComponent<TextMeshProUGUI>().text = typedWordString;
 
         StartCoroutine(LateStart());
     }
@@ -59,26 +65,41 @@ public class ViRMA_Keyboard : MonoBehaviour
     }
     private void SubmitKey(Button key)
     {
-        string submittedChar = key.GetComponentInChildren<Text>().text;
+        string buttonName = key.gameObject.name;
+        string submittedChar = key.GetComponentInChildren<Text>().text;      
 
-        if (submittedChar == "←")
+        if (buttonName == "SUBMIT")
         {
-            if (typedString.Length > 0)
+            if (typedWordString.Length > 0)
             {
-                typedString = typedString.Substring(0, typedString.Length - 1);
+                StartCoroutine(ViRMA_APIController.SearchHierachies(typedWordString.ToLower(), (nodes) => {
+                    StartCoroutine(globals.dimExplorer.LoadDimExplorer(nodes));
+                }));
+            }      
+        }
+        else if (buttonName == "DELETE")
+        {
+            if (typedWordString.Length > 0)
+            {
+                typedWordString = typedWordString.Substring(0, typedWordString.Length - 1);
+            }       
+        }
+        else if (buttonName == "CLEAR")
+        {
+            typedWordString = "";
+        }
+        else if (buttonName == "SPACE")
+        {
+            if (typedWordString.Substring(typedWordString.Length - 1) != " ") {
+                typedWordString += " ";
             }       
         }
         else
         {
-            typedString += submittedChar;
+            typedWordString += submittedChar;
         }
 
-        Debug.Log(typedString);
-
-        StartCoroutine(ViRMA_APIController.SearchHierachies("computer", (nodes) => {
-            StartCoroutine(globals.dimExplorer.LoadDimExplorer(nodes));
-        }));
-
+        typedWordObj.GetComponent<TextMeshProUGUI>().text = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(typedWordString.ToLower());
     }
 
 }

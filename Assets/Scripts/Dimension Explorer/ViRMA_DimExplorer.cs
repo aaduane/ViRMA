@@ -23,6 +23,8 @@ public class ViRMA_DimExplorer : MonoBehaviour
     public GameObject tagBtnHoveredByUser;
     public GameObject filterBtnHoveredByUser;
 
+    public GameObject dimExKeyboard;
+
     private void Awake()
     {
         globals = Player.instance.gameObject.GetComponent<ViRMA_GlobalsAndActions>();
@@ -30,6 +32,11 @@ public class ViRMA_DimExplorer : MonoBehaviour
         horizontalRigidbody = GetComponent<Rigidbody>();
 
         dimensionExpLorerLoaded = false;
+    }
+
+    private void Start()
+    {
+        
     }
 
     private void Update()
@@ -138,13 +145,27 @@ public class ViRMA_DimExplorer : MonoBehaviour
     }
     public void PositionDimExplorer()
     {
-        // get position directly in front of the player at a specific distance
-        Vector3 flattenedVector = Player.instance.bodyDirectionGuess;
-        flattenedVector.y = 0;
-        flattenedVector.Normalize();
-        Vector3 spawnPos = Player.instance.hmdTransform.position + flattenedVector * 0.6f;
-        transform.position = spawnPos;
-        transform.LookAt(2 * transform.position - Player.instance.hmdTransform.position);
+        if (dimExKeyboard != null && dimExKeyboard.activeSelf)
+        {
+            Vector3 keyboardPos = dimExKeyboard.transform.position;
+            float playerHeight = Player.instance.eyeHeight;
+            transform.position = new Vector3(keyboardPos.x, playerHeight, keyboardPos.z);
+            transform.LookAt(2 * transform.position - Player.instance.hmdTransform.position);
+
+            float distanceBehind = 0.25f;
+            Vector3 newPosition = transform.position + (transform.forward * distanceBehind);
+            transform.position = newPosition;
+        }
+        else
+        {
+            // get position directly in front of the player at a specific distance
+            Vector3 flattenedVector = Player.instance.bodyDirectionGuess;
+            flattenedVector.y = 0;
+            flattenedVector.Normalize();
+            Vector3 spawnPos = Player.instance.hmdTransform.position + flattenedVector * 0.6f;
+            transform.position = spawnPos;
+            transform.LookAt(2 * transform.position - Player.instance.hmdTransform.position);
+        }
 
         // calculate max left and right positions of dimension explorer
         float maxDistanceX = dimExBounds.extents.x;
