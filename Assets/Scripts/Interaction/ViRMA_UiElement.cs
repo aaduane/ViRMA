@@ -120,7 +120,7 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
 
 	// button states
-	private void SetKeyboardBtnNormalState()
+	public void SetKeyboardBtnNormalState()
     {
 		if (btnText.gameObject.transform.parent.name == "CLEAR")
 		{

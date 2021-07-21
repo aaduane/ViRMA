@@ -8,11 +8,11 @@ using Valve.VR.InteractionSystem;
 public class ViRMA_Keyboard : MonoBehaviour
 {
     private ViRMA_GlobalsAndActions globals;
-
+    private Coroutine activeQueryCoroutine;
     private Button[] keys;
     public string typedWordString = "";
-    public GameObject typedWordObj;
-    
+    public TextMeshProUGUI typedWordTMP;
+    private bool keyboardFaded;
 
     private void Awake()
     {
@@ -30,7 +30,7 @@ public class ViRMA_Keyboard : MonoBehaviour
             SetKeyColliderSize(key);
         }
 
-        typedWordObj.GetComponent<TextMeshProUGUI>().text = typedWordString;
+        typedWordTMP.text = typedWordString;
 
         StartCoroutine(LateStart());
     }
@@ -44,6 +44,21 @@ public class ViRMA_Keyboard : MonoBehaviour
         transform.localScale = transform.localScale * 0.5f;
 
         globals.menuInteractionActions.Activate();
+    }
+
+    private void OnTriggerEnter(Collider triggeredCol)
+    {
+        if (triggeredCol.GetComponent<ViRMA_Drumstick>())
+        {
+            FadeKeyboard(false);
+        }
+    }
+    private void OnTriggerExit(Collider triggeredCol)
+    {
+        if (triggeredCol.GetComponent<ViRMA_Drumstick>())
+        {
+            // Debug.Log("EXIT - Keyboard triggered!");
+        }
     }
 
     private void PlaceInFrontOfPlayer()
@@ -63,6 +78,70 @@ public class ViRMA_Keyboard : MonoBehaviour
         BoxCollider keyCollider = key.gameObject.GetComponentInChildren<BoxCollider>();
         keyCollider.size = new Vector3(width, height, 25);
     }
+
+    public void FadeKeyboard(bool toFade)
+    {
+        if (toFade == true)
+        {     
+            if (keyboardFaded == false)
+            {
+                Collider[] colliders = GetComponentsInChildren<Collider>();
+                foreach (var col in colliders)
+                {
+                    if (col.gameObject != gameObject)
+                    {
+                        col.enabled = false;
+                    }
+                }
+
+                Image[] backgrounds = GetComponentsInChildren<Image>();
+                foreach (var bgs in backgrounds)
+                {
+                    bgs.color = new Color(bgs.color.r, bgs.color.g, bgs.color.b, 0.15f);
+                }
+
+                Text[] texts = GetComponentsInChildren<Text>();
+                foreach (var text in texts)
+                {
+                    text.color = new Color(text.color.r, text.color.g, text.color.b, 0.15f);
+                }
+                typedWordTMP.color = new Color(typedWordTMP.color.r, typedWordTMP.color.g, typedWordTMP.color.b, 0.15f);
+
+                keyboardFaded = true;
+            }        
+        }
+        else
+        {
+            if (keyboardFaded == true)
+            {
+                Collider[] colliders = GetComponentsInChildren<Collider>();
+                foreach (var col in colliders)
+                {
+                    col.enabled = true;
+                }
+
+                Image[] backgrounds = GetComponentsInChildren<Image>();
+                foreach (var bgs in backgrounds)
+                {
+                    bgs.color = new Color(bgs.color.r, bgs.color.g, bgs.color.b, 1.0f);
+                    if (bgs.gameObject.name == "Background")
+                    {
+                        bgs.color = new Color32(0, 0, 0, 100);
+                    }
+                }
+
+                Text[] texts = GetComponentsInChildren<Text>();
+                foreach (var text in texts)
+                {
+                    text.color = new Color(text.color.r, text.color.g, text.color.b, 1.0f);
+                }
+                typedWordTMP.color = new Color(typedWordTMP.color.r, typedWordTMP.color.g, typedWordTMP.color.b, 1.0f);
+
+                keyboardFaded = false;
+            }    
+        }
+    }
+
     private void SubmitKey(Button key)
     {
         string buttonName = key.gameObject.name;
@@ -72,9 +151,16 @@ public class ViRMA_Keyboard : MonoBehaviour
         {
             if (typedWordString.Length > 0)
             {
-                StartCoroutine(ViRMA_APIController.SearchHierachies(typedWordString.ToLower(), (nodes) => {
+                if (activeQueryCoroutine != null)
+                {
+                    StopCoroutine(activeQueryCoroutine);
+                }             
+
+                activeQueryCoroutine = StartCoroutine(ViRMA_APIController.SearchHierachies(typedWordString.ToLower(), (nodes) => {
                     StartCoroutine(globals.dimExplorer.LoadDimExplorer(nodes));
                 }));
+
+                //FadeKeyboard(true);
             }      
         }
         else if (buttonName == "DELETE")
@@ -99,7 +185,7 @@ public class ViRMA_Keyboard : MonoBehaviour
             typedWordString += submittedChar;
         }
 
-        typedWordObj.GetComponent<TextMeshProUGUI>().text = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(typedWordString.ToLower());
+        typedWordTMP.text = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(typedWordString.ToLower());
     }
 
 }

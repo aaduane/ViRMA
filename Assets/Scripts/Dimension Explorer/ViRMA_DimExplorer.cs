@@ -23,7 +23,7 @@ public class ViRMA_DimExplorer : MonoBehaviour
     public GameObject tagBtnHoveredByUser;
     public GameObject filterBtnHoveredByUser;
 
-    public GameObject dimExKeyboard;
+    public ViRMA_Keyboard dimExKeyboard;
 
     private void Awake()
     {
@@ -32,11 +32,6 @@ public class ViRMA_DimExplorer : MonoBehaviour
         horizontalRigidbody = GetComponent<Rigidbody>();
 
         dimensionExpLorerLoaded = false;
-    }
-
-    private void Start()
-    {
-        
     }
 
     private void Update()
@@ -133,6 +128,24 @@ public class ViRMA_DimExplorer : MonoBehaviour
 
         globals.dimExplorerActions.Activate();
     }
+    public void DimExgroupSPacingAdjustment()
+    {
+        ViRMA_DimExplorerGroup[] dimExGrps = GetComponentsInChildren<ViRMA_DimExplorerGroup>();
+        foreach (ViRMA_DimExplorerGroup dimExGrp in dimExGrps)
+        {
+            if (dimExGrp.siblingsDimExGrp == dimExGrp.gameObject)
+            {
+                float dist = Vector3.Distance(dimExGrp.siblingsDimExGrp.transform.localPosition, dimExGrp.parentDimExGrp.transform.localPosition);
+
+                float collidersSpace = (dimExGrp.dimExCollider.size.x / 2) + (dimExGrp.parentDimExGrp.GetComponent<ViRMA_DimExplorerGroup>().dimExCollider.size.x / 2);
+            
+                if (dist < collidersSpace)
+                {
+                    // dimExSibling is too close to dimExParent ! ! ! 
+                }
+            }
+        }
+    }
     public void CalculateBounds()
     {
         Renderer[] meshes = GetComponentsInChildren<Renderer>();
@@ -145,9 +158,10 @@ public class ViRMA_DimExplorer : MonoBehaviour
     }
     public void PositionDimExplorer()
     {
-        if (dimExKeyboard != null && dimExKeyboard.activeSelf)
+        // if keyboard is in the scene, position the dim explorer directly behind it
+        if (dimExKeyboard.gameObject != null && dimExKeyboard.gameObject.activeSelf)
         {
-            Vector3 keyboardPos = dimExKeyboard.transform.position;
+            Vector3 keyboardPos = dimExKeyboard.gameObject.transform.position;
             float playerHeight = Player.instance.eyeHeight;
             transform.position = new Vector3(keyboardPos.x, playerHeight, keyboardPos.z);
             transform.LookAt(2 * transform.position - Player.instance.hmdTransform.position);
@@ -417,6 +431,28 @@ public class ViRMA_DimExplorer : MonoBehaviour
                 activeVerticalRigidbody.velocity = transform.TransformDirection(rightHandVelocity);
             }
         }
+
+        // if velocity falls below a certain threshold, just stop all movement completely
+        if (horizontalRigidbody.velocity.magnitude < 0.2f)
+        {
+            horizontalRigidbody.velocity = Vector3.zero;
+        }
+        else
+        {
+            dimExKeyboard.FadeKeyboard(true);
+        }
+        if (activeVerticalRigidbody)
+        {
+            if (activeVerticalRigidbody.velocity.magnitude < 0.2f)
+            {
+                activeVerticalRigidbody.velocity = Vector3.zero;
+            }
+            else
+            {
+                dimExKeyboard.FadeKeyboard(true);
+            }
+        }
+        
     }
 
 

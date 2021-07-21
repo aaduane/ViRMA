@@ -387,7 +387,7 @@ public class ViRMA_APIController : MonoBehaviour
     // dimension explorer
     public static IEnumerator SearchHierachies(string searchParam, Action<List<Tag>> onSuccess)
     {
-        Debug.Log("Submitting... node/name=" + searchParam);
+        //Debug.Log("Submitting... node/name=" + searchParam);
 
         yield return GetRequest("node/name=" + searchParam, (response) =>
         {

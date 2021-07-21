@@ -33,6 +33,7 @@ public class ViRMA_DimExplorerGroup : MonoBehaviour
         dimExCollider = gameObject.AddComponent<BoxCollider>();
 
         dimExRigidbody = gameObject.AddComponent<Rigidbody>();
+        dimExRigidbody.isKinematic = true;
         dimExRigidbody.useGravity = false;
         dimExRigidbody.drag = 0.5f;
 
@@ -170,7 +171,7 @@ public class ViRMA_DimExplorerGroup : MonoBehaviour
             topMostChild = transform.GetChild(0);
             bottomMostChild = transform.GetChild(transform.childCount - 1);
         }
-        
+
         // start limiting scrolling
         dimensionExpLorerGroupLoaded = true;
     }

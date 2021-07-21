@@ -131,13 +131,12 @@ public class ViRMA_DimExplorerBtn : MonoBehaviour
             {
                 SetDefaultState();
             }
-            bgRend.SetPropertyBlock(matPropBlock);
-
             // if collider on button is disabled, fade the buttons, unless it's context menu is active
             if (col.enabled == false && contextMenuActiveOnBtn == false)
             {
                 SetFadedState();
             }
+            bgRend.SetPropertyBlock(matPropBlock);
         }  
     }
     public void SetDefaultState()
@@ -168,7 +167,9 @@ public class ViRMA_DimExplorerBtn : MonoBehaviour
     {
         Color colourToFade = matPropBlock.GetColor("_Color");
         colourToFade.a = 0.5f;
-        matPropBlock.SetColor("_Color", colourToFade);       
+        matPropBlock.SetColor("_Color", colourToFade);
+
+        textMesh.color = new Color(textMesh.color.r, textMesh.color.g, textMesh.color.b, 0.5f);
     }
 
 }
