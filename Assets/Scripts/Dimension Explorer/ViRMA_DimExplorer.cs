@@ -63,6 +63,7 @@ public class ViRMA_DimExplorer : MonoBehaviour
 
         // create dimension explorer button groupings
         float dimExGrpPos = 0;
+        float dimExFamilySpaing = 0.5f;
         float dimExGrpSpacing = 0.2f;
         foreach (var node in nodes)
         {
@@ -109,7 +110,8 @@ public class ViRMA_DimExplorer : MonoBehaviour
             dimExpChildrenGrp.siblingsDimExGrp = dimExpSiblings;
             dimExpChildrenGrp.childrenDimExGrp = dimExpChildren;
 
-            dimExGrpPos += 1;
+            //dimExGrpPos += 1;
+            dimExGrpPos = dimExGrpPos + dimExFamilySpaing;
         }
 
         verticalRigidbodies.Clear();
@@ -121,6 +123,7 @@ public class ViRMA_DimExplorer : MonoBehaviour
         // wait a second for DimExGroups to finish loading so AABB is calculated correctly
         yield return new WaitForSeconds(1);
 
+        DimExgroupSpacingAdjustment();
         CalculateBounds();
         PositionDimExplorer();
 
@@ -128,20 +131,27 @@ public class ViRMA_DimExplorer : MonoBehaviour
 
         globals.dimExplorerActions.Activate();
     }
-    public void DimExgroupSPacingAdjustment()
+    public void DimExgroupSpacingAdjustment()
     {
         ViRMA_DimExplorerGroup[] dimExGrps = GetComponentsInChildren<ViRMA_DimExplorerGroup>();
         foreach (ViRMA_DimExplorerGroup dimExGrp in dimExGrps)
         {
             if (dimExGrp.siblingsDimExGrp == dimExGrp.gameObject)
             {
-                float dist = Vector3.Distance(dimExGrp.siblingsDimExGrp.transform.localPosition, dimExGrp.parentDimExGrp.transform.localPosition);
-
-                float collidersSpace = (dimExGrp.dimExCollider.size.x / 2) + (dimExGrp.parentDimExGrp.GetComponent<ViRMA_DimExplorerGroup>().dimExCollider.size.x / 2);
-            
-                if (dist < collidersSpace)
+                float parentDist = Vector3.Distance(dimExGrp.siblingsDimExGrp.transform.localPosition, dimExGrp.parentDimExGrp.transform.localPosition);
+                float parentColsDistance = (dimExGrp.dimExCollider.size.x / 2) + (dimExGrp.parentDimExGrp.GetComponent<ViRMA_DimExplorerGroup>().dimExCollider.size.x / 2); 
+                if (parentDist < parentColsDistance)
                 {
-                    // dimExSibling is too close to dimExParent ! ! ! 
+                    Debug.Log("Sibling group is too close to parent group - ADJUSTING!");
+                    dimExGrp.parentDimExGrp.transform.localPosition = dimExGrp.parentDimExGrp.transform.localPosition - (transform.right * parentDist);
+                }
+
+                float childrenDist = Vector3.Distance(dimExGrp.siblingsDimExGrp.transform.localPosition, dimExGrp.childrenDimExGrp.transform.localPosition);
+                float childrenColsDistance = (dimExGrp.dimExCollider.size.x / 2) + (dimExGrp.childrenDimExGrp.GetComponent<ViRMA_DimExplorerGroup>().dimExCollider.size.x / 2);
+                if (childrenDist < childrenColsDistance)
+                {
+                    Debug.Log("Sibling group is too close to children group - ADJUSTING!");
+                    dimExGrp.childrenDimExGrp.transform.localPosition = dimExGrp.childrenDimExGrp.transform.localPosition + (transform.right * childrenDist);
                 }
             }
         }
