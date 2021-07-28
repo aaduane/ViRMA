@@ -437,6 +437,14 @@ public class ViRMA_APIController : MonoBehaviour
                 // attch parent tag info to new tag
                 newTag.Parent = parentNode;
             }
+            else
+            {
+                /////////////////////////////////////////////////////////////////////////////////// NEED TO FIX ENTITY BUG HERE
+                Tag parentNode = new Tag();
+                parentNode.Id = 0;
+                parentNode.Name = ".";
+                newTag.Parent = parentNode;
+            }
 
             nodes.Add(newTag);
 

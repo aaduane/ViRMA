@@ -128,6 +128,7 @@ public class ViRMA_DimExplorer : MonoBehaviour
         PositionDimExplorer();
 
         dimensionExpLorerLoaded = true;
+        dimExKeyboard.queryLoading = false;
 
         globals.dimExplorerActions.Activate();
     }
@@ -240,6 +241,17 @@ public class ViRMA_DimExplorer : MonoBehaviour
         }));
 
         // fetch and wait for sibling data
+
+
+
+        if (parentTagData.Id == 0)
+        {
+            /////////////////////////////////////////////////////////////////////////////////// NEED TO FIX ENTITY BUG HERE
+            /////////////////////////////////////////////////////////////////////////////////// id of 0 means we're at the top of the hierarchy?
+        }
+
+
+
         yield return StartCoroutine(ViRMA_APIController.GetHierarchyChildren(parentTagData.Id, (response) => {
             siblingsTagData = response;
         }));
@@ -254,7 +266,6 @@ public class ViRMA_DimExplorer : MonoBehaviour
         {
             parentGroup.tagsInGroup = new List<Tag>() { parentTagData };
             StartCoroutine(parentGroup.LoadDimExplorerGroup());
-            //parentGroup.LoadDimExplorerGroup();
         }
 
         // reload childen dim ex grouo
@@ -266,7 +277,6 @@ public class ViRMA_DimExplorer : MonoBehaviour
         {
             childrenGroup.tagsInGroup = childrenTagData;
             StartCoroutine(childrenGroup.LoadDimExplorerGroup());
-            //childrenGroup.LoadDimExplorerGroup();
         }
 
         // reload sibling dim ex grouo
@@ -279,7 +289,6 @@ public class ViRMA_DimExplorer : MonoBehaviour
             siblingsGroup.searchedForTagData = submittedTagData;
             siblingsGroup.tagsInGroup = siblingsTagData;
             StartCoroutine(siblingsGroup.LoadDimExplorerGroup());
-            //siblingsGroup.LoadDimExplorerGroup();
         }
 
         dimensionExpLorerLoaded = true;

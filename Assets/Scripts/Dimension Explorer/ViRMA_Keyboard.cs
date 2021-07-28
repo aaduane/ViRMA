@@ -8,11 +8,13 @@ using Valve.VR.InteractionSystem;
 public class ViRMA_Keyboard : MonoBehaviour
 {
     private ViRMA_GlobalsAndActions globals;
-    private Coroutine activeQueryCoroutine;
     private Button[] keys;
     public string typedWordString = "";
     public TextMeshProUGUI typedWordTMP;
     private bool keyboardFaded;
+    public bool queryLoading;
+    public GameObject loadingIndicator;
+    private Coroutine activeQueryCoroutine;
 
     private void Awake()
     {
@@ -33,6 +35,19 @@ public class ViRMA_Keyboard : MonoBehaviour
         typedWordTMP.text = typedWordString;
 
         StartCoroutine(LateStart());
+    }
+
+    private void Update()
+    {
+        if (queryLoading)
+        {
+            loadingIndicator.transform.parent.gameObject.SetActive(true);
+            loadingIndicator.transform.Rotate(0, 0, -300f * Time.deltaTime);
+        }
+        else
+        {
+            loadingIndicator.transform.parent.gameObject.SetActive(false);
+        }
     }
 
     IEnumerator LateStart()
@@ -154,13 +169,17 @@ public class ViRMA_Keyboard : MonoBehaviour
                 if (activeQueryCoroutine != null)
                 {
                     StopCoroutine(activeQueryCoroutine);
-                }             
+                }
 
-                activeQueryCoroutine = StartCoroutine(ViRMA_APIController.SearchHierachies(typedWordString.ToLower(), (nodes) => {
+                queryLoading = true;
+                key.enabled = false;
+                StartCoroutine(globals.dimExplorer.ClearDimExplorer());           
+
+                activeQueryCoroutine = StartCoroutine(ViRMA_APIController.SearchHierachies(typedWordString.ToLower(), (nodes) => {             
                     StartCoroutine(globals.dimExplorer.LoadDimExplorer(nodes));
+                    activeQueryCoroutine = null;
+                    key.enabled = true;
                 }));
-
-                //FadeKeyboard(true);
             }      
         }
         else if (buttonName == "DELETE")

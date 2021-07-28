@@ -8,6 +8,7 @@ public class ViRMA_AxisPoint : MonoBehaviour
 {
     private ViRMA_GlobalsAndActions globals;
     GameObject axisLabel;
+    TextMeshPro axisLabelText;
 
     [HideInInspector] public bool x;
     [HideInInspector] public bool y;
@@ -28,6 +29,7 @@ public class ViRMA_AxisPoint : MonoBehaviour
     {
 
         axisLabel = Instantiate(Resources.Load("Prefabs/AxisLabel")) as GameObject;
+        axisLabelText = axisLabel.GetComponent<TextMeshPro>();
         axisLabel.transform.SetParent(transform);
         axisLabel.transform.localScale = axisLabel.transform.localScale * 0.5f;
         axisLabel.transform.localPosition = Vector3.zero;
@@ -63,16 +65,17 @@ public class ViRMA_AxisPoint : MonoBehaviour
 
     private void Update()
     {
-        //MoveAxesToFocusedCell();
+        // set axis label text when it is ready
+        if (axisLabelText.text != axisPointLabel)
+        {
+            axisLabelText.text = axisPointLabel;
+        }
+
+        //MoveAxesToFocusedCell(); // no longer works properly with changes (needs to be edited to use again)
     }
 
     private void MoveAxesToFocusedCell()
     {
-        if (axisLabel.GetComponent<TextMeshPro>().text != axisPointLabel)
-        {
-            axisLabel.GetComponent<TextMeshPro>().text = axisPointLabel;
-        }   
-
         //transform.LookAt(2 * transform.position - Player.instance.hmdTransform.position);
         //globals.vizController.gameObject.GetComponent<Rigidbody>().centerOfMass = Vector3.zero;
 
