@@ -439,7 +439,7 @@ public class ViRMA_APIController : MonoBehaviour
             }
             else
             {
-                /////////////////////////////////////////////////////////////////////////////////// NEED TO FIX ENTITY BUG HERE
+                // when there is no parent, it means we're at the top of the hierarchy and use a tag id of zero to indicate that
                 Tag parentNode = new Tag();
                 parentNode.Id = 0;
                 parentNode.Name = ".";

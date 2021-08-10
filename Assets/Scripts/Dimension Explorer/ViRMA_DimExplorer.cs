@@ -241,22 +241,21 @@ public class ViRMA_DimExplorer : MonoBehaviour
         }));
 
         // fetch and wait for sibling data
-
-
-
         if (parentTagData.Id == 0)
         {
-            /////////////////////////////////////////////////////////////////////////////////// NEED TO FIX ENTITY BUG HERE
-            /////////////////////////////////////////////////////////////////////////////////// id of 0 means we're at the top of the hierarchy?
+            // if the parent id is zero, it means we're atht top of hierarchy so replace normal siblings with previous parent instead
+            yield return StartCoroutine(ViRMA_APIController.GetHierarchyParent(childrenTagData[0].Id, (response) => {
+                siblingsTagData = new List<Tag>() { response };
+            }));
         }
-
-
-
-        yield return StartCoroutine(ViRMA_APIController.GetHierarchyChildren(parentTagData.Id, (response) => {
-            siblingsTagData = response;
-        }));
-
-        
+        else
+        {
+            // if parent isn't zero, then just get the normal siblings like always
+            yield return StartCoroutine(ViRMA_APIController.GetHierarchyChildren(parentTagData.Id, (response) => {
+                siblingsTagData = response;
+            }));
+        }
+               
         // reload parent dim ex grouo
         if (parentTagData.Name == null)
         {
