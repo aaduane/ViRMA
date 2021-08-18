@@ -37,13 +37,13 @@ public class ViRMA_QueryController : MonoBehaviour
         
         //StartCoroutine(ViRMA_APIController.SearchHierachies("computer", (nodes) => {
         //    StartCoroutine(globals.dimExplorer.LoadDimExplorer(nodes));
-        //}));
-        
+        //}));    
 
     }
 
     private void Update()
     {
+        /*
         if (activeQuery.X != null)
         {
             Debug.Log("X: " + activeQuery.X.Id);
@@ -56,6 +56,7 @@ public class ViRMA_QueryController : MonoBehaviour
         {
             Debug.Log("Z: " + activeQuery.Z.Id);
         }
+        */
     }
 
     public void ReloadViz()

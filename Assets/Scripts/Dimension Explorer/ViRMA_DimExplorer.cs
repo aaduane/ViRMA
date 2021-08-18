@@ -143,7 +143,7 @@ public class ViRMA_DimExplorer : MonoBehaviour
                 float parentColsDistance = (dimExGrp.dimExCollider.size.x / 2) + (dimExGrp.parentDimExGrp.GetComponent<ViRMA_DimExplorerGroup>().dimExCollider.size.x / 2); 
                 if (parentDist < parentColsDistance)
                 {
-                    Debug.Log("Sibling group is too close to parent group - ADJUSTING!");
+                    //Debug.Log("Sibling group is too close to parent group - ADJUSTING!");
                     dimExGrp.parentDimExGrp.transform.localPosition = dimExGrp.parentDimExGrp.transform.localPosition - (transform.right * parentDist);
                 }
 
@@ -151,7 +151,7 @@ public class ViRMA_DimExplorer : MonoBehaviour
                 float childrenColsDistance = (dimExGrp.dimExCollider.size.x / 2) + (dimExGrp.childrenDimExGrp.GetComponent<ViRMA_DimExplorerGroup>().dimExCollider.size.x / 2);
                 if (childrenDist < childrenColsDistance)
                 {
-                    Debug.Log("Sibling group is too close to children group - ADJUSTING!");
+                    //Debug.Log("Sibling group is too close to children group - ADJUSTING!");
                     dimExGrp.childrenDimExGrp.transform.localPosition = dimExGrp.childrenDimExGrp.transform.localPosition + (transform.right * childrenDist);
                 }
             }
