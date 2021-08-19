@@ -41,6 +41,8 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
     {
 		// set default color of button
 		SetKeyboardBtnNormalState();
+
+		SetKeyColliderSize();
 	}
 
 
@@ -118,25 +120,36 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 		SetKeyboardBtnNormalState();
 	}
 
+	private void SetKeyColliderSize()
+	{
+		Button btn = GetComponent<Button>();
+		float width = btn.GetComponent<RectTransform>().rect.width;
+		float height = btn.GetComponent<RectTransform>().rect.height;
+		BoxCollider keyCollider = btn.gameObject.GetComponentInChildren<BoxCollider>();
+		keyCollider.size = new Vector3(width, height, 25);
+	}
 
 	// button states
 	public void SetKeyboardBtnNormalState()
     {
-		if (btnText.gameObject.transform.parent.name == "CLEAR")
-		{
-			btnBackground.color = new Color32(192, 57, 43, 255);
-			btnText.color = Color.white;
-		}
-		else if (btnText.gameObject.transform.parent.name == "DELETE")
-		{
-			btnBackground.color = new Color32(211, 84, 0, 255);
-			btnText.color = Color.white;
-		}
-		else
-		{
-			btnBackground.color = globals.lightBlack;
-			btnText.color = Color.white;
-		}	
+		if (btnText != null)
+        {
+			if (btnText.gameObject.transform.parent.name == "CLEAR")
+			{
+				btnBackground.color = new Color32(192, 57, 43, 255);
+				btnText.color = Color.white;
+			}
+			else if (btnText.gameObject.transform.parent.name == "DELETE")
+			{
+				btnBackground.color = new Color32(211, 84, 0, 255);
+				btnText.color = Color.white;
+			}
+			else
+			{
+				btnBackground.color = globals.lightBlack;
+				btnText.color = Color.white;
+			}
+		}			
     }
 	private void SetKeyboardBtnHighlightState()
     {

@@ -29,7 +29,7 @@ public class ViRMA_Keyboard : MonoBehaviour
         {
             key.onClick.AddListener(() => SubmitKey(key));
 
-            SetKeyColliderSize(key);
+            //SetKeyColliderSize(key);
         }
 
         typedWordTMP.text = typedWordString;
@@ -39,26 +39,14 @@ public class ViRMA_Keyboard : MonoBehaviour
 
     private void Update()
     {
-        if (queryLoading)
-        {
-            loadingIndicator.transform.parent.gameObject.SetActive(true);
-            loadingIndicator.transform.Rotate(0, 0, -300f * Time.deltaTime);
-        }
-        else
-        {
-            loadingIndicator.transform.parent.gameObject.SetActive(false);
-        }
+        LoadingIndicator();
     }
 
     IEnumerator LateStart()
     {
         yield return new WaitForSeconds(1);
 
-        PlaceInFrontOfPlayer();
-
-        transform.localScale = transform.localScale * 0.5f;
-
-        globals.menuInteractionActions.Activate();
+        //ToggleDimExKeyboard(true);
     }
 
     private void OnTriggerEnter(Collider triggeredCol)
@@ -76,24 +64,29 @@ public class ViRMA_Keyboard : MonoBehaviour
         }
     }
 
-    private void PlaceInFrontOfPlayer()
+    public void ToggleDimExKeyboard(bool onOff)
     {
-        Vector3 flattenedVector = Player.instance.bodyDirectionGuess;
-        flattenedVector.y = 0;
-        flattenedVector.Normalize();
-        Vector3 spawnPos = Player.instance.hmdTransform.position + flattenedVector * 0.4f;
-        spawnPos.y = spawnPos.y * 0.75f;
-        transform.position = spawnPos;
-        transform.LookAt(2 * transform.position - Player.instance.hmdTransform.position);
-    }
-    private void SetKeyColliderSize(Button key)
-    {
-        float width = key.GetComponent<RectTransform>().rect.width;
-        float height = key.GetComponent<RectTransform>().rect.height;
-        BoxCollider keyCollider = key.gameObject.GetComponentInChildren<BoxCollider>();
-        keyCollider.size = new Vector3(width, height, 25);
-    }
+        // scaling
+        transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
 
+        if (onOff)
+        {
+            Vector3 flattenedVector = Player.instance.bodyDirectionGuess;
+            flattenedVector.y = 0;
+            flattenedVector.Normalize();
+            Vector3 spawnPos = Player.instance.hmdTransform.position + flattenedVector * 0.4f;
+            spawnPos.y = spawnPos.y * 0.75f;
+            transform.position = spawnPos;
+            transform.LookAt(2 * transform.position - Player.instance.hmdTransform.position);
+            globals.menuInteractionActions.Activate();
+        }
+        else
+        {
+            transform.position = new Vector3(0, 9999, 0);
+            globals.dimExplorer.ClearDimExplorer();
+            globals.menuInteractionActions.Deactivate();
+        }
+    }
     public void FadeKeyboard(bool toFade)
     {
         if (toFade == true)
@@ -156,7 +149,6 @@ public class ViRMA_Keyboard : MonoBehaviour
             }    
         }
     }
-
     private void SubmitKey(Button key)
     {
         string buttonName = key.gameObject.name;
@@ -205,6 +197,18 @@ public class ViRMA_Keyboard : MonoBehaviour
         }
 
         typedWordTMP.text = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(typedWordString.ToLower());
+    }
+    private void LoadingIndicator()
+    {
+        if (queryLoading)
+        {
+            loadingIndicator.transform.parent.gameObject.SetActive(true);
+            loadingIndicator.transform.Rotate(0, 0, -300f * Time.deltaTime);
+        }
+        else
+        {
+            loadingIndicator.transform.parent.gameObject.SetActive(false);
+        }
     }
 
 }

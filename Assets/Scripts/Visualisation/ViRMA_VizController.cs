@@ -64,7 +64,7 @@ public class ViRMA_VizController : MonoBehaviour
         //dummyQuery.AddFilter(115, "Hierarchy");
         //dummyQuery.AddFilter(116, "Hierarchy");
 
-        StartCoroutine(SubmitVizQuery(dummyQuery));
+        //StartCoroutine(SubmitVizQuery(dummyQuery));
     }
     private void Update()
     {

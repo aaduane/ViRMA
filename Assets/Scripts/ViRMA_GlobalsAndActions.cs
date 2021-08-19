@@ -236,9 +236,8 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
     // testing
     private void ActiveDevelopmentTesting()
     {
-        vizController.gameObject.SetActive(false);
-
-        queryController.gameObject.SetActive(true);
+        //vizController.gameObject.SetActive(true);
+        //queryController.gameObject.SetActive(true);
 
         //ToggleOnlyThisActionSet(menuInteractionActions);
     }
