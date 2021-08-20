@@ -15,6 +15,9 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 	// used for custom UI interaction button states
 	private Image btnBackground;
 	private Text btnText;
+
+	ViRMA_Keyboard keyboard;
+	ViRMA_MainMenu mainMenu;
 	
 	protected virtual void Awake()
 	{
@@ -35,13 +38,29 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
 			button.transition = Selectable.Transition.None;
 		}
+
+		// determine what is the UIElement's canvas parent
+		Transform target = transform;
+		while (target.parent != null)
+		{
+			if (target.parent.GetComponent<ViRMA_Keyboard>())
+			{
+				keyboard = target.parent.GetComponent<ViRMA_Keyboard>();
+			}
+			if (target.parent.GetComponent<ViRMA_MainMenu>())
+			{
+				mainMenu = target.parent.GetComponent<ViRMA_MainMenu>();
+			}
+			target = target.parent;
+		}
 	}
 
     private void Start()
     {
 		// set default color of button
-		SetKeyboardBtnNormalState();
+		SetBtnNormalState();
 
+		// set correct box collider size for UI interactions
 		SetKeyColliderSize();
 	}
 
@@ -85,11 +104,11 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
         {
 			if (hand.uiInteractAction.stateDown)
 			{
-				SetKeyboardBtnDownState();
+				SetBtnDownState();
 			}
 			if (hand.uiInteractAction.stateUp)
 			{
-				SetKeyboardBtnNormalState();
+				SetBtnNormalState();
 			}
 		}	
 	}
@@ -101,11 +120,11 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 	// --- custom interaction states for pointer and SteamVR hand --- \\
     public void OnPointerEnter(PointerEventData eventData)
     {
-		SetKeyboardBtnHighlightState();
+		SetBtnHighlightState();
 	}
     public void OnPointerExit(PointerEventData eventData)
     {
-		SetKeyboardBtnNormalState();
+		SetBtnNormalState();
 	}
     public void OnPointerUp(PointerEventData eventData)
     {
@@ -113,11 +132,11 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 	}
 	public void OnPointerDown(PointerEventData eventData)
 	{
-		SetKeyboardBtnDownState();
+		SetBtnDownState();
 	}
 	public void OnPointerClick(PointerEventData eventData)
     {
-		SetKeyboardBtnNormalState();
+		SetBtnNormalState();
 	}
 
 	private void SetKeyColliderSize()
@@ -130,40 +149,44 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 	}
 
 	// button states
-	public void SetKeyboardBtnNormalState()
+	public void SetBtnNormalState()
     {
-		if (btnText != null)
+		if (keyboard)
         {
-			if (btnText.gameObject.transform.parent.name == "CLEAR")
+			if (btnText != null)
 			{
-				btnBackground.color = new Color32(192, 57, 43, 255);
-				btnText.color = Color.white;
+				if (btnText.gameObject.transform.parent.name == "CLEAR")
+				{
+					btnBackground.color = new Color32(192, 57, 43, 255);
+					btnText.color = Color.white;
+				}
+				else if (btnText.gameObject.transform.parent.name == "DELETE")
+				{
+					btnBackground.color = new Color32(211, 84, 0, 255);
+					btnText.color = Color.white;
+				}
+				else
+				{
+					btnBackground.color = globals.lightBlack;
+					btnText.color = Color.white;
+				}
 			}
-			else if (btnText.gameObject.transform.parent.name == "DELETE")
-			{
-				btnBackground.color = new Color32(211, 84, 0, 255);
-				btnText.color = Color.white;
-			}
-			else
-			{
-				btnBackground.color = globals.lightBlack;
-				btnText.color = Color.white;
-			}
-		}			
-    }
-	private void SetKeyboardBtnHighlightState()
-    {
-		//btnBackground.color = globals.BrightenColor(globals.lightBlack);
-		//btnText.color = Color.white;
+		}
 
+		if (mainMenu)
+        {
+			btnBackground.color = globals.lightBlack;
+			btnText.color = Color.white;
+		}
+				
+    }
+	private void SetBtnHighlightState()
+    {
 		btnBackground.color = globals.BrightenColor(btnBackground.color);
 		btnText.color = globals.BrightenColor(btnText.color);
 	}
-	private void SetKeyboardBtnDownState()
+	private void SetBtnDownState()
     {
-		//btnBackground.color = Color.white;
-		//btnText.color = globals.lightBlack;
-
 		Color32 originalBgColor = btnBackground.color;
 		Color32 originalTextColor = btnText.color;
 

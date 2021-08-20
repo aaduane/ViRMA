@@ -101,7 +101,7 @@ public class ViRMA_DimExplorerBtn : MonoBehaviour
         contextMenu.AddComponent<Rigidbody>().useGravity = false;
 
         contextMenu.AddComponent<BoxCollider>().isTrigger = true;
-        contextMenu.GetComponent<BoxCollider>().size = new Vector3(col.size.x * 3f, col.size.y * 4f, col.size.z * 10f);
+        contextMenu.GetComponent<BoxCollider>().size = new Vector3(0.5f, 0.25f, 0.15f);
         contextMenu.GetComponent<BoxCollider>().center = new Vector3(col.center.x, col.center.y, (col.size.z * 10f / 2f) * -1);     
     }
 

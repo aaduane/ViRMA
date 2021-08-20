@@ -238,8 +238,6 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
     {
         //vizController.gameObject.SetActive(true);
         //queryController.gameObject.SetActive(true);
-
-        //ToggleOnlyThisActionSet(menuInteractionActions);
     }
     private void TestAction(SteamVR_Action_Boolean action, SteamVR_Input_Sources source)
     {

@@ -28,8 +28,6 @@ public class ViRMA_Keyboard : MonoBehaviour
         foreach (Button key in keys)
         {
             key.onClick.AddListener(() => SubmitKey(key));
-
-            //SetKeyColliderSize(key);
         }
 
         typedWordTMP.text = typedWordString;
@@ -46,7 +44,7 @@ public class ViRMA_Keyboard : MonoBehaviour
     {
         yield return new WaitForSeconds(1);
 
-        //ToggleDimExKeyboard(true);
+        //ToggleDimExKeyboard(true); testing
     }
 
     private void OnTriggerEnter(Collider triggeredCol)
