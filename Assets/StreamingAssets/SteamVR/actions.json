@@ -74,6 +74,10 @@
       "type": "boolean"
     },
     {
+      "name": "/actions/MenuInteraction/in/Scroll",
+      "type": "vector2"
+    },
+    {
       "name": "/actions/DimExplorer/in/Select",
       "type": "boolean"
     },

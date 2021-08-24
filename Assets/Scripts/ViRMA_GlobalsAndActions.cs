@@ -8,6 +8,7 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
     public ViRMA_VizController vizController;
     public ViRMA_QueryController queryController;
     public ViRMA_DimExplorer dimExplorer;
+    public ViRMA_MainMenu mainMenu;
 
     // colours
     public Color32 axisRed = new Color32(192, 57, 43, 255);
@@ -48,6 +49,7 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
     public SteamVR_ActionSet menuInteractionActions;
     public SteamVR_Action_Boolean menuInteraction_Select;
     public SteamVR_Action_Boolean menuInteraction_MenuControl;
+    public SteamVR_Action_Vector2 menuInteraction_Scroll;
 
     // viz actions
     public SteamVR_ActionSet vizNavActions;
@@ -65,6 +67,8 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
         vizController = GameObject.Find("VisualisationController").GetComponent<ViRMA_VizController>();
         queryController = GameObject.Find("QueryController").GetComponent<ViRMA_QueryController>();
         dimExplorer = GameObject.Find("DimensionExplorer").GetComponent<ViRMA_DimExplorer>();
+        mainMenu = GameObject.Find("MainMenu").GetComponent<ViRMA_MainMenu>();
+
 
         // assign all action sets
         AssignAllActionSets();
@@ -91,6 +95,7 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
         menuInteractionActions = SteamVR_Input.GetActionSet("MenuInteraction");
         menuInteraction_Select = SteamVR_Input.GetActionFromPath<SteamVR_Action_Boolean>("/actions/MenuInteraction/in/Select");
         menuInteraction_MenuControl = SteamVR_Input.GetActionFromPath<SteamVR_Action_Boolean>("/actions/MenuInteraction/in/MenuControl");
+        menuInteraction_Scroll = SteamVR_Input.GetActionFromPath<SteamVR_Action_Vector2>("/actions/MenuInteraction/in/Scroll");
 
         // viz navigation action set
         vizNavActions = SteamVR_Input.GetActionSet("VizNavigation");
@@ -118,6 +123,8 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
         dimExplorer_Scroll[SteamVR_Input_Sources.Any].onStateDown += dimExplorer.SubmitTagForTraversal;
         dimExplorer_Select[SteamVR_Input_Sources.Any].onStateDown += dimExplorer.SubmitTagForContextMenu;
         dimExplorer_Select[SteamVR_Input_Sources.Any].onStateDown += dimExplorer.SubmitContextBtnForQuery;
+
+        //menuInteraction_Scroll[SteamVR_Input_Sources.Any].onAxis += mainMenu.TestScroll;
     }
     public void ToggleOnlyThisActionSet(SteamVR_ActionSet targetActionSet)
     {

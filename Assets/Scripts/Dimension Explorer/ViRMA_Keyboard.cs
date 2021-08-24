@@ -44,7 +44,9 @@ public class ViRMA_Keyboard : MonoBehaviour
     {
         yield return new WaitForSeconds(1);
 
-        //ToggleDimExKeyboard(true); testing
+        // delayed things
+
+        //ToggleDimExKeyboard(true); // testing
     }
 
     private void OnTriggerEnter(Collider triggeredCol)
@@ -200,12 +202,18 @@ public class ViRMA_Keyboard : MonoBehaviour
     {
         if (queryLoading)
         {
-            loadingIndicator.transform.parent.gameObject.SetActive(true);
+            if (!loadingIndicator.transform.parent.gameObject.activeSelf)
+            {
+                loadingIndicator.transform.parent.gameObject.SetActive(true);
+            }          
             loadingIndicator.transform.Rotate(0, 0, -300f * Time.deltaTime);
         }
         else
         {
-            loadingIndicator.transform.parent.gameObject.SetActive(false);
+            if (loadingIndicator.transform.parent.gameObject.activeSelf)
+            {
+                loadingIndicator.transform.parent.gameObject.SetActive(false);
+            }        
         }
     }
 

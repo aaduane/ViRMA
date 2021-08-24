@@ -22,7 +22,6 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 	protected virtual void Awake()
 	{
 		globals = Player.instance.gameObject.GetComponent<ViRMA_GlobalsAndActions>();
-
 		btnBackground = GetComponent<Image>();
 		btnText = GetComponentInChildren<Text>();
 

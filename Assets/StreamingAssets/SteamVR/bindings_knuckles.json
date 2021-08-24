@@ -136,6 +136,24 @@
                },
                "mode" : "button",
                "path" : "/user/hand/right/input/a"
+            },
+            {
+               "inputs" : {
+                  "scroll" : {
+                     "output" : "/actions/menuinteraction/in/scroll"
+                  }
+               },
+               "mode" : "scroll",
+               "path" : "/user/hand/left/input/thumbstick"
+            },
+            {
+               "inputs" : {
+                  "scroll" : {
+                     "output" : "/actions/menuinteraction/in/scroll"
+                  }
+               },
+               "mode" : "scroll",
+               "path" : "/user/hand/right/input/thumbstick"
             }
          ]
       },

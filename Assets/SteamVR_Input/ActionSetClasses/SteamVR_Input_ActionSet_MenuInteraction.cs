@@ -32,5 +32,13 @@ namespace Valve.VR
                 return SteamVR_Actions.menuInteraction_MenuControl;
             }
         }
+        
+        public virtual SteamVR_Action_Vector2 Scroll
+        {
+            get
+            {
+                return SteamVR_Actions.menuInteraction_Scroll;
+            }
+        }
     }
 }
