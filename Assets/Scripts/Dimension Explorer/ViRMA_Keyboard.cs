@@ -25,10 +25,7 @@ public class ViRMA_Keyboard : MonoBehaviour
 
     private void Start()
     {
-        foreach (Button key in keys)
-        {
-            key.onClick.AddListener(() => SubmitKey(key));
-        }
+        SetBtnDefaultState();
 
         typedWordTMP.text = typedWordString;
 
@@ -46,7 +43,7 @@ public class ViRMA_Keyboard : MonoBehaviour
 
         // delayed things
 
-        //ToggleDimExKeyboard(true); // testing
+        // ToggleDimExKeyboard(true); // testing
     }
 
     private void OnTriggerEnter(Collider triggeredCol)
@@ -64,6 +61,35 @@ public class ViRMA_Keyboard : MonoBehaviour
         }
     }
 
+    public void SetBtnDefaultState()
+    {
+        foreach (Button key in keys)
+        {
+            key.onClick.AddListener(() => SubmitKey(key));
+
+            Text keyText = key.GetComponentInChildren<Text>();
+            Image keyBackground = key.GetComponent<Image>();
+
+            if (keyText && keyBackground)
+            {
+                if (keyText.gameObject.transform.parent.name == "CLEAR")
+                {
+                    keyBackground.color = new Color32(192, 57, 43, 255);
+                    keyText.color = Color.white;
+                }
+                else if (keyText.gameObject.transform.parent.name == "DELETE")
+                {
+                    keyBackground.color = new Color32(211, 84, 0, 255);
+                    keyText.color = Color.white;
+                }
+                else
+                {
+                    keyBackground.color = globals.lightBlack;
+                    keyText.color = Color.white;
+                }
+            }
+        }
+    }
     public void ToggleDimExKeyboard(bool onOff)
     {
         // scaling

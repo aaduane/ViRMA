@@ -16,8 +16,8 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 	private Image btnBackground;
 	private Text btnText;
 
-	ViRMA_Keyboard keyboard;
-	ViRMA_MainMenu mainMenu;
+	public Color normalBackgroundColor;
+	public Color normalTextColor;
 	
 	protected virtual void Awake()
 	{
@@ -37,27 +37,12 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
 			button.transition = Selectable.Transition.None;
 		}
-
-		// determine what is the UIElement's canvas parent
-		Transform target = transform;
-		while (target.parent != null)
-		{
-			if (target.parent.GetComponent<ViRMA_Keyboard>())
-			{
-				keyboard = target.parent.GetComponent<ViRMA_Keyboard>();
-			}
-			if (target.parent.GetComponent<ViRMA_MainMenu>())
-			{
-				mainMenu = target.parent.GetComponent<ViRMA_MainMenu>();
-			}
-			target = target.parent;
-		}
 	}
 
     private void Start()
     {
 		// set default color of button
-		SetBtnNormalState();
+		//SetBtnNormalState();
 
 		// set correct box collider size for UI interactions
 		SetKeyColliderSize();
@@ -150,37 +135,14 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 	// button states
 	public void SetBtnNormalState()
     {
-		if (keyboard)
-        {
-			if (btnText != null)
-			{
-				if (btnText.gameObject.transform.parent.name == "CLEAR")
-				{
-					btnBackground.color = new Color32(192, 57, 43, 255);
-					btnText.color = Color.white;
-				}
-				else if (btnText.gameObject.transform.parent.name == "DELETE")
-				{
-					btnBackground.color = new Color32(211, 84, 0, 255);
-					btnText.color = Color.white;
-				}
-				else
-				{
-					btnBackground.color = globals.lightBlack;
-					btnText.color = Color.white;
-				}
-			}
-		}
-
-		if (mainMenu)
-        {
-			btnBackground.color = globals.lightBlack;
-			btnText.color = Color.white;
-		}
-				
-    }
+		btnBackground.color = normalBackgroundColor;
+		btnText.color = normalTextColor;
+	}
 	private void SetBtnHighlightState()
     {
+		normalBackgroundColor = btnBackground.color;
+		normalTextColor = btnText.color;
+
 		btnBackground.color = globals.BrightenColor(btnBackground.color);
 		btnText.color = globals.BrightenColor(btnText.color);
 	}
