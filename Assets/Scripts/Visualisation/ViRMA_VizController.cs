@@ -55,16 +55,26 @@ public class ViRMA_VizController : MonoBehaviour
     {
         // dummy queries for debugging
         Query dummyQuery = new Query();
+
         dummyQuery.SetAxis("X", 3, "Tagset");
         dummyQuery.SetAxis("Y", 7, "Tagset");
         dummyQuery.SetAxis("Z", 77, "Hierarchy");
+
         //dummyQuery.SetAxis("X", 7, "Tagset");
         //dummyQuery.SetAxis("Y", 7, "Tagset");
         //dummyQuery.SetAxis("Z", 7, "Tagset");
+
         //dummyQuery.AddFilter(115, "Hierarchy");
         //dummyQuery.AddFilter(116, "Hierarchy");
 
-        //StartCoroutine(SubmitVizQuery(dummyQuery));
+
+        //dummyQuery.SetAxis("Y", 691, "Hierarchy");
+        //dummyQuery.SetAxis("Z", 13, "Tagset");
+
+        //dummyQuery.SetAxis("X", 7481, "Hierarchy");
+        //dummyQuery.SetAxis("Y", 5, "Tagset");
+
+        StartCoroutine(SubmitVizQuery(dummyQuery));
     }
     private void Update()
     {
@@ -87,8 +97,13 @@ public class ViRMA_VizController : MonoBehaviour
             cellData = cells;
         }));
 
+        float before = Time.realtimeSinceStartup;
+
         // generate textures and texture arrays from local image storage
         GenerateTexturesAndTextureArrays(cellData);
+
+        float after = Time.realtimeSinceStartup;
+        Debug.Log("TEXTURE PARSE TIME ~ ~ ~ ~ ~ " + (after - before).ToString("n3") + " seconds");
 
         // generate cell X, Y, Z axes 
         GenerateAxes(cellData);
@@ -116,7 +131,7 @@ public class ViRMA_VizController : MonoBehaviour
 
         // activate navigation action controls
         globals.vizNavActions.Activate();
-    }     
+    }
     private void GenerateTexturesAndTextureArrays(List<Cell> cellData)
     {
         // make a list of all the unique image textures present in the current query
@@ -127,9 +142,10 @@ public class ViRMA_VizController : MonoBehaviour
             {
                 int index = uniqueTextures.FindIndex(a => a.Key == newCell.ImageName);
                 if (index == -1)
-                {
+                {        
                     byte[] imageBytes = File.ReadAllBytes(ViRMA_APIController.imagesDirectory + newCell.ImageName);
-                    newCell.ImageTexture = ConvertImage(imageBytes);
+                    newCell.ImageTexture = ConvertImageToDDS(imageBytes); // dds stuff
+                    //newCell.ImageTexture = ConvertImageToTex(imageBytes); // jpg stuff
                     KeyValuePair<string, Texture2D> uniqueTexture = new KeyValuePair<string, Texture2D>(newCell.ImageName, newCell.ImageTexture);
                     uniqueTextures.Add(uniqueTexture);
                 }
@@ -144,7 +160,7 @@ public class ViRMA_VizController : MonoBehaviour
         int textureWidth = uniqueTextures[0].Value.width; // e.g. 1024 or 684
         int textureHeight = uniqueTextures[0].Value.height; // e.g. 765 or 485
         int maxTextureArraySize = SystemInfo.maxTextureSize; // e.g. 16384 (most GPUs)
-        int maxTexturesPerArray = maxTextureArraySize / textureHeight; // e.g. 22 or 33 
+        int maxTexturesPerArray = maxTextureArraySize / textureHeight; // e.g. 22 or 33
         int totalTextureArrays = uniqueTextures.Count / maxTexturesPerArray + 1;
 
         for (int i = 0; i < totalTextureArrays; i++)
@@ -154,7 +170,8 @@ public class ViRMA_VizController : MonoBehaviour
             if (i != totalTextureArrays - 1)
             {
                 Material newtextureArrayMaterial = new Material(Resources.Load(cellMaterial) as Material);
-                Texture2D newTextureArray = new Texture2D(textureWidth, textureHeight * maxTexturesPerArray, TextureFormat.DXT1, false);
+                Texture2D newTextureArray = new Texture2D(textureWidth, textureHeight * maxTexturesPerArray, TextureFormat.DXT1, false); // dds stuff
+                //Texture2D newTextureArray = new Texture2D(textureWidth, textureHeight * maxTexturesPerArray, TextureFormat.RGB24, false); // jpg stuff
                 for (int j = 0; j < maxTexturesPerArray; j++)
                 {
                     int uniqueTextureIndex = j + maxTexturesPerArray * i;
@@ -165,7 +182,7 @@ public class ViRMA_VizController : MonoBehaviour
                     }
                     Graphics.CopyTexture(targetTexture, 0, 0, 0, 0, targetTexture.width, targetTexture.height, newTextureArray, 0, 0, 0, targetTexture.height * j);
 
-                    //Debug.Log(j + " | " + uniqueTextureIndex); // debugging
+                    // Debug.Log(j + " | " + uniqueTextureIndex); // debugging
 
                     foreach (var cellDataObj in this.cellData)
                     {
@@ -177,13 +194,15 @@ public class ViRMA_VizController : MonoBehaviour
                         }
                     }
                 }
+                // newTextureArray.Compress(false);
                 newtextureArrayMaterial.mainTexture = newTextureArray;
             }
             else
             {
                 Material newtextureArrayMaterial = new Material(Resources.Load(cellMaterial) as Material);
                 int lastTextureArraySize = uniqueTextures.Count - (maxTexturesPerArray * (totalTextureArrays - 1));
-                Texture2D newTextureArray = new Texture2D(textureWidth, textureHeight * lastTextureArraySize, TextureFormat.DXT1, false);
+                Texture2D newTextureArray = new Texture2D(textureWidth, textureHeight * lastTextureArraySize, TextureFormat.DXT1, false); // dds stuff
+                //Texture2D newTextureArray = new Texture2D(textureWidth, textureHeight * lastTextureArraySize, TextureFormat.RGB24, false); // jpg stuff
                 for (int j = 0; j < lastTextureArraySize; j++)
                 {
                     int uniqueTextureIndex = j + maxTexturesPerArray * i;
@@ -206,11 +225,12 @@ public class ViRMA_VizController : MonoBehaviour
                         }
                     }
                 }
+                // newTextureArray.Compress(false);
                 newtextureArrayMaterial.mainTexture = newTextureArray;
             }
         }
     }
-    private static Texture2D ConvertImage(byte[] ddsBytes)
+    private static Texture2D ConvertImageToDDS(byte[] ddsBytes)
     {
         byte ddsSizeCheck = ddsBytes[4];
         if (ddsSizeCheck != 124)
@@ -228,6 +248,13 @@ public class ViRMA_VizController : MonoBehaviour
         texture.LoadRawTextureData(dxtBytes);
         texture.Apply();
         return (texture);
+    }
+    private static Texture2D ConvertImageToTex(byte[] texBytes)
+    {
+        Texture2D tex = new Texture2D(1, 1);
+        tex.LoadImage(texBytes);
+        TextureScale.Bilinear(tex, 1024, 768);
+        return (tex);
     }
     private void GenerateCells(List<Cell> cellData)
     {

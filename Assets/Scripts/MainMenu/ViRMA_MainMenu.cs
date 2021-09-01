@@ -22,7 +22,7 @@ public class ViRMA_MainMenu : MonoBehaviour
 
         SetBtnDefaultState();
 
-        StartCoroutine(TestPosition());
+        // StartCoroutine(TestPosition()); // testing
     }
 
     public void SetBtnDefaultState()

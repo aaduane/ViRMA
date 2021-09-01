@@ -20,7 +20,7 @@ public class ViRMA_QueryController : MonoBehaviour
         activeQuery = new Query();
 
         /*
-         * 
+        
         StartCoroutine(ViRMA_APIController.GetTagsets((tagsets) => {
             foreach (var tagset in tagsets)
             {
