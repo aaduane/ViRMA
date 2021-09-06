@@ -139,10 +139,11 @@ public class ViRMA_APIController : MonoBehaviour
     public static bool debugging = false;
     public static string serverAddress = "https://localhost:44317/api/";
 
-    public static string imagesDirectory = System.IO.Directory.GetCurrentDirectory().ToString() + "/LaugavegurDataDDS/"; // editor
-    //public static string imagesDirectory = "C:/Users/aaron/Documents/Unity Projects/ViRMA/LaugavegurDataDDS/"; // build
+    //public static string imagesDirectory = System.IO.Directory.GetCurrentDirectory().ToString() + "/LaugavegurDataDDS/"; 
+    //public static string imagesDirectory = "C:/Users/aaron/Documents/Unity Projects/ViRMA/LaugavegurDataDDS/"; 
 
-    //public static string imagesDirectory = System.IO.Directory.GetCurrentDirectory().ToString() + "/../LSC2021/";
+    public static string imagesDirectory = System.IO.Directory.GetCurrentDirectory().ToString() + "/../lsc-2021-dds/"; 
+    //public static string imagesDirectory = "C:/Users/aaron/Documents/Unity Projects/lsc-2021-dds/"; 
 
     // private
     private static JSONNode jsonData;
@@ -210,24 +211,24 @@ public class ViRMA_APIController : MonoBehaviour
         string url = "cell?";
         if (query.X != null)
         {
-            string typeId = query.X.Type == "Tagset" ? query.X.Type + "Id" : query.X.Type + "NodeId";
-            url += "xAxis={'AxisType': '" + query.X.Type + "', '" + typeId + "': " + query.X.Id + "}&";
+            //string typeId = query.X.Type == "Tagset" ? query.X.Type + "Id" : query.X.Type + "NodeId";
+            //url += "xAxis={'AxisType': '" + query.X.Type + "', '" + typeId + "': " + query.X.Id + "}&";
 
-            //url += "xAxis={'AxisType': '" + query.X.Type + "', 'Id': " + query.X.Id + "}&";
+            url += "xAxis={'AxisType': '" + query.X.Type + "', 'Id': " + query.X.Id + "}&";
         }
         if (query.Y != null)
         {
-            string typeId = query.Y.Type == "Tagset" ? query.Y.Type + "Id" : query.Y.Type + "NodeId";
-            url += "yAxis={'AxisType': '" + query.Y.Type + "', '" + typeId + "': " + query.Y.Id + "}&";
+            //string typeId = query.Y.Type == "Tagset" ? query.Y.Type + "Id" : query.Y.Type + "NodeId";
+            //url += "yAxis={'AxisType': '" + query.Y.Type + "', '" + typeId + "': " + query.Y.Id + "}&";
 
-            //url += "yAxis={'AxisType': '" + query.Y.Type + "', 'Id': " + query.Y.Id + "}&";
+            url += "yAxis={'AxisType': '" + query.Y.Type + "', 'Id': " + query.Y.Id + "}&";
         }
         if (query.Z != null)
         {
-            string typeId = query.Z.Type == "Tagset" ? query.Z.Type + "Id" : query.Z.Type + "NodeId";
-            url += "zAxis={'AxisType': '" + query.Z.Type + "', '" + typeId + "': " + query.Z.Id + "}&";
+            //string typeId = query.Z.Type == "Tagset" ? query.Z.Type + "Id" : query.Z.Type + "NodeId";
+            //url += "zAxis={'AxisType': '" + query.Z.Type + "', '" + typeId + "': " + query.Z.Id + "}&";
 
-            //url += "zAxis={'AxisType': '" + query.Z.Type + "', 'Id': " + query.Z.Id + "}&";
+            url += "zAxis={'AxisType': '" + query.Z.Type + "', 'Id': " + query.Z.Id + "}&";
         }
         url = url.Substring(0, url.Length - 1);
 
@@ -255,7 +256,9 @@ public class ViRMA_APIController : MonoBehaviour
             newCell.Coordinates = new Vector3(obj.Value["x"], obj.Value["y"], obj.Value["z"]);
             if (obj.Value["CubeObjects"].Count > 0)
             {
-                newCell.ImageName = obj.Value["CubeObjects"][0]["FileName"];
+                //newCell.ImageName = obj.Value["CubeObjects"][0]["FileName"];
+
+                newCell.ImageName = obj.Value["CubeObjects"][0]["FileURI"];
                 string imageNameDDS = newCell.ImageName.Substring(0, newCell.ImageName.Length - 4) + ".dds";
                 newCell.ImageName = imageNameDDS;
 

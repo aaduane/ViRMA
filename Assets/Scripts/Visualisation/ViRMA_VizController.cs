@@ -56,9 +56,9 @@ public class ViRMA_VizController : MonoBehaviour
         // dummy queries for debugging
         Query dummyQuery = new Query();
 
-        dummyQuery.SetAxis("X", 3, "Tagset");
-        dummyQuery.SetAxis("Y", 7, "Tagset");
-        dummyQuery.SetAxis("Z", 77, "Hierarchy");
+        //dummyQuery.SetAxis("X", 3, "Tagset");
+        //dummyQuery.SetAxis("Y", 7, "Tagset");
+        //dummyQuery.SetAxis("Z", 77, "Hierarchy");
 
         //dummyQuery.SetAxis("X", 7, "Tagset");
         //dummyQuery.SetAxis("Y", 7, "Tagset");
@@ -68,8 +68,8 @@ public class ViRMA_VizController : MonoBehaviour
         //dummyQuery.AddFilter(116, "Hierarchy");
 
 
-        //dummyQuery.SetAxis("Y", 691, "Hierarchy");
-        //dummyQuery.SetAxis("Z", 13, "Tagset");
+        dummyQuery.SetAxis("Y", 691, "Hierarchy");
+        dummyQuery.SetAxis("Z", 13, "Tagset");
 
         //dummyQuery.SetAxis("X", 7481, "Hierarchy");
         //dummyQuery.SetAxis("Y", 5, "Tagset");
@@ -142,7 +142,9 @@ public class ViRMA_VizController : MonoBehaviour
             {
                 int index = uniqueTextures.FindIndex(a => a.Key == newCell.ImageName);
                 if (index == -1)
-                {        
+                {
+                    Debug.Log("TEST: " + ViRMA_APIController.imagesDirectory + newCell.ImageName);
+
                     byte[] imageBytes = File.ReadAllBytes(ViRMA_APIController.imagesDirectory + newCell.ImageName);
                     newCell.ImageTexture = ConvertImageToDDS(imageBytes); // dds stuff
                     //newCell.ImageTexture = ConvertImageToTex(imageBytes); // jpg stuff

@@ -25,6 +25,14 @@ public class ViRMA_MainMenu : MonoBehaviour
         // StartCoroutine(TestPosition()); // testing
     }
 
+    void Update()
+    {
+        if (Input.GetKey("escape"))
+        {
+            Application.Quit();
+        }
+    }
+
     public void SetBtnDefaultState()
     {
         allBtns = GetComponentsInChildren<Button>();
