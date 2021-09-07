@@ -316,11 +316,11 @@ public class ViRMA_DimExplorer : MonoBehaviour
             Query currentQuery = globals.queryController.activeQuery;
             if (axisQueryType == "filter")
             {
-                currentQuery.AddFilter(tagQueryData.Id, "Hierarchy");
+                currentQuery.AddFilter(tagQueryData.Id, "Hierarchy"); // old way to add filters, needs to change?
             }
             else
             {
-                currentQuery.SetAxis(axisQueryType, tagQueryData.Id, "Hieratchy");
+                currentQuery.SetAxis(axisQueryType, tagQueryData.Id, "Hierarchy");
             }
 
             // destroy context menu and return dimension explorer to normal state

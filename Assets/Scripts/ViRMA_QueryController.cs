@@ -7,6 +7,7 @@ public class ViRMA_QueryController : MonoBehaviour
 {
     private ViRMA_GlobalsAndActions globals;
     public Query activeQuery;
+    public Query previousQuery;
     [HideInInspector] public bool queryLoading;
 
     private void Awake()
@@ -18,6 +19,7 @@ public class ViRMA_QueryController : MonoBehaviour
     private void Start()
     {
         activeQuery = new Query();
+        previousQuery = new Query();
 
         /*
         
@@ -45,7 +47,7 @@ public class ViRMA_QueryController : MonoBehaviour
 
     private void Update()
     {
-
+        /*
         if (activeQuery.X != null)
         {
             Debug.Log("X: " + activeQuery.X.Id);
@@ -62,11 +64,19 @@ public class ViRMA_QueryController : MonoBehaviour
         {
             Debug.Log(activeQuery.Filters.Count + " direct filters!");
         }
+        */
+
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// NOT WORKING
+        if (activeQuery.X != previousQuery.X || activeQuery.Y != previousQuery.Y || activeQuery.Z != previousQuery.Z)
+        {
+            ReloadViz();
+            previousQuery = activeQuery; 
+        }
     }
 
     public void ReloadViz()
     {
-        Debug.Log("Reloading viz...");
+        Debug.Log("LOADING VIZ!");
 
         if (queryLoading == false)
         {

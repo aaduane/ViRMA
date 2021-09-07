@@ -43,7 +43,7 @@ public class ViRMA_Keyboard : MonoBehaviour
 
         // delayed things
 
-        // ToggleDimExKeyboard(true); // testing
+        ToggleDimExKeyboard(true); // testing
     }
 
     private void OnTriggerEnter(Collider triggeredCol)
