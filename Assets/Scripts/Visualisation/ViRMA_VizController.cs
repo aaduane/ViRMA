@@ -23,6 +23,8 @@ public class ViRMA_VizController : MonoBehaviour
     public Rigidbody rigidBody;
     private float previousDistanceBetweenHands;
     private Bounds cellsAndAxesBounds;
+    public Query activeQuery;
+    public bool vizFullyLoaded;
 
     [HideInInspector] public bool activeBrowsingState;
     [HideInInspector] public Vector3 activeVizPosition;
@@ -40,6 +42,7 @@ public class ViRMA_VizController : MonoBehaviour
     {
         // define ViRMA globals script
         globals = Player.instance.gameObject.GetComponent<ViRMA_GlobalsAndActions>();
+        activeQuery = new Query();
 
         // setup cells and axes wrapper
         cellsandAxesWrapper = new GameObject("CellsAndAxesWrapper");
@@ -78,7 +81,7 @@ public class ViRMA_VizController : MonoBehaviour
         dummyQuery.SetAxis("X", 1749, "Hierarchy");
         dummyQuery.SetAxis("Y", 1749, "Hierarchy");
 
-        //StartCoroutine(SubmitVizQuery(dummyQuery));
+        StartCoroutine(SubmitVizQuery(dummyQuery));
     }
     private void Update()
     {
@@ -96,6 +99,8 @@ public class ViRMA_VizController : MonoBehaviour
     // cell and axes generation
     public IEnumerator SubmitVizQuery(Query submittedQuery)
     {
+        vizFullyLoaded = false;
+
         // get actual data from server
         yield return StartCoroutine(ViRMA_APIController.GetCells(submittedQuery, (cells) => {
             cellData = cells;
@@ -124,16 +129,18 @@ public class ViRMA_VizController : MonoBehaviour
 
         // add cells and axes to final parent to set default starting scale and position
         SetupDefaultScaleAndPosition();
-      
-        // set flag that query is finished loading
-        globals.queryController.queryLoading = false;
 
-        // activate navigation action controls
-        globals.vizNavActions.Activate();
+        // set new layer to prevent physical interactions with other objects on that layer and set flag that query is finished loading
+        foreach (Transform child in cellsandAxesWrapper.transform)
+        {
+            child.gameObject.layer = 9;
+        }
+        globals.queryController.queryLoading = false;
+        vizFullyLoaded = true;
     }
     private void GenerateTexturesAndTextureArrays(List<Cell> cellData)
     {
-        float before = Time.realtimeSinceStartup; // testing
+        //float before = Time.realtimeSinceStartup; // testing
 
         // make a list of all the unique image textures present in the current query
         List<KeyValuePair<string, Texture2D>> uniqueTextures = new List<KeyValuePair<string, Texture2D>>();
@@ -231,8 +238,8 @@ public class ViRMA_VizController : MonoBehaviour
             }
         }
 
-        float after = Time.realtimeSinceStartup; // testing
-        Debug.Log("TEXTURE PARSE TIME ~ ~ ~ ~ ~ " + (after - before).ToString("n3") + " seconds"); // testing
+        //float after = Time.realtimeSinceStartup; // testing
+        // Debug.Log("TEXTURE PARSE TIME ~ ~ ~ ~ ~ " + (after - before).ToString("n3") + " seconds"); // testing
     }
     private static Texture2D ConvertImageToDDS(byte[] ddsBytes)
     {
@@ -513,22 +520,25 @@ public class ViRMA_VizController : MonoBehaviour
     }
     public void ClearViz()
     {
-        cellObjs.Clear();
-        axisXPointObjs.Clear();
-        axisYPointObjs.Clear();
-        axisZPointObjs.Clear();
-
-        activeVizPosition = transform.position;
-        activeVizRotation = transform.rotation;
-        activeBrowsingState = true;
-
-        transform.localScale = Vector3.one;
-        transform.rotation = Quaternion.identity;
-
-        foreach (Transform child in cellsandAxesWrapper.transform)
+        if (cellObjs.Count > 0)
         {
-            Destroy(child.gameObject);
-        }
+            cellObjs.Clear();
+            axisXPointObjs.Clear();
+            axisYPointObjs.Clear();
+            axisZPointObjs.Clear();
+
+            activeVizPosition = transform.position;
+            activeVizRotation = transform.rotation;
+            activeBrowsingState = true;
+
+            transform.localScale = Vector3.one;
+            transform.rotation = Quaternion.identity;
+
+            foreach (Transform child in cellsandAxesWrapper.transform)
+            {
+                Destroy(child.gameObject);
+            }
+        }    
     }
 
 
@@ -674,6 +684,10 @@ public class ViRMA_VizController : MonoBehaviour
     // general  
     private void CalculateCellsAndAxesBounds()
     {
+        Vector3 currentPosition = transform.position;
+
+        transform.position = Vector3.zero;
+
         // calculate bounding box
         Renderer[] meshes = cellsandAxesWrapper.GetComponentsInChildren<Renderer>();
         Bounds bounds = new Bounds(cellsandAxesWrapper.transform.position, Vector3.zero);
@@ -682,6 +696,8 @@ public class ViRMA_VizController : MonoBehaviour
             bounds.Encapsulate(mesh.bounds);
         }
         cellsAndAxesBounds = bounds;
+
+        transform.position = currentPosition;
     }
     private void SetupDefaultScaleAndPosition()
     {

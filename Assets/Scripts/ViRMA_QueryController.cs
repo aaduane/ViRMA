@@ -1,26 +1,31 @@
-﻿using System.Collections;
-using UnityEngine;
-using Valve.VR;
+﻿using UnityEngine;
 using Valve.VR.InteractionSystem;
+using System.Collections.Generic;
 
 public class ViRMA_QueryController : MonoBehaviour
 {
     private ViRMA_GlobalsAndActions globals;
-    public Query activeQuery;
-    public Query previousQuery;
+    public Query buildingQuery;
     [HideInInspector] public bool queryLoading;
+
+    // active query parameters
+    int activeXAxisId;
+    string activeXAxisType;
+    int activeYAxisId;
+    string activeYAxisType;
+    int activeZAxisId;
+    string activeZAxisType;
+    List<string> activeFilters;
 
     private void Awake()
     {
         // define ViRMA globals script
         globals = Player.instance.gameObject.GetComponent<ViRMA_GlobalsAndActions>();
+        buildingQuery = new Query();
     }
 
     private void Start()
     {
-        activeQuery = new Query();
-        previousQuery = new Query();
-
         /*
         
         StartCoroutine(ViRMA_APIController.GetTagsets((tagsets) => {
@@ -42,49 +47,82 @@ public class ViRMA_QueryController : MonoBehaviour
         }));
 
         */
-
     }
 
     private void Update()
     {
         /*
-        if (activeQuery.X != null)
+        if (buildingQuery.X != null)
         {
-            Debug.Log("X: " + activeQuery.X.Id);
+            Debug.Log("X: " + buildingQuery.X.Id);
         }
-        if (activeQuery.Y != null)
+        if (buildingQuery.Y != null)
         {
-            Debug.Log("Y: " + activeQuery.Y.Id);
+            Debug.Log("Y: " + buildingQuery.Y.Id);
         }
-        if (activeQuery.Z != null)
+        if (buildingQuery.Z != null)
         {
-            Debug.Log("Z: " + activeQuery.Z.Id);
+            Debug.Log("Z: " + buildingQuery.Z.Id);
         }
-        if (activeQuery.Filters.Count > 0)
+        if (buildingQuery.Filters.Count > 0)
         {
-            Debug.Log(activeQuery.Filters.Count + " direct filters!");
+            Debug.Log(buildingQuery.Filters.Count + " direct filters!");
         }
         */
 
-        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// NOT WORKING
-        if (activeQuery.X != previousQuery.X || activeQuery.Y != previousQuery.Y || activeQuery.Z != previousQuery.Z)
+        int counter = 0;
+
+        if (buildingQuery.X != null)
+        {
+            if (buildingQuery.X.Id != activeXAxisId || buildingQuery.X.Type != activeXAxisType)
+            {
+                counter++;
+                activeXAxisId = buildingQuery.X.Id;
+                activeXAxisType = buildingQuery.X.Type;        
+            }
+        }
+
+        if (buildingQuery.Y != null)
+        {
+            if (buildingQuery.Y.Id != activeYAxisId || buildingQuery.Y.Type != activeYAxisType)
+            {
+                counter++;
+                activeYAxisId = buildingQuery.Y.Id;
+                activeYAxisType = buildingQuery.Y.Type;
+            }
+        }
+
+        if (buildingQuery.Z != null)
+        {
+            if (buildingQuery.Z.Id != activeZAxisId || buildingQuery.Z.Type != activeZAxisType)
+            {
+                counter++;
+                activeZAxisId = buildingQuery.Z.Id;
+                activeZAxisType = buildingQuery.Z.Type;
+            }
+        }
+
+        if (counter > 0)
         {
             ReloadViz();
-            previousQuery = activeQuery; 
         }
+
+
     }
 
     public void ReloadViz()
     {
-        Debug.Log("LOADING VIZ!");
+        Debug.Log("Loading new query... ");
 
         if (queryLoading == false)
         {
             queryLoading = true;
 
+            //StartCoroutine(globals.dimExplorer.ClearDimExplorer());
+
             globals.vizController.GetComponent<ViRMA_VizController>().ClearViz();
 
-            StartCoroutine(globals.vizController.SubmitVizQuery(activeQuery));
+            StartCoroutine(globals.vizController.SubmitVizQuery(buildingQuery));
         }
     }
 

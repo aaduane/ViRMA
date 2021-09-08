@@ -526,7 +526,7 @@ public class ViRMA_APIController : MonoBehaviour
             }
         }
 
-        Debug.Log(nodes.Count + " results found!");
+        // Debug.Log(nodes.Count + " dimension results found!"); // testing
 
         List<Tag> orderedNodes = nodes.OrderBy(s => s.Id).ToList();
         onSuccess(orderedNodes);

@@ -40,7 +40,7 @@ public class ViRMA_DimExplorer : MonoBehaviour
         {
             DimExMovementLimiter();
             DimExplorerMovement();
-        }    
+        }
     }
 
     // general
@@ -129,8 +129,6 @@ public class ViRMA_DimExplorer : MonoBehaviour
 
         dimensionExpLorerLoaded = true;
         dimExKeyboard.queryLoading = false;
-
-        globals.dimExplorerActions.Activate();
     }
     public void DimExgroupSpacingAdjustment()
     {
@@ -313,14 +311,13 @@ public class ViRMA_DimExplorer : MonoBehaviour
             Tag tagQueryData = filterBtnHoveredByUser.GetComponent<ViRMA_DimExplorerContextMenuBtn>().tagQueryData;
 
             // push data to query controller
-            Query currentQuery = globals.queryController.activeQuery;
             if (axisQueryType == "filter")
             {
-                currentQuery.AddFilter(tagQueryData.Id, "Hierarchy"); // old way to add filters, needs to change?
+                globals.queryController.buildingQuery.AddFilter(tagQueryData.Id, "Hierarchy"); 
             }
             else
             {
-                currentQuery.SetAxis(axisQueryType, tagQueryData.Id, "Hierarchy");
+                globals.queryController.buildingQuery.SetAxis(axisQueryType, tagQueryData.Id, "Hierarchy");
             }
 
             // destroy context menu and return dimension explorer to normal state

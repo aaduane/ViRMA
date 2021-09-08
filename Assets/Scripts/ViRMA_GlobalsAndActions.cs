@@ -43,7 +43,7 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
     public Material rightControllerNormalMaterial;
 
     // default actions
-    public SteamVR_ActionSet defaultAction;  
+    public SteamVR_ActionSet defaultActions;  
 
     // test actions
     public SteamVR_ActionSet menuInteractionActions;
@@ -69,7 +69,6 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
         dimExplorer = GameObject.Find("DimensionExplorer").GetComponent<ViRMA_DimExplorer>();
         mainMenu = GameObject.Find("MainMenu").GetComponent<ViRMA_MainMenu>();
 
-
         // assign all action sets
         AssignAllActionSets();
 
@@ -83,13 +82,17 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
     {
         // SteamVR controller models take some frames to load so this waits for them to set some globals
         InitialiseSteamVRControllers();
+
+
+
+        ActionActivityController();
     }
 
     // actions
     private void AssignAllActionSets()
     {
         // default action set 
-        defaultAction = SteamVR_Input.GetActionSet("default");
+        defaultActions = SteamVR_Input.GetActionSet("default");
 
         // ui interaction action set
         menuInteractionActions = SteamVR_Input.GetActionSet("MenuInteraction");
@@ -129,8 +132,54 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
     public void ToggleOnlyThisActionSet(SteamVR_ActionSet targetActionSet)
     {
         SteamVR_ActionSet_Manager.DisableAllActionSets();
-        defaultAction.Activate();
+        defaultActions.Activate();
         targetActionSet.Activate();
+    }
+
+    private void ActionActivityController()
+    {
+        if (dimExplorer.dimensionExpLorerLoaded)
+        {
+            if (!dimExplorerActions.IsActive())
+            {
+                dimExplorerActions.Activate();
+                vizNavActions.Deactivate();
+            }
+        }
+        else if (vizController.vizFullyLoaded)
+        {
+            if (!vizNavActions.IsActive())
+            {
+                vizNavActions.Activate();
+                dimExplorerActions.Deactivate();
+            }
+        }
+
+        // menu interaction? ...viz moving when typing on dim ex keyboard, etc.
+
+
+        bool debug = false;
+        if (debug)
+        {
+            string activeSetDebug = "Active Sets:";
+            if (defaultActions.IsActive())
+            {
+                activeSetDebug += " | default";
+            }
+            if (menuInteractionActions.IsActive())
+            {
+                activeSetDebug += " | menu interaction";
+            }
+            if (vizNavActions.IsActive())
+            {
+                activeSetDebug += " | viz nav";
+            }
+            if (dimExplorerActions.IsActive())
+            {
+                activeSetDebug += " | dimension explorer nav";
+            }
+            Debug.Log(activeSetDebug);
+        }    
     }
 
     // controller appearance

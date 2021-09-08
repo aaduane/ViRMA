@@ -104,13 +104,17 @@ public class ViRMA_Keyboard : MonoBehaviour
             spawnPos.y = spawnPos.y * 0.75f;
             transform.position = spawnPos;
             transform.LookAt(2 * transform.position - Player.instance.hmdTransform.position);
+
             globals.menuInteractionActions.Activate();
+
         }
         else
         {
             transform.position = new Vector3(0, 9999, 0);
             globals.dimExplorer.ClearDimExplorer();
+
             globals.menuInteractionActions.Deactivate();
+
         }
     }
     public void FadeKeyboard(bool toFade)
