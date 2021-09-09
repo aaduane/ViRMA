@@ -78,8 +78,9 @@ public class ViRMA_VizController : MonoBehaviour
         //dummyQuery.SetAxis("X", 7481, "Hierarchy");
         //dummyQuery.SetAxis("Y", 5, "Tagset");
 
-        dummyQuery.SetAxis("X", 1749, "Hierarchy");
-        dummyQuery.SetAxis("Y", 1749, "Hierarchy");
+        dummyQuery.SetAxis("X", 1770, "Hierarchy");
+        dummyQuery.SetAxis("Y", 3733, "Hierarchy");
+        //dummyQuery.SetAxis("Z", 2118, "Hierarchy");
 
         StartCoroutine(SubmitVizQuery(dummyQuery));
     }
@@ -106,37 +107,44 @@ public class ViRMA_VizController : MonoBehaviour
             cellData = cells;
         }));    
 
-        // generate textures and texture arrays from local image storage
-        GenerateTexturesAndTextureArrays(cellData);  
-
-        // generate cell X, Y, Z axes 
-        GenerateAxes(cellData);
-
-        // generate labels for axis points on axes
-        GenerateAxesLabels(submittedQuery);
-
-        // generate cells and their posiitons, centered on a parent
-        GenerateCells(cellData);
-
-        // set center point of wrapper around cells and axes
-        CenterParentOnCellsAndAxes();
-
-        // calculate bounding box to set cells positional limits
-        CalculateCellsAndAxesBounds();
-
-        // show cells/axes bounds and bounds center for debugging
-        // ToggleDebuggingBounds(); 
-
-        // add cells and axes to final parent to set default starting scale and position
-        SetupDefaultScaleAndPosition();
-
-        // set new layer to prevent physical interactions with other objects on that layer and set flag that query is finished loading
-        foreach (Transform child in cellsandAxesWrapper.transform)
+        if (cellData.Count != 0)
         {
-            child.gameObject.layer = 9;
+            // generate textures and texture arrays from local image storage
+            GenerateTexturesAndTextureArrays(cellData);
+
+            // generate cell X, Y, Z axes 
+            GenerateAxes(cellData);
+
+            // generate labels for axis points on axes
+            GenerateAxesLabels(submittedQuery);
+
+            // generate cells and their posiitons, centered on a parent
+            GenerateCells(cellData);
+
+            // set center point of wrapper around cells and axes
+            CenterParentOnCellsAndAxes();
+
+            // calculate bounding box to set cells positional limits
+            CalculateCellsAndAxesBounds();
+
+            // show cells/axes bounds and bounds center for debugging
+            // ToggleDebuggingBounds(); 
+
+            // add cells and axes to final parent to set default starting scale and position
+            SetupDefaultScaleAndPosition();
+
+            // set new layer to prevent physical interactions with other objects on that layer and set flag that query is finished loading
+            foreach (Transform child in cellsandAxesWrapper.transform)
+            {
+                child.gameObject.layer = 9;
+            }
+            globals.queryController.queryLoading = false;
+            vizFullyLoaded = true;
+        }        
+        else
+        {
+            Debug.Log("No results found!");
         }
-        globals.queryController.queryLoading = false;
-        vizFullyLoaded = true;
     }
     private void GenerateTexturesAndTextureArrays(List<Cell> cellData)
     {
@@ -465,55 +473,37 @@ public class ViRMA_VizController : MonoBehaviour
     {
         StartCoroutine(ViRMA_APIController.GetAxesLabels(submittedQuery, (axesLabels) => {
 
+            Debug.Log("X: " + (axisXPointObjs.Count - 1));
             for (int i = 1; i < axisXPointObjs.Count; i++)
-            {          
-                if (axesLabels.X != null)
-                {
-                    ViRMA_AxisPoint axisPoint = axisXPointObjs[i].GetComponent<ViRMA_AxisPoint>();
-                    axisPoint.axisId = axesLabels.X.Id;
-                    axisPoint.axisName = axesLabels.X.Name;
-                    axisPoint.axisType = axesLabels.X.Type;
-                    axisPoint.axisPointLabel = axesLabels.X.Labels[i - 1].Key;
-                    axisPoint.axisPointLabelId = axesLabels.X.Labels[i - 1].Value;
-                }
-                else
-                {
-                    Destroy(axisXPointObjs[i]);
-                }
+            {
+                ViRMA_AxisPoint axisPoint = axisXPointObjs[i].GetComponent<ViRMA_AxisPoint>();
+                axisPoint.axisId = axesLabels.X.Id;
+                axisPoint.axisName = axesLabels.X.Name;
+                axisPoint.axisType = axesLabels.X.Type;
+                axisPoint.axisPointLabel = axesLabels.X.Labels[i - 1].Key;
+                axisPoint.axisPointLabelId = axesLabels.X.Labels[i - 1].Value;
             }
-     
+
+            Debug.Log("Y: " + (axisYPointObjs.Count - 1));
             for (int i = 1; i < axisYPointObjs.Count; i++)
-            {          
-                if (axesLabels.Y != null)
-                {
-                    ViRMA_AxisPoint axisPoint = axisYPointObjs[i].GetComponent<ViRMA_AxisPoint>();
-                    axisPoint.axisId = axesLabels.Y.Id;
-                    axisPoint.axisName = axesLabels.Y.Name;
-                    axisPoint.axisType = axesLabels.Y.Type;
-                    axisPoint.axisPointLabel = axesLabels.Y.Labels[i - 1].Key;
-                    axisPoint.axisPointLabelId = axesLabels.Y.Labels[i - 1].Value;
-                }                
-                else
-                {
-                    Destroy(axisYPointObjs[i]);
-                }
+            {
+                ViRMA_AxisPoint axisPoint = axisYPointObjs[i].GetComponent<ViRMA_AxisPoint>();
+                axisPoint.axisId = axesLabels.Y.Id;
+                axisPoint.axisName = axesLabels.Y.Name;
+                axisPoint.axisType = axesLabels.Y.Type;
+                axisPoint.axisPointLabel = axesLabels.Y.Labels[i - 1].Key;
+                axisPoint.axisPointLabelId = axesLabels.Y.Labels[i - 1].Value;
             }
-        
+
+            Debug.Log("Z: " + (axisZPointObjs.Count - 1));
             for (int i = 1; i < axisZPointObjs.Count; i++)
             {
-                if (axesLabels.Z != null)
-                {
-                    ViRMA_AxisPoint axisPoint = axisZPointObjs[i].GetComponent<ViRMA_AxisPoint>();
-                    axisPoint.axisId = axesLabels.Z.Id;
-                    axisPoint.axisName = axesLabels.Z.Name;
-                    axisPoint.axisType = axesLabels.Z.Type;
-                    axisPoint.axisPointLabel = axesLabels.Z.Labels[i - 1].Key;
-                    axisPoint.axisPointLabelId = axesLabels.Z.Labels[i - 1].Value;
-                }
-                else
-                {
-                    Destroy(axisZPointObjs[i]);
-                }
+                ViRMA_AxisPoint axisPoint = axisZPointObjs[i].GetComponent<ViRMA_AxisPoint>();
+                axisPoint.axisId = axesLabels.Z.Id;
+                axisPoint.axisName = axesLabels.Z.Name;
+                axisPoint.axisType = axesLabels.Z.Type;
+                axisPoint.axisPointLabel = axesLabels.Z.Labels[i - 1].Key;
+                axisPoint.axisPointLabelId = axesLabels.Z.Labels[i - 1].Value;
             }
 
         }));

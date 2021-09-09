@@ -104,7 +104,7 @@ public class ViRMA_QueryController : MonoBehaviour
 
         if (counter > 0)
         {
-            ReloadViz();
+            //ReloadViz();
         }
 
 
@@ -112,10 +112,10 @@ public class ViRMA_QueryController : MonoBehaviour
 
     public void ReloadViz()
     {
-        Debug.Log("Loading new query... ");
-
         if (queryLoading == false)
         {
+            Debug.Log("Loading new query... ");
+
             queryLoading = true;
 
             //StartCoroutine(globals.dimExplorer.ClearDimExplorer());
@@ -123,6 +123,10 @@ public class ViRMA_QueryController : MonoBehaviour
             globals.vizController.GetComponent<ViRMA_VizController>().ClearViz();
 
             StartCoroutine(globals.vizController.SubmitVizQuery(buildingQuery));
+        }
+        else
+        {
+            Debug.Log("Query aready loading!");
         }
     }
 

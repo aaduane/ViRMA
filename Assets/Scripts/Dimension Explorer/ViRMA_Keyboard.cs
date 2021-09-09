@@ -11,10 +11,14 @@ public class ViRMA_Keyboard : MonoBehaviour
     private Button[] keys;
     public string typedWordString = "";
     public TextMeshProUGUI typedWordTMP;
-    private bool keyboardFaded;
-    public bool queryLoading;
-    public GameObject loadingIndicator;
+    public GameObject loadingIcon;
     private Coroutine activeQueryCoroutine;
+
+    // flags
+    public bool queryLoading;
+    public bool keyboardLoaded;
+    public bool keyboardFaded;
+    
 
     private void Awake()
     {
@@ -104,17 +108,17 @@ public class ViRMA_Keyboard : MonoBehaviour
             spawnPos.y = spawnPos.y * 0.75f;
             transform.position = spawnPos;
             transform.LookAt(2 * transform.position - Player.instance.hmdTransform.position);
+            keyboardLoaded = true;
 
-            globals.menuInteractionActions.Activate();
-
+            //globals.menuInteractionActions.Activate();
         }
         else
         {
             transform.position = new Vector3(0, 9999, 0);
             globals.dimExplorer.ClearDimExplorer();
+            keyboardLoaded = false;
 
-            globals.menuInteractionActions.Deactivate();
-
+            //globals.menuInteractionActions.Deactivate();
         }
     }
     public void FadeKeyboard(bool toFade)
@@ -230,21 +234,23 @@ public class ViRMA_Keyboard : MonoBehaviour
     }
     private void LoadingIndicator()
     {
+
         if (queryLoading)
         {
-            if (!loadingIndicator.transform.parent.gameObject.activeSelf)
+            if (!loadingIcon.transform.parent.gameObject.activeSelf)
             {
-                loadingIndicator.transform.parent.gameObject.SetActive(true);
+                loadingIcon.transform.parent.gameObject.SetActive(true);
             }          
-            loadingIndicator.transform.Rotate(0, 0, -300f * Time.deltaTime);
+            loadingIcon.transform.Rotate(0, 0, -300f * Time.deltaTime);
         }
         else
         {
-            if (loadingIndicator.transform.parent.gameObject.activeSelf)
+            if (loadingIcon.transform.parent.gameObject.activeSelf)
             {
-                loadingIndicator.transform.parent.gameObject.SetActive(false);
+                loadingIcon.transform.parent.gameObject.SetActive(false);
             }        
         }
+        
     }
 
 }

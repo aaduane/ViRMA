@@ -80,11 +80,17 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
     }
     private void Update()
     {
+        /*
+        if (Input.GetKey("escape"))
+        {
+            Application.Quit();
+        }
+        */
+
         // SteamVR controller models take some frames to load so this waits for them to set some globals
         InitialiseSteamVRControllers();
 
-
-
+        // control activation of SteamVR actions
         ActionActivityController();
     }
 
@@ -138,28 +144,27 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
 
     private void ActionActivityController()
     {
+        /*
         if (dimExplorer.dimensionExpLorerLoaded)
         {
-            if (!dimExplorerActions.IsActive())
-            {
-                dimExplorerActions.Activate();
-                vizNavActions.Deactivate();
-            }
+            dimExplorerActions.Activate();
+            vizNavActions.Deactivate();
         }
         else if (vizController.vizFullyLoaded)
         {
-            if (!vizNavActions.IsActive())
-            {
-                vizNavActions.Activate();
-                dimExplorerActions.Deactivate();
-            }
+            vizNavActions.Activate();
+            dimExplorerActions.Deactivate();
         }
 
-        // menu interaction? ...viz moving when typing on dim ex keyboard, etc.
+        if (dimExplorer.dimExKeyboard.keyboardLoaded)
+        {
+            menuInteractionActions.Activate();
+            vizNavActions.Deactivate();
+        }
+        */
 
-
-        bool debug = false;
-        if (debug)
+        // debugging
+        if (false)
         {
             string activeSetDebug = "Active Sets:";
             if (defaultActions.IsActive())

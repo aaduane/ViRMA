@@ -244,6 +244,8 @@ public class ViRMA_APIController : MonoBehaviour
             url = url.Replace("\'", "\"");
         }
 
+        Debug.Log(url); // testing
+
         yield return GetRequest(url, (response) =>
         {
             jsonData = response;

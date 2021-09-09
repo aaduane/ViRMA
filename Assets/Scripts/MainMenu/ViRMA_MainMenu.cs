@@ -18,19 +18,11 @@ public class ViRMA_MainMenu : MonoBehaviour
 
     private void Start()
     {
-        globals.menuInteractionActions.Activate();
+        //globals.menuInteractionActions.Activate();
 
         SetBtnDefaultState();
 
         // StartCoroutine(TestPosition()); // testing
-    }
-
-    void Update()
-    {
-        if (Input.GetKey("escape"))
-        {
-            Application.Quit();
-        }
     }
 
     public void SetBtnDefaultState()

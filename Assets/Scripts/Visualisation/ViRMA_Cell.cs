@@ -219,7 +219,7 @@ public class ViRMA_Cell : MonoBehaviour
                 // y
                 int yAxisPointIndex = (int)thisCellData.Coordinates.y;
                 GameObject yAxisPointObj = globals.vizController.axisYPointObjs[yAxisPointIndex];
-                string yAxisPointLabel = yAxisPointObj.GetComponent<ViRMA_AxisPoint>().axisPointLabel;
+                string yAxisPointLabel = yAxisPointObj.GetComponent<ViRMA_AxisPoint>().axisPointLabel;            
 
                 // z 
                 int zAxisPointIndex = (int)thisCellData.Coordinates.z;
