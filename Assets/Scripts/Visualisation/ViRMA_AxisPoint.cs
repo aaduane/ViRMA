@@ -37,7 +37,7 @@ public class ViRMA_AxisPoint : MonoBehaviour
 
         if (x)
         {
-            axisLabel.name = "AxisXPointLabel";
+            axisLabel.name = axisPointLabel + "_" + axisPointLabelId;
             Vector3 xPos = axisLabel.transform.localPosition;
             xPos.z -= 1;
             axisLabel.transform.localPosition = xPos;
@@ -45,7 +45,7 @@ public class ViRMA_AxisPoint : MonoBehaviour
         }
         if (y)
         {
-            axisLabel.name = "AxisYPointLabel";         
+            axisLabel.name = axisPointLabel + "_" + axisPointLabelId;
             Vector3 yPos = axisLabel.transform.localPosition;
             yPos.x -= 1;
             axisLabel.transform.localPosition = yPos;
@@ -53,7 +53,7 @@ public class ViRMA_AxisPoint : MonoBehaviour
         }
         if (z)
         {
-            axisLabel.name = "AxisZPointLabel";
+            axisLabel.name = axisPointLabel + "_" + axisPointLabelId;
             Vector3 zPos = axisLabel.transform.localPosition;
             zPos.x -= 1;
             axisLabel.transform.localPosition = zPos;

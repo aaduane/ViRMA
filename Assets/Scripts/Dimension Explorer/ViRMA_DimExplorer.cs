@@ -25,8 +25,6 @@ public class ViRMA_DimExplorer : MonoBehaviour
 
     public ViRMA_Keyboard dimExKeyboard;
 
-    Query testQuery;
-
     private void Awake()
     {
         globals = Player.instance.gameObject.GetComponent<ViRMA_GlobalsAndActions>();
@@ -34,8 +32,6 @@ public class ViRMA_DimExplorer : MonoBehaviour
         horizontalRigidbody = GetComponent<Rigidbody>();
 
         dimensionExpLorerLoaded = false;
-
-        testQuery = new Query();
     }
 
     private void Update()
@@ -45,10 +41,6 @@ public class ViRMA_DimExplorer : MonoBehaviour
             DimExMovementLimiter();
             DimExplorerMovement();
         }
-
-
-        globals.menuInteractionActions.Activate();
-        globals.dimExplorerActions.Activate();
     }
 
     // general
@@ -136,7 +128,7 @@ public class ViRMA_DimExplorer : MonoBehaviour
         PositionDimExplorer();
 
         dimensionExpLorerLoaded = true;
-        dimExKeyboard.queryLoading = false;
+        dimExKeyboard.dimExqueryLoading = false;
     }
     public void DimExgroupSpacingAdjustment()
     {
@@ -326,14 +318,7 @@ public class ViRMA_DimExplorer : MonoBehaviour
             }
             else
             {
-                //globals.queryController.buildingQuery.SetAxis(axisQueryType, tagQueryData.Id, "Hierarchy");
-
-                // testing
-                globals.vizController.GetComponent<ViRMA_VizController>().ClearViz();
-                testQuery.SetAxis(axisQueryType, tagQueryData.Id, "Hierarchy");
-                StartCoroutine(globals.vizController.SubmitVizQuery(testQuery));
-                Debug.Log("Submitting test query...");
-
+                globals.queryController.buildingQuery.SetAxis(axisQueryType, tagQueryData.Id, "Hierarchy");
             }
 
             // destroy context menu and return dimension explorer to normal state

@@ -15,7 +15,7 @@ public class ViRMA_Keyboard : MonoBehaviour
     private Coroutine activeQueryCoroutine;
 
     // flags
-    public bool queryLoading;
+    public bool dimExqueryLoading;
     public bool keyboardLoaded;
     public bool keyboardFaded;
     
@@ -109,16 +109,12 @@ public class ViRMA_Keyboard : MonoBehaviour
             transform.position = spawnPos;
             transform.LookAt(2 * transform.position - Player.instance.hmdTransform.position);
             keyboardLoaded = true;
-
-            //globals.menuInteractionActions.Activate();
         }
         else
         {
             transform.position = new Vector3(0, 9999, 0);
             globals.dimExplorer.ClearDimExplorer();
             keyboardLoaded = false;
-
-            //globals.menuInteractionActions.Deactivate();
         }
     }
     public void FadeKeyboard(bool toFade)
@@ -197,7 +193,7 @@ public class ViRMA_Keyboard : MonoBehaviour
                     StopCoroutine(activeQueryCoroutine);
                 }
 
-                queryLoading = true;
+                dimExqueryLoading = true;
                 key.enabled = false;
                 StartCoroutine(globals.dimExplorer.ClearDimExplorer());           
 
@@ -234,8 +230,7 @@ public class ViRMA_Keyboard : MonoBehaviour
     }
     private void LoadingIndicator()
     {
-
-        if (queryLoading)
+        if (dimExqueryLoading)
         {
             if (!loadingIcon.transform.parent.gameObject.activeSelf)
             {

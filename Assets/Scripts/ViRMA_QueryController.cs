@@ -6,7 +6,7 @@ public class ViRMA_QueryController : MonoBehaviour
 {
     private ViRMA_GlobalsAndActions globals;
     public Query buildingQuery;
-    [HideInInspector] public bool queryLoading;
+    [HideInInspector] public bool vizQueryLoading;
 
     // active query parameters
     int activeXAxisId;
@@ -104,19 +104,17 @@ public class ViRMA_QueryController : MonoBehaviour
 
         if (counter > 0)
         {
-            //ReloadViz();
+            ReloadViz();
         }
-
-
     }
 
     public void ReloadViz()
     {
-        if (queryLoading == false)
+        if (vizQueryLoading == false)
         {
             Debug.Log("Loading new query... ");
 
-            queryLoading = true;
+            vizQueryLoading = true;
 
             //StartCoroutine(globals.dimExplorer.ClearDimExplorer());
 

@@ -304,7 +304,7 @@ namespace Valve.VR
                         return true;
                     }
 
-                    Debug.Log("<b>[SteamVR]</b> [" + gameObject.name + "] Render model does not support components, falling back to single mesh.");
+                    //Debug.Log("<b>[SteamVR]</b> [" + gameObject.name + "] Render model does not support components, falling back to single mesh.");
                 }
 
                 if (!string.IsNullOrEmpty(renderModelName))

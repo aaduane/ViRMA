@@ -151,6 +151,8 @@ public class ViRMA_APIController : MonoBehaviour
     // general API methods
     public static IEnumerator GetRequest(string paramsURL, Action<JSONNode> onSuccess)
     {
+        //Debug.Log(paramsURL); // testing
+
         string getRequest = serverAddress + paramsURL;
         float beforeWebRequest = 0, afterWebRequest = 0, beforeJsonParse = 0, afterJsonParse = 0;
 
@@ -244,7 +246,7 @@ public class ViRMA_APIController : MonoBehaviour
             url = url.Replace("\'", "\"");
         }
 
-        Debug.Log(url); // testing
+        //Debug.Log(url); // testing
 
         yield return GetRequest(url, (response) =>
         {
@@ -288,7 +290,14 @@ public class ViRMA_APIController : MonoBehaviour
                 name = response["Tag"]["Name"];
                 foreach (JSONObject child in response["Children"])
                 {
-                    KeyValuePair<string, int> labelIdPair = new KeyValuePair<string, int>(child["Tag"]["Name"], child["Tag"]["Id"]);
+                    int labelId = child["Tag"]["Id"];
+                    string labelName = child["Tag"]["Name"];
+                    int bracketIndex = labelName.IndexOf("(");
+                    if (bracketIndex > -1)
+                    {
+                        labelName = labelName.Substring(0, bracketIndex);
+                    }
+                    KeyValuePair<string, int> labelIdPair = new KeyValuePair<string, int>(labelName, labelId);
                     labels.Add(labelIdPair);
                 }
             }
@@ -298,7 +307,14 @@ public class ViRMA_APIController : MonoBehaviour
                 name = response["Name"];
                 foreach (JSONObject child in response["Tags"])
                 {
-                    KeyValuePair<string, int> labelIdPair = new KeyValuePair<string, int>(child["Name"], child["Id"]);
+                    int labelId = child["Id"];
+                    string labelName = child["Name"];
+                    int bracketIndex = labelName.IndexOf("(");
+                    if (bracketIndex > -1)
+                    {
+                        labelName = labelName.Substring(0, bracketIndex);
+                    }
+                    KeyValuePair<string, int> labelIdPair = new KeyValuePair<string, int>(labelName, labelId);
                     labels.Add(labelIdPair);
                 }
             }

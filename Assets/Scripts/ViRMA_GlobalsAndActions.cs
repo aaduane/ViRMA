@@ -144,7 +144,7 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
 
     private void ActionActivityController()
     {
-        /*
+
         if (dimExplorer.dimensionExpLorerLoaded)
         {
             dimExplorerActions.Activate();
@@ -159,12 +159,12 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
         if (dimExplorer.dimExKeyboard.keyboardLoaded)
         {
             menuInteractionActions.Activate();
+            dimExplorerActions.Activate();
             vizNavActions.Deactivate();
         }
-        */
 
         // debugging
-        if (false)
+        if (true)
         {
             string activeSetDebug = "Active Sets:";
             if (defaultActions.IsActive())
