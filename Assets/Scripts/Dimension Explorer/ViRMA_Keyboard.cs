@@ -13,11 +13,13 @@ public class ViRMA_Keyboard : MonoBehaviour
     public TextMeshProUGUI typedWordTMP;
     public GameObject loadingIcon;
     private Coroutine activeQueryCoroutine;
+    public Hand activeHand; 
 
     // flags
     public bool dimExqueryLoading;
     public bool keyboardLoaded;
     public bool keyboardFaded;
+    public bool keyboardMoving;
     
 
     private void Awake()
@@ -85,6 +87,11 @@ public class ViRMA_Keyboard : MonoBehaviour
                 {
                     keyBackground.color = new Color32(211, 84, 0, 255);
                     keyText.color = Color.white;
+                }
+                else if (keyText.gameObject.transform.parent.name == "MOVE")
+                {
+                    keyBackground.color = new Color32(99, 110, 114, 255);
+                    keyText.color = globals.BrightenColor(new Color32(99, 110, 114, 255));
                 }
                 else
                 {
@@ -179,6 +186,27 @@ public class ViRMA_Keyboard : MonoBehaviour
             }    
         }
     }
+    public void MoveKeyboard(Hand hand)
+    {
+        bool moving = !keyboardMoving;
+
+        if (moving)
+        {
+            if (transform.parent != hand.transform)
+            {
+                transform.parent = hand.transform;
+            }
+        }
+        else
+        {
+            if (transform.parent == hand.transform)
+            {
+                transform.parent = null;
+            }
+        }
+
+        keyboardMoving = moving;
+    }
     private void SubmitKey(Button key)
     {
         string buttonName = key.gameObject.name;
@@ -214,6 +242,10 @@ public class ViRMA_Keyboard : MonoBehaviour
         else if (buttonName == "CLEAR")
         {
             typedWordString = "";
+        }
+        else if (buttonName == "MOVE")
+        {
+            MoveKeyboard(activeHand);
         }
         else if (buttonName == "SPACE")
         {

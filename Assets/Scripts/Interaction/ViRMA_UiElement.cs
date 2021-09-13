@@ -8,6 +8,7 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 {
 	// SteamVR: used for UI interaction with controller
 	private ViRMA_GlobalsAndActions globals;
+	private ViRMA_Keyboard keyboard;
 
 	public CustomEvents.UnityEventHand onHandClick;
 	protected Hand currentHand;
@@ -37,6 +38,18 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
 			button.transition = Selectable.Transition.None;
 		}
+
+		// find out if UI element is part of a Virma Keyboard
+		Transform t = transform;
+		while (t.parent != null)
+        {
+			if (t.parent.GetComponent<ViRMA_Keyboard>())
+            {
+				keyboard = t.parent.GetComponent<ViRMA_Keyboard>();
+				break;
+			}
+			t = t.parent.transform;
+        }
 	}
 
     private void Start()
@@ -78,6 +91,10 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 		{
 			// SteamVR: submit button to be invoked
 			ViRMA_InputModule.instance.Submit(gameObject);
+			if (keyboard)
+            {
+				keyboard.activeHand = hand;
+            }		
 
 			// SteamVR: hide controller hint
 			// ControllerButtonHints.HideButtonHint(hand, globals.menuInteraction_Select); // not highlighting any button
@@ -154,4 +171,5 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 		btnBackground.color = originalTextColor;
 		btnText.color = originalBgColor;
 	}
+
 }

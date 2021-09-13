@@ -163,8 +163,15 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
             vizNavActions.Deactivate();
         }
 
+        if (dimExplorer.dimExKeyboard.keyboardMoving)
+        {
+            menuInteractionActions.Activate();
+            dimExplorerActions.Deactivate();
+            vizNavActions.Deactivate();
+        }
+
         // debugging
-        if (true)
+        if (false)
         {
             string activeSetDebug = "Active Sets:";
             if (defaultActions.IsActive())
