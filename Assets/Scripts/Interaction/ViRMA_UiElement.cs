@@ -19,7 +19,9 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
 	public Color normalBackgroundColor;
 	public Color normalTextColor;
-	
+
+	public bool buttonFaded;
+
 	protected virtual void Awake()
 	{
 		globals = Player.instance.gameObject.GetComponent<ViRMA_GlobalsAndActions>();
@@ -54,11 +56,14 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     private void Start()
     {
-		// set default color of button
-		//SetBtnNormalState();
-
 		// set correct box collider size for UI interactions
 		SetKeyColliderSize();
+	}
+
+    private void Update()
+    {
+		// override all button stats when button is faded
+		BtnFadeController();
 	}
 
 
@@ -93,14 +98,14 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 			ViRMA_InputModule.instance.Submit(gameObject);
 			if (keyboard)
             {
-				keyboard.activeHand = hand;
+				keyboard.handInteractingWithKeyboard = hand;
             }		
 
 			// SteamVR: hide controller hint
 			// ControllerButtonHints.HideButtonHint(hand, globals.menuInteraction_Select); // not highlighting any button
 		}
 
-		// force SteamVR UI hand interation states to match custom pointer UI interaction states
+		// minor hack: force SteamVR UI hand interation states to match custom pointer UI interaction states
 		if (hand.uiInteractAction.active && ViRMA_InputModule.instance.contactUIEnabled)
         {
 			if (hand.uiInteractAction.stateDown)
@@ -162,7 +167,7 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
 		btnBackground.color = globals.BrightenColor(btnBackground.color);
 		btnText.color = globals.BrightenColor(btnText.color);
-	}
+	}	
 	private void SetBtnDownState()
     {
 		Color32 originalBgColor = btnBackground.color;
@@ -170,6 +175,27 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
 		btnBackground.color = originalTextColor;
 		btnText.color = originalBgColor;
+	}
+	private void BtnFadeController()
+    {
+		float alpha;
+		if (buttonFaded)
+		{
+			alpha = 0.15f;
+		}
+		else
+		{
+			alpha = 1.0f;
+		}
+
+		if (btnBackground.color.a != alpha)
+		{
+			btnBackground.color = new Color(btnBackground.color.r, btnBackground.color.g, btnBackground.color.b, alpha);
+		}
+		if (btnText.color.a != alpha)
+		{
+			btnText.color = new Color(btnText.color.r, btnText.color.g, btnText.color.b, alpha);
+		}
 	}
 
 }

@@ -8,7 +8,7 @@ public class ViRMA_DimExplorer : MonoBehaviour
 {
     private ViRMA_GlobalsAndActions globals;
 
-    private Rigidbody horizontalRigidbody;
+    public Rigidbody horizontalRigidbody;
     public List<Rigidbody> verticalRigidbodies;
     public Rigidbody activeVerticalRigidbody;
     

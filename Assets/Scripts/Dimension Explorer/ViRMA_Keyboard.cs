@@ -3,6 +3,7 @@ using System.Globalization;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using Valve.VR;
 using Valve.VR.InteractionSystem;
 
 public class ViRMA_Keyboard : MonoBehaviour
@@ -11,16 +12,16 @@ public class ViRMA_Keyboard : MonoBehaviour
     private Button[] keys;
     public string typedWordString = "";
     public TextMeshProUGUI typedWordTMP;
+    public Image typedWordBg;
     public GameObject loadingIcon;
     private Coroutine activeQueryCoroutine;
-    public Hand activeHand; 
+    public Hand handInteractingWithKeyboard;
 
     // flags
     public bool dimExqueryLoading;
     public bool keyboardLoaded;
     public bool keyboardFaded;
     public bool keyboardMoving;
-    
 
     private void Awake()
     {
@@ -41,6 +42,8 @@ public class ViRMA_Keyboard : MonoBehaviour
     private void Update()
     {
         LoadingIndicator();
+
+        KeyboardRepositioning();
     }
 
     IEnumerator LateStart()
@@ -103,8 +106,9 @@ public class ViRMA_Keyboard : MonoBehaviour
     }
     public void ToggleDimExKeyboard(bool onOff)
     {
-        // scaling
+        // scaling and appearance
         transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+        FadeKeyboard(false);
 
         if (onOff)
         {
@@ -120,7 +124,7 @@ public class ViRMA_Keyboard : MonoBehaviour
         else
         {
             transform.position = new Vector3(0, 9999, 0);
-            globals.dimExplorer.ClearDimExplorer();
+            StartCoroutine(globals.dimExplorer.ClearDimExplorer());
             keyboardLoaded = false;
         }
     }
@@ -130,8 +134,8 @@ public class ViRMA_Keyboard : MonoBehaviour
         {     
             if (keyboardFaded == false)
             {
-                Collider[] colliders = GetComponentsInChildren<Collider>();
-                foreach (var col in colliders)
+                Collider[] keyboardColliders = GetComponentsInChildren<Collider>();
+                foreach (var col in keyboardColliders)
                 {
                     if (col.gameObject != gameObject)
                     {
@@ -139,18 +143,14 @@ public class ViRMA_Keyboard : MonoBehaviour
                     }
                 }
 
-                Image[] backgrounds = GetComponentsInChildren<Image>();
-                foreach (var bgs in backgrounds)
+                ViRMA_UiElement[] btnElements = GetComponentsInChildren<ViRMA_UiElement>();
+                foreach (var btnElement in btnElements)
                 {
-                    bgs.color = new Color(bgs.color.r, bgs.color.g, bgs.color.b, 0.15f);
+                    btnElement.buttonFaded = true;
                 }
 
-                Text[] texts = GetComponentsInChildren<Text>();
-                foreach (var text in texts)
-                {
-                    text.color = new Color(text.color.r, text.color.g, text.color.b, 0.15f);
-                }
                 typedWordTMP.color = new Color(typedWordTMP.color.r, typedWordTMP.color.g, typedWordTMP.color.b, 0.15f);
+                typedWordBg.color = new Color(typedWordBg.color.r, typedWordBg.color.g, typedWordBg.color.b, 0.15f);
 
                 keyboardFaded = true;
             }        
@@ -159,53 +159,63 @@ public class ViRMA_Keyboard : MonoBehaviour
         {
             if (keyboardFaded == true)
             {
-                Collider[] colliders = GetComponentsInChildren<Collider>();
-                foreach (var col in colliders)
+                Collider[] keyboardColliders = GetComponentsInChildren<Collider>();
+                foreach (var col in keyboardColliders)
                 {
                     col.enabled = true;
                 }
 
-                Image[] backgrounds = GetComponentsInChildren<Image>();
-                foreach (var bgs in backgrounds)
+                ViRMA_UiElement[] btnElements = GetComponentsInChildren<ViRMA_UiElement>();
+                foreach (var btnElement in btnElements)
                 {
-                    bgs.color = new Color(bgs.color.r, bgs.color.g, bgs.color.b, 1.0f);
-                    if (bgs.gameObject.name == "Background")
-                    {
-                        bgs.color = new Color32(0, 0, 0, 100);
-                    }
+                    btnElement.buttonFaded = false;
                 }
 
-                Text[] texts = GetComponentsInChildren<Text>();
-                foreach (var text in texts)
-                {
-                    text.color = new Color(text.color.r, text.color.g, text.color.b, 1.0f);
-                }
                 typedWordTMP.color = new Color(typedWordTMP.color.r, typedWordTMP.color.g, typedWordTMP.color.b, 1.0f);
+                typedWordBg.color = new Color(typedWordBg.color.r, typedWordBg.color.g, typedWordBg.color.b, 1.0f);
+
+                globals.dimExplorer.horizontalRigidbody.velocity = Vector3.zero;
 
                 keyboardFaded = false;
             }    
         }
     }
-    public void MoveKeyboard(Hand hand)
+    private void KeyboardRepositioning()
     {
-        bool moving = !keyboardMoving;
-
-        if (moving)
+        if (keyboardMoving)
         {
-            if (transform.parent != hand.transform)
+            if (globals.menuInteraction_Select.GetState(handInteractingWithKeyboard.handType))
             {
-                transform.parent = hand.transform;
+                if (handInteractingWithKeyboard)
+                {
+                    if (transform.parent != handInteractingWithKeyboard)
+                    {
+                        transform.parent = handInteractingWithKeyboard.transform;
+                    }
+
+                    if (keyboardFaded)
+                    {
+                        FadeKeyboard(false);
+                    }
+
+                    if (globals.dimExplorerActions.IsActive())
+                    {
+                        globals.dimExplorerActions.Deactivate();
+                    }
+                }      
+            }
+            else
+            {
+                if (handInteractingWithKeyboard)
+                {
+                    if (transform.parent == handInteractingWithKeyboard.transform)
+                    {
+                        transform.parent = null;
+                        keyboardMoving = false;
+                    }
+                }
             }
         }
-        else
-        {
-            if (transform.parent == hand.transform)
-            {
-                transform.parent = null;
-            }
-        }
-
-        keyboardMoving = moving;
     }
     private void SubmitKey(Button key)
     {
@@ -232,6 +242,16 @@ public class ViRMA_Keyboard : MonoBehaviour
                 }));
             }      
         }
+        else if (buttonName == "CLOSE")
+        {
+
+            if (activeQueryCoroutine != null)
+            {
+                StopCoroutine(activeQueryCoroutine);
+            }
+            dimExqueryLoading = false;
+            ToggleDimExKeyboard(false);
+        }
         else if (buttonName == "DELETE")
         {
             if (typedWordString.Length > 0)
@@ -245,7 +265,7 @@ public class ViRMA_Keyboard : MonoBehaviour
         }
         else if (buttonName == "MOVE")
         {
-            MoveKeyboard(activeHand);
+            keyboardMoving = true;
         }
         else if (buttonName == "SPACE")
         {
