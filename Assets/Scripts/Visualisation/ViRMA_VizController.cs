@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using TMPro;
 using UnityEngine;
 using Valve.VR;
 using Valve.VR.InteractionSystem;
@@ -78,8 +79,7 @@ public class ViRMA_VizController : MonoBehaviour
         //dummyQuery.SetAxis("Y", 1749, "Hierarchy");
         //dummyQuery.SetAxis("Z", 691, "Hierarchy");
 
-        //StartCoroutine(SubmitVizQuery(dummyQuery));
-        //globals.vizNavActions.Activate(); // testing
+        StartCoroutine(SubmitVizQuery(dummyQuery));
     }
     private void Update()
     {
@@ -292,166 +292,6 @@ public class ViRMA_VizController : MonoBehaviour
             }
         }   
     }
-    private void GenerateAxes(List<Cell> cells)
-    {
-        // get max cell axis values
-        float maxX = 0;
-        float maxY = 0;
-        float maxZ = 0;
-        foreach (var newCell in cells)
-        {
-            if (newCell.Coordinates.x > maxX)
-            {
-                maxX = newCell.Coordinates.x;
-            }
-            if (newCell.Coordinates.y > maxY)
-            {
-                maxY = newCell.Coordinates.y;
-            }
-            if (newCell.Coordinates.z > maxZ)
-            {
-                maxZ = newCell.Coordinates.z;
-            }
-        }
-
-        // reuse same material and just change colour property
-        Material transparentMaterial = Resources.Load("Materials/BasicTransparent") as Material;
-        MaterialPropertyBlock materialProperties = new MaterialPropertyBlock();
-        Color32 transparentRed = new Color32(255, 0, 0, 130);
-        Color32 transparentGreen = new Color32(0, 255, 0, 130);
-        Color32 transparentBlue = new Color32(0, 0, 255, 130);
-        float axisLineWidth = 0.005f;
-
-        // origin
-        GameObject AxisOriginPoint = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        AxisOriginPoint.GetComponent<Renderer>().material = transparentMaterial;
-        materialProperties.SetColor("_Color", new Color32(0, 0, 0, 255));
-        AxisOriginPoint.GetComponent<Renderer>().SetPropertyBlock(materialProperties);
-        AxisOriginPoint.name = "AxisOriginPoint";
-        AxisOriginPoint.transform.position = Vector3.zero;
-        AxisOriginPoint.transform.localScale = Vector3.one * 0.5f;
-        AxisOriginPoint.transform.parent = cellsandAxesWrapper.transform;
-        axisXPointObjs.Add(AxisOriginPoint);
-        axisYPointObjs.Add(AxisOriginPoint);
-        axisZPointObjs.Add(AxisOriginPoint);
-
-        // x axis nodes
-        materialProperties.SetColor("_Color", transparentRed);
-        for (int i = 1; i <= maxX; i++)
-        {
-            GameObject AxisXPoint = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            AxisXPoint.GetComponent<Renderer>().material = transparentMaterial;
-            AxisXPoint.GetComponent<Renderer>().SetPropertyBlock(materialProperties);
-            AxisXPoint.name = "AxisXPoint" + i;
-            AxisXPoint.transform.position = new Vector3(i, 0, 0) * (defaultCellSpacingRatio + 1);
-            AxisXPoint.transform.localScale = Vector3.one * 0.5f;
-            AxisXPoint.transform.parent = cellsandAxesWrapper.transform;
-            AxisXPoint.AddComponent<ViRMA_AxisPoint>().x = true;
-            axisXPointObjs.Add(AxisXPoint);
-        }
-
-        // x axis line
-        if (axisXPointObjs.Count > 2)
-        {
-            GameObject AxisXLineObj = new GameObject("AxisXLine");
-            axisXLine = AxisXLineObj.AddComponent<LineRenderer>();
-            axisXLine.GetComponent<Renderer>().material = transparentMaterial;
-            axisXLine.GetComponent<Renderer>().SetPropertyBlock(materialProperties);
-            axisXLine.positionCount = 2;
-            axisXLine.startWidth = axisLineWidth;
-            axisXLine.endWidth = axisLineWidth;
-        }
-
-        // y axis 
-        materialProperties.SetColor("_Color", transparentGreen);
-        for (int i = 1; i <= maxY; i++)
-        {
-            GameObject AxisYPoint = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            AxisYPoint.GetComponent<Renderer>().material = transparentMaterial;
-            AxisYPoint.GetComponent<Renderer>().SetPropertyBlock(materialProperties);
-            AxisYPoint.name = "AxisYPoint" + i;
-            AxisYPoint.transform.position = new Vector3(0, i, 0) * (defaultCellSpacingRatio + 1);
-            AxisYPoint.transform.localScale = Vector3.one * 0.5f;
-            AxisYPoint.transform.parent = cellsandAxesWrapper.transform;
-            AxisYPoint.AddComponent<ViRMA_AxisPoint>().y = true;
-            axisYPointObjs.Add(AxisYPoint);
-        }
-
-        // y axis line
-        if (axisYPointObjs.Count > 2)
-        {
-            GameObject AxisYLineObj = new GameObject("AxisYLine");
-            axisYLine = AxisYLineObj.AddComponent<LineRenderer>();
-            axisYLine.GetComponent<Renderer>().material = transparentMaterial;
-            axisYLine.GetComponent<Renderer>().SetPropertyBlock(materialProperties);
-            axisYLine.positionCount = 2;
-            axisYLine.startWidth = axisLineWidth;
-            axisYLine.endWidth = axisLineWidth;
-        }
-
-        // z axis 
-        materialProperties.SetColor("_Color", transparentBlue);
-        for (int i = 1; i <= maxZ; i++)
-        {
-            GameObject AxisZPoint = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            AxisZPoint.GetComponent<Renderer>().material = transparentMaterial;
-            AxisZPoint.GetComponent<Renderer>().SetPropertyBlock(materialProperties);
-            AxisZPoint.name = "AxisZPoint" + i;
-            AxisZPoint.transform.position = new Vector3(0, 0, i) * (defaultCellSpacingRatio + 1);
-            AxisZPoint.transform.localScale = Vector3.one * 0.5f;
-            AxisZPoint.transform.parent = cellsandAxesWrapper.transform;
-            AxisZPoint.AddComponent<ViRMA_AxisPoint>().z = true;
-            axisZPointObjs.Add(AxisZPoint);
-        }
-
-        // z axis line
-        if (axisZPointObjs.Count > 2)
-        {
-            GameObject AxisZLineObj = new GameObject("AxisZLine");
-            axisZLine = AxisZLineObj.AddComponent<LineRenderer>();
-            axisZLine.GetComponent<Renderer>().material = transparentMaterial;
-            axisZLine.GetComponent<Renderer>().SetPropertyBlock(materialProperties);
-            axisZLine.positionCount = 2;
-            axisZLine.startWidth = axisLineWidth;
-            axisZLine.endWidth = axisLineWidth;
-        }
-    }
-    private void GenerateAxesLabels(AxesLabels axesLabels)
-    {
-        Debug.Log("X: " + (axisXPointObjs.Count - 1));
-        for (int i = 1; i < axisXPointObjs.Count; i++)
-        {
-            ViRMA_AxisPoint axisPoint = axisXPointObjs[i].GetComponent<ViRMA_AxisPoint>();
-            axisPoint.axisId = axesLabels.X.Id;
-            axisPoint.axisName = axesLabels.X.Name;
-            axisPoint.axisType = axesLabels.X.Type;
-            axisPoint.axisPointLabel = axesLabels.X.Labels[i - 1].Key;
-            axisPoint.axisPointLabelId = axesLabels.X.Labels[i - 1].Value;
-        }
-
-        Debug.Log("Y: " + (axisYPointObjs.Count - 1));
-        for (int i = 1; i < axisYPointObjs.Count; i++)
-        {
-            ViRMA_AxisPoint axisPoint = axisYPointObjs[i].GetComponent<ViRMA_AxisPoint>();
-            axisPoint.axisId = axesLabels.Y.Id;
-            axisPoint.axisName = axesLabels.Y.Name;
-            axisPoint.axisType = axesLabels.Y.Type;
-            axisPoint.axisPointLabel = axesLabels.Y.Labels[i - 1].Key;
-            axisPoint.axisPointLabelId = axesLabels.Y.Labels[i - 1].Value;
-        }
-
-        Debug.Log("Z: " + (axisZPointObjs.Count - 1));
-        for (int i = 1; i < axisZPointObjs.Count; i++)
-        {
-            ViRMA_AxisPoint axisPoint = axisZPointObjs[i].GetComponent<ViRMA_AxisPoint>();
-            axisPoint.axisId = axesLabels.Z.Id;
-            axisPoint.axisName = axesLabels.Z.Name;
-            axisPoint.axisType = axesLabels.Z.Type;
-            axisPoint.axisPointLabel = axesLabels.Z.Labels[i - 1].Key;
-            axisPoint.axisPointLabelId = axesLabels.Z.Labels[i - 1].Value;
-        }
-
-    }
     private IEnumerator GenerateAxesFromLabels(Query submittedQuery)
     {
         // get label data from server
@@ -604,6 +444,36 @@ public class ViRMA_VizController : MonoBehaviour
                 }
             }    
         }));
+    }
+    public void HighlightAxisPoint(GameObject axisPointObj)
+    {
+        ViRMA_AxisPoint axisPoint = axisPointObj.GetComponent<ViRMA_AxisPoint>();
+        List<GameObject> fadedPoints = new List<GameObject>();
+        if (axisPoint.x)
+        {
+            fadedPoints = axisXPointObjs;
+        }
+        else if (axisPoint.y)
+        {
+            fadedPoints = axisYPointObjs;
+        }
+        else if (axisPoint.z)
+        {
+            fadedPoints = axisZPointObjs;
+        }
+
+        foreach (var fadedPoint in fadedPoints)
+        {
+            if (fadedPoint != axisPointObj)
+            {
+                if (fadedPoint.GetComponent<ViRMA_AxisPoint>())
+                {
+                    TextMeshPro axisLabelText = fadedPoint.GetComponent<ViRMA_AxisPoint>().axisLabelText;
+                    Color fadeText = axisLabelText.color;
+                    axisLabelText.color = new Color(axisLabelText.color.r, axisLabelText.color.g, axisLabelText.color.b, 0.2f);
+                }
+            }       
+        }
     }
     private void DrawAxesLines()
     {
@@ -811,7 +681,8 @@ public class ViRMA_VizController : MonoBehaviour
             }
 
             // y max
-            float maxDistanceY = Player.instance.eyeHeight + cellsAndAxesBounds.extents.y;
+            float verticalBoundary = cellsAndAxesBounds.extents.y + 0.50f;
+            float maxDistanceY = Player.instance.eyeHeight + verticalBoundary;
             if (transform.position.y >= maxDistanceY && currentVelocity.y > 0)
             {
                 currentVelocity.y = 0;
@@ -819,7 +690,7 @@ public class ViRMA_VizController : MonoBehaviour
             }
 
             // y min
-            float minDistanceY = Player.instance.eyeHeight - cellsAndAxesBounds.extents.y;
+            float minDistanceY = Player.instance.eyeHeight - verticalBoundary;
             if (transform.position.y <= minDistanceY && currentVelocity.y < 0)
             {
                 currentVelocity.y = 0;

@@ -16,6 +16,7 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 	// used for custom UI interaction button states
 	private Image btnBackground;
 	private Text btnText;
+	private RawImage btnIcon;
 
 	public Color normalBackgroundColor;
 	public Color normalTextColor;
@@ -27,6 +28,11 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 		globals = Player.instance.gameObject.GetComponent<ViRMA_GlobalsAndActions>();
 		btnBackground = GetComponent<Image>();
 		btnText = GetComponentInChildren<Text>();
+		if (GetComponentInChildren<RawImage>())
+        {
+			btnIcon = GetComponentInChildren<RawImage>();
+
+		}
 
 		// SteamVR: assign function to button when it is clicked by hand script
 		Button button = GetComponent<Button>();
@@ -196,6 +202,13 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 		{
 			btnText.color = new Color(btnText.color.r, btnText.color.g, btnText.color.b, alpha);
 		}
+		if (btnIcon)
+        {
+			if (btnIcon.color.a != alpha)
+			{
+				btnIcon.color = new Color(btnIcon.color.r, btnIcon.color.g, btnIcon.color.b, alpha);
+			}
+		}	
 	}
 
 }

@@ -7,8 +7,9 @@ using Valve.VR.InteractionSystem;
 public class ViRMA_AxisPoint : MonoBehaviour
 {
     private ViRMA_GlobalsAndActions globals;
-    GameObject axisLabel;
-    TextMeshPro axisLabelText;
+    public GameObject axisLabel;
+    public TextMeshPro axisLabelText;
+    public Rigidbody axisPointRigidbody;
 
     [HideInInspector] public bool x;
     [HideInInspector] public bool y;
@@ -23,6 +24,9 @@ public class ViRMA_AxisPoint : MonoBehaviour
     private void Awake()
     {
         globals = Player.instance.gameObject.GetComponent<ViRMA_GlobalsAndActions>();
+        axisPointRigidbody = gameObject.AddComponent<Rigidbody>();
+        axisPointRigidbody.isKinematic = true;
+        axisPointRigidbody.useGravity = false;
     }
 
     private void Start()
@@ -72,6 +76,27 @@ public class ViRMA_AxisPoint : MonoBehaviour
         }
 
         //MoveAxesToFocusedCell(); // no longer works properly with changes (needs to be edited to use again)
+    }
+
+    private void OnTriggerEnter(Collider triggeredCol)
+    {
+        if (triggeredCol.GetComponent<ViRMA_Drumstick>())
+        {
+            //transform.localScale = transform.localScale / 0.25f;
+
+            globals.vizController.HighlightAxisPoint(gameObject);
+
+            Debug.Log("ENTER | " + gameObject.name + " | " + axisLabelText.text);
+        }
+    }
+
+    private void OnTriggerExit(Collider triggeredCol)
+    {
+        if (triggeredCol.GetComponent<ViRMA_Drumstick>())
+        {
+            //transform.localScale = transform.localScale * 0.25f;
+            Debug.Log("EXIT | " + gameObject.name + " | " + axisLabelText.text);
+        }
     }
 
     private void MoveAxesToFocusedCell()

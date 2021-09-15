@@ -455,7 +455,13 @@ public class ViRMA_DimExplorer : MonoBehaviour
         }
         else
         {
-            dimExKeyboard.FadeKeyboard(true);
+            if (transform.childCount > 0)
+            {
+                if (!dimExKeyboard.keyboardFaded)
+                {
+                    dimExKeyboard.FadeKeyboard(true);
+                }
+            }           
         }
         if (activeVerticalRigidbody)
         {
@@ -465,7 +471,13 @@ public class ViRMA_DimExplorer : MonoBehaviour
             }
             else
             {
-                dimExKeyboard.FadeKeyboard(true);
+                if (transform.childCount > 0)
+                {
+                    if (!dimExKeyboard.keyboardFaded)
+                    {
+                        dimExKeyboard.FadeKeyboard(true);
+                    }
+                }
             }
         }
         

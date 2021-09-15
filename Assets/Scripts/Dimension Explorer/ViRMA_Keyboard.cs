@@ -52,7 +52,7 @@ public class ViRMA_Keyboard : MonoBehaviour
 
         // delayed things
 
-        ToggleDimExKeyboard(true); // testing
+        //ToggleDimExKeyboard(true); // testing
     }
 
     private void OnTriggerEnter(Collider triggeredCol)
@@ -83,18 +83,28 @@ public class ViRMA_Keyboard : MonoBehaviour
             {
                 if (keyText.gameObject.transform.parent.name == "CLEAR")
                 {
+                    keyBackground.color = new Color32(211, 84, 0, 255);
+                    keyText.color = globals.BrightenColor(new Color32(211, 84, 0, 255));
+                }
+                else if (keyText.gameObject.transform.parent.name == "CLOSE")
+                {
                     keyBackground.color = new Color32(192, 57, 43, 255);
                     keyText.color = Color.white;
                 }
-                else if (keyText.gameObject.transform.parent.name == "DELETE")
+                else if (keyText.gameObject.transform.parent.name == "BACKSPACE")
                 {
-                    keyBackground.color = new Color32(211, 84, 0, 255);
-                    keyText.color = Color.white;
+                    keyBackground.color = globals.lightBlack;
+                    keyText.color = globals.BrightenColor(globals.lightBlack);
                 }
                 else if (keyText.gameObject.transform.parent.name == "MOVE")
                 {
                     keyBackground.color = new Color32(99, 110, 114, 255);
                     keyText.color = globals.BrightenColor(new Color32(99, 110, 114, 255));
+                }
+                else if (keyText.gameObject.transform.parent.name == "SUBMIT")
+                {
+                    keyBackground.color = new Color32(39, 174, 96, 255);
+                    keyText.color = globals.BrightenColor(new Color32(39, 174, 96, 255));
                 }
                 else
                 {
@@ -252,7 +262,7 @@ public class ViRMA_Keyboard : MonoBehaviour
             dimExqueryLoading = false;
             ToggleDimExKeyboard(false);
         }
-        else if (buttonName == "DELETE")
+        else if (buttonName == "BACKSPACE")
         {
             if (typedWordString.Length > 0)
             {
