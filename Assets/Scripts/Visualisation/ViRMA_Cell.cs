@@ -54,6 +54,16 @@ public class ViRMA_Cell : MonoBehaviour
         }
     }
 
+    private void OnTriggerStay(Collider triggeredCol)
+    {
+        if (triggeredCol.GetComponent<ViRMA_Drumstick>())
+        {
+            globals.vizController.focusedCell = gameObject;
+
+            globals.ToggleControllerFade(triggeredCol.GetComponent<ViRMA_Drumstick>().hand, true);
+        }
+    }
+
     private void OnTriggerExit(Collider triggeredCol)
     {
         if (triggeredCol.GetComponent<ViRMA_Drumstick>())
@@ -233,8 +243,13 @@ public class ViRMA_Cell : MonoBehaviour
                 axesLabels.transform.LookAt(2 * axesLabels.transform.position - Player.instance.hmdTransform.position);
 
                 axesLabels.transform.GetChild(0).GetComponent<TextMeshPro>().text = xAxisPointLabel;
+                axesLabels.transform.GetChild(0).GetComponent<TextMeshPro>().color = globals.axisRed;
+
                 axesLabels.transform.GetChild(1).GetComponent<TextMeshPro>().text = yAxisPointLabel;
+                axesLabels.transform.GetChild(1).GetComponent<TextMeshPro>().color = globals.axisGreen;
+
                 axesLabels.transform.GetChild(2).GetComponent<TextMeshPro>().text = zAxisPointLabel;
+                axesLabels.transform.GetChild(2).GetComponent<TextMeshPro>().color = globals.axisBlue;
             }
         }
         else

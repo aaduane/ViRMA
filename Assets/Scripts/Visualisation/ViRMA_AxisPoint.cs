@@ -10,6 +10,10 @@ public class ViRMA_AxisPoint : MonoBehaviour
     public GameObject axisLabel;
     public TextMeshPro axisLabelText;
     public Rigidbody axisPointRigidbody;
+    public bool axisPointFaded;
+
+    public MeshRenderer axisPointRend;
+    public MaterialPropertyBlock axisPointRendPropBlock;
 
     [HideInInspector] public bool x;
     [HideInInspector] public bool y;
@@ -27,6 +31,9 @@ public class ViRMA_AxisPoint : MonoBehaviour
         axisPointRigidbody = gameObject.AddComponent<Rigidbody>();
         axisPointRigidbody.isKinematic = true;
         axisPointRigidbody.useGravity = false;
+
+        axisPointRend = GetComponent<MeshRenderer>();
+        axisPointRendPropBlock = new MaterialPropertyBlock();
     }
 
     private void Start()
@@ -37,7 +44,7 @@ public class ViRMA_AxisPoint : MonoBehaviour
         axisLabel.transform.SetParent(transform);
         axisLabel.transform.localScale = axisLabel.transform.localScale * 0.5f;
         axisLabel.transform.localPosition = Vector3.zero;
-        axisLabel.transform.localRotation = Quaternion.identity;    
+        axisLabel.transform.localRotation = Quaternion.identity;
 
         if (x)
         {
@@ -73,7 +80,31 @@ public class ViRMA_AxisPoint : MonoBehaviour
         if (axisLabelText.text != axisPointLabel)
         {
             axisLabelText.text = axisPointLabel;
+
+            float offsetSize = (axisLabelText.preferredWidth * 0.5f) + 2;          
+            float offsetPos = ((offsetSize / 2) * -1) + 1;
+            BoxCollider axisPointCol = GetComponent<BoxCollider>();
+
+            if (x)
+            {
+                axisPointCol.center = new Vector3(0, 0, offsetPos);
+                axisPointCol.size = new Vector3(2.5f, 1, offsetSize);
+            }
+            else if (y)
+            {
+                axisPointCol.center = new Vector3(offsetPos, 0, 0);
+                axisPointCol.size = new Vector3(offsetSize, 2.5f, 1);
+            }
+            else if (z)
+            {
+                axisPointCol.center = new Vector3(offsetPos, 0, 0);
+                axisPointCol.size = new Vector3(offsetSize, 1, 2.5f);
+            }
+
+
         }
+
+        AxisPointStateController();
 
         //MoveAxesToFocusedCell(); // no longer works properly with changes (needs to be edited to use again)
     }
@@ -82,11 +113,19 @@ public class ViRMA_AxisPoint : MonoBehaviour
     {
         if (triggeredCol.GetComponent<ViRMA_Drumstick>())
         {
-            //transform.localScale = transform.localScale / 0.25f;
+            globals.vizController.focusedAxisPoint = gameObject;
 
-            globals.vizController.HighlightAxisPoint(gameObject);
+            globals.ToggleControllerFade(triggeredCol.GetComponent<ViRMA_Drumstick>().hand, true);
+        }
+    }
 
-            Debug.Log("ENTER | " + gameObject.name + " | " + axisLabelText.text);
+    private void OnTriggerStay(Collider triggeredCol)
+    {
+        if (triggeredCol.GetComponent<ViRMA_Drumstick>())
+        {
+            globals.vizController.focusedAxisPoint = gameObject;
+
+            globals.ToggleControllerFade(triggeredCol.GetComponent<ViRMA_Drumstick>().hand, true);
         }
     }
 
@@ -94,11 +133,75 @@ public class ViRMA_AxisPoint : MonoBehaviour
     {
         if (triggeredCol.GetComponent<ViRMA_Drumstick>())
         {
-            //transform.localScale = transform.localScale * 0.25f;
-            Debug.Log("EXIT | " + gameObject.name + " | " + axisLabelText.text);
+            if (globals.vizController.focusedAxisPoint == gameObject)
+            {
+                globals.vizController.focusedAxisPoint = null;
+
+                globals.ToggleControllerFade(triggeredCol.GetComponent<ViRMA_Drumstick>().hand, false);
+            }
         }
     }
 
+    private void AxisPointStateController()
+    {
+        if (globals.vizController.focusedAxisPoint)
+        {
+            if (globals.vizController.focusedAxisPoint == gameObject)
+            {
+                transform.localScale = Vector3.one * 0.65f;
+                ToggleFade(false);
+            }
+            else
+            {
+                transform.localScale = Vector3.one * 0.5f;
+                ToggleFade(true);
+            }
+        }
+        else
+        {
+            transform.localScale = Vector3.one * 0.5f;
+            ToggleFade(false);
+        }
+    }
+
+    public void ToggleFade(bool toFade)
+    {
+        float alpha = 1;
+        if (toFade)
+        {
+            if (!axisPointFaded)
+            {
+                int fadeChecker = 0;
+                if (x && globals.vizController.focusedAxisPoint.GetComponent<ViRMA_AxisPoint>().x)
+                {
+                    fadeChecker++;
+                }
+                else if (y && globals.vizController.focusedAxisPoint.GetComponent<ViRMA_AxisPoint>().y)
+                {
+                    fadeChecker++;
+                }
+                else if (z && globals.vizController.focusedAxisPoint.GetComponent<ViRMA_AxisPoint>().z)
+                {
+                    fadeChecker++;
+                }
+                if (fadeChecker > 0)
+                {
+                    alpha = 0.35f;
+                    axisLabelText.color = new Color(axisLabelText.color.r, axisLabelText.color.g, axisLabelText.color.b, alpha);
+                    axisPointFaded = true;
+                }
+            }
+        }
+        else
+        {
+            if (axisPointFaded)
+            {
+                alpha = 1.0f;
+                axisLabelText.color = new Color(axisLabelText.color.r, axisLabelText.color.g, axisLabelText.color.b, alpha);
+                axisPointFaded = false;
+            }
+        }
+    }
     private void MoveAxesToFocusedCell()
     {
         //transform.LookAt(2 * transform.position - Player.instance.hmdTransform.position);

@@ -11,9 +11,14 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
     public ViRMA_MainMenu mainMenu;
 
     // colours
-    public Color32 axisRed = new Color32(192, 57, 43, 255);
-    public Color32 axisGreen = new Color32(39, 174, 96, 255);
-    public Color32 axisBlue = new Color32(35, 99, 142, 255); 
+    public Color axisRed = new Color32(192, 57, 43, 255);
+    public Color axisGreen = new Color32(39, 174, 96, 255);
+    public Color axisBlue = new Color32(35, 99, 142, 255);
+
+    public Color axisFadeRed = new Color32(192, 57, 43, 150);
+    public Color axisFadeGreen = new Color32(39, 174, 96, 150);
+    public Color axisFadeBlue = new Color32(35, 99, 142, 150);
+
     public Color32 lightBlack = new Color32(52, 73, 94, 255);
     public Color32 lightBlue = new Color32(52, 152, 219, 255);
     public Color32 BrightenColor(Color32 colorToBrighten)

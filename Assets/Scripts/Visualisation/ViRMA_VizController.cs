@@ -16,6 +16,7 @@ public class ViRMA_VizController : MonoBehaviour
     [HideInInspector] public List<GameObject> cellObjs, axisXPointObjs, axisYPointObjs, axisZPointObjs;
     [HideInInspector] public LineRenderer axisXLine, axisYLine, axisZLine;
     public GameObject focusedCell;
+    public GameObject focusedAxisPoint;
 
     /*--- private --- */
 
@@ -300,9 +301,6 @@ public class ViRMA_VizController : MonoBehaviour
             // // global style for propety blocks
             Material transparentMaterial = Resources.Load("Materials/BasicTransparent") as Material;
             MaterialPropertyBlock materialProperties = new MaterialPropertyBlock();
-            Color32 transparentRed = new Color32(255, 0, 0, 130);
-            Color32 transparentGreen = new Color32(0, 255, 0, 130);
-            Color32 transparentBlue = new Color32(0, 0, 255, 130);
             float axisLineWidth = 0.005f;
 
             // origin point
@@ -323,14 +321,14 @@ public class ViRMA_VizController : MonoBehaviour
             // x axis points
             if (axesLabels.X != null)
             {
-                materialProperties.SetColor("_Color", transparentRed);
+                materialProperties.SetColor("_Color", globals.axisFadeRed);
                 for (int i = 0; i < axesLabels.X.Labels.Count; i++)
                 {
                     // create gameobject to represent axis point
                     GameObject axisXPoint = GameObject.CreatePrimitive(PrimitiveType.Cube);
                     axisXPoint.GetComponent<Renderer>().material = transparentMaterial;
                     axisXPoint.GetComponent<Renderer>().SetPropertyBlock(materialProperties);
-                    axisXPoint.name = "axisXPoint_" + i;
+                    axisXPoint.name = "AxisXPoint_" + i;
                     axisXPoint.transform.position = new Vector3(i + 1, 0, 0) * (defaultCellSpacingRatio + 1);
                     axisXPoint.transform.localScale = Vector3.one * 0.5f;
                     axisXPoint.transform.parent = cellsandAxesWrapper.transform;
@@ -365,14 +363,14 @@ public class ViRMA_VizController : MonoBehaviour
             // y axis points
             if (axesLabels.Y != null)
             {
-                materialProperties.SetColor("_Color", transparentGreen);
+                materialProperties.SetColor("_Color", globals.axisFadeGreen);
                 for (int i = 0; i < axesLabels.Y.Labels.Count; i++)
                 {
                     // create gameobject to represent axis point
                     GameObject axisYPoint = GameObject.CreatePrimitive(PrimitiveType.Cube);
                     axisYPoint.GetComponent<Renderer>().material = transparentMaterial;
                     axisYPoint.GetComponent<Renderer>().SetPropertyBlock(materialProperties);
-                    axisYPoint.name = "axisYPoint_" + i;
+                    axisYPoint.name = "AxisYPoint_" + i;
                     axisYPoint.transform.position = new Vector3(0, i + 1, 0) * (defaultCellSpacingRatio + 1);
                     axisYPoint.transform.localScale = Vector3.one * 0.5f;
                     axisYPoint.transform.parent = cellsandAxesWrapper.transform;
@@ -406,14 +404,14 @@ public class ViRMA_VizController : MonoBehaviour
             // z axis points
             if (axesLabels.Z != null)
             {
-                materialProperties.SetColor("_Color", transparentBlue);
+                materialProperties.SetColor("_Color", globals.axisFadeBlue);
                 for (int i = 0; i < axesLabels.Z.Labels.Count; i++)
                 {
                     // create gameobject to represent axis point
                     GameObject axisZPoint = GameObject.CreatePrimitive(PrimitiveType.Cube);
                     axisZPoint.GetComponent<Renderer>().material = transparentMaterial;
                     axisZPoint.GetComponent<Renderer>().SetPropertyBlock(materialProperties);
-                    axisZPoint.name = "axisZPoint_" + i;
+                    axisZPoint.name = "AxisZPoint_" + i;
                     axisZPoint.transform.position = new Vector3(0, 0, i + 1) * (defaultCellSpacingRatio + 1);
                     axisZPoint.transform.localScale = Vector3.one * 0.5f;
                     axisZPoint.transform.parent = cellsandAxesWrapper.transform;
@@ -444,36 +442,6 @@ public class ViRMA_VizController : MonoBehaviour
                 }
             }    
         }));
-    }
-    public void HighlightAxisPoint(GameObject axisPointObj)
-    {
-        ViRMA_AxisPoint axisPoint = axisPointObj.GetComponent<ViRMA_AxisPoint>();
-        List<GameObject> fadedPoints = new List<GameObject>();
-        if (axisPoint.x)
-        {
-            fadedPoints = axisXPointObjs;
-        }
-        else if (axisPoint.y)
-        {
-            fadedPoints = axisYPointObjs;
-        }
-        else if (axisPoint.z)
-        {
-            fadedPoints = axisZPointObjs;
-        }
-
-        foreach (var fadedPoint in fadedPoints)
-        {
-            if (fadedPoint != axisPointObj)
-            {
-                if (fadedPoint.GetComponent<ViRMA_AxisPoint>())
-                {
-                    TextMeshPro axisLabelText = fadedPoint.GetComponent<ViRMA_AxisPoint>().axisLabelText;
-                    Color fadeText = axisLabelText.color;
-                    axisLabelText.color = new Color(axisLabelText.color.r, axisLabelText.color.g, axisLabelText.color.b, 0.2f);
-                }
-            }       
-        }
     }
     private void DrawAxesLines()
     {
