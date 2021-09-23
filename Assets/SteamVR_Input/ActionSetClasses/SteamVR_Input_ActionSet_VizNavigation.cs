@@ -40,5 +40,21 @@ namespace Valve.VR
                 return SteamVR_Actions.vizNavigation_Scale;
             }
         }
+        
+        public virtual SteamVR_Action_Single HardGrip
+        {
+            get
+            {
+                return SteamVR_Actions.vizNavigation_HardGrip;
+            }
+        }
+        
+        public virtual SteamVR_Action_Boolean Select
+        {
+            get
+            {
+                return SteamVR_Actions.vizNavigation_Select;
+            }
+        }
     }
 }

@@ -38,7 +38,6 @@ public class ViRMA_AxisPoint : MonoBehaviour
 
     private void Start()
     {
-
         axisLabel = Instantiate(Resources.Load("Prefabs/AxisLabel")) as GameObject;
         axisLabelText = axisLabel.GetComponent<TextMeshPro>();
         axisLabel.transform.SetParent(transform);
@@ -71,38 +70,11 @@ public class ViRMA_AxisPoint : MonoBehaviour
             axisLabel.transform.localEulerAngles = new Vector3(90, 0, 0);
             axisLabel.GetComponent<TextMeshPro>().alignment = TextAlignmentOptions.MidlineRight;
         }
-
     }
 
     private void Update()
     {
-        // set axis label text when it is ready
-        if (axisLabelText.text != axisPointLabel)
-        {
-            axisLabelText.text = axisPointLabel;
-
-            float offsetSize = (axisLabelText.preferredWidth * 0.5f) + 2;          
-            float offsetPos = ((offsetSize / 2) * -1) + 1;
-            BoxCollider axisPointCol = GetComponent<BoxCollider>();
-
-            if (x)
-            {
-                axisPointCol.center = new Vector3(0, 0, offsetPos);
-                axisPointCol.size = new Vector3(2.5f, 1, offsetSize);
-            }
-            else if (y)
-            {
-                axisPointCol.center = new Vector3(offsetPos, 0, 0);
-                axisPointCol.size = new Vector3(offsetSize, 2.5f, 1);
-            }
-            else if (z)
-            {
-                axisPointCol.center = new Vector3(offsetPos, 0, 0);
-                axisPointCol.size = new Vector3(offsetSize, 1, 2.5f);
-            }
-
-
-        }
+        LoadAxisPointLabel();
 
         AxisPointStateController();
 
@@ -199,6 +171,34 @@ public class ViRMA_AxisPoint : MonoBehaviour
                 alpha = 1.0f;
                 axisLabelText.color = new Color(axisLabelText.color.r, axisLabelText.color.g, axisLabelText.color.b, alpha);
                 axisPointFaded = false;
+            }
+        }
+    }
+    private void LoadAxisPointLabel()
+    {
+        // set axis label text when it is ready
+        if (axisLabelText.text != axisPointLabel)
+        {
+            axisLabelText.text = axisPointLabel;
+
+            float offsetSize = (axisLabelText.preferredWidth * 0.5f) + 2;
+            float offsetPos = ((offsetSize / 2) * -1) + 1;
+            BoxCollider axisPointCol = GetComponent<BoxCollider>();
+
+            if (x)
+            {
+                axisPointCol.center = new Vector3(0, 0, offsetPos);
+                axisPointCol.size = new Vector3(2.5f, 1, offsetSize);
+            }
+            else if (y)
+            {
+                axisPointCol.center = new Vector3(offsetPos, 0, 0);
+                axisPointCol.size = new Vector3(offsetSize, 2.5f, 1);
+            }
+            else if (z)
+            {
+                axisPointCol.center = new Vector3(offsetPos, 0, 0);
+                axisPointCol.size = new Vector3(offsetSize, 1, 2.5f);
             }
         }
     }

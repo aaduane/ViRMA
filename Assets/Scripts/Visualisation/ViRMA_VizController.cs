@@ -668,6 +668,28 @@ public class ViRMA_VizController : MonoBehaviour
         }
     }
 
+    // node interaction (drill dowm, roll up, view cell)
+    public void DrillDown(SteamVR_Action_Boolean action, SteamVR_Input_Sources source)
+    {
+        if (focusedAxisPoint != null)
+        {
+
+            // THIS IS FOR ROLL UP, NOT DRILL DOWN - FIX ! ! ! ! ! 
+            StartCoroutine(ViRMA_APIController.GetHierarchyParent(focusedAxisPoint.GetComponent<ViRMA_AxisPoint>().axisId, (response) => {
+                Tag parent = response;
+                Debug.Log("Parent: " + parent.Name);
+            }));
+        }
+    }
+
+    public void TestGrip(SteamVR_Action_Single fromAction, SteamVR_Input_Sources fromSource, float newAxis, float newDelta)
+    {
+        if (newAxis > 0.9f)
+        {
+            Debug.Log(newAxis);
+        }
+    }
+
 
     // general  
     private void CalculateCellsAndAxesBounds()

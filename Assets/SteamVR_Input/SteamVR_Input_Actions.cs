@@ -47,6 +47,10 @@ namespace Valve.VR
         
         private static SteamVR_Action_Boolean p_vizNavigation_Scale;
         
+        private static SteamVR_Action_Single p_vizNavigation_HardGrip;
+        
+        private static SteamVR_Action_Boolean p_vizNavigation_Select;
+        
         private static SteamVR_Action_Boolean p_menuInteraction_Select;
         
         private static SteamVR_Action_Boolean p_menuInteraction_MenuControl;
@@ -177,6 +181,22 @@ namespace Valve.VR
             }
         }
         
+        public static SteamVR_Action_Single vizNavigation_HardGrip
+        {
+            get
+            {
+                return SteamVR_Actions.p_vizNavigation_HardGrip.GetCopy<SteamVR_Action_Single>();
+            }
+        }
+        
+        public static SteamVR_Action_Boolean vizNavigation_Select
+        {
+            get
+            {
+                return SteamVR_Actions.p_vizNavigation_Select.GetCopy<SteamVR_Action_Boolean>();
+            }
+        }
+        
         public static SteamVR_Action_Boolean menuInteraction_Select
         {
             get
@@ -235,6 +255,8 @@ namespace Valve.VR
                     SteamVR_Actions.vizNavigation_Position,
                     SteamVR_Actions.vizNavigation_Rotation,
                     SteamVR_Actions.vizNavigation_Scale,
+                    SteamVR_Actions.vizNavigation_HardGrip,
+                    SteamVR_Actions.vizNavigation_Select,
                     SteamVR_Actions.menuInteraction_Select,
                     SteamVR_Actions.menuInteraction_MenuControl,
                     SteamVR_Actions.menuInteraction_Scroll,
@@ -255,6 +277,8 @@ namespace Valve.VR
                     SteamVR_Actions.vizNavigation_Position,
                     SteamVR_Actions.vizNavigation_Rotation,
                     SteamVR_Actions.vizNavigation_Scale,
+                    SteamVR_Actions.vizNavigation_HardGrip,
+                    SteamVR_Actions.vizNavigation_Select,
                     SteamVR_Actions.menuInteraction_Select,
                     SteamVR_Actions.menuInteraction_MenuControl,
                     SteamVR_Actions.menuInteraction_Scroll,
@@ -277,12 +301,14 @@ namespace Valve.VR
                     SteamVR_Actions.vizNavigation_Position,
                     SteamVR_Actions.vizNavigation_Rotation,
                     SteamVR_Actions.vizNavigation_Scale,
+                    SteamVR_Actions.vizNavigation_Select,
                     SteamVR_Actions.menuInteraction_Select,
                     SteamVR_Actions.menuInteraction_MenuControl,
                     SteamVR_Actions.dimExplorer_Select,
                     SteamVR_Actions.dimExplorer_Scroll};
             Valve.VR.SteamVR_Input.actionsSingle = new Valve.VR.SteamVR_Action_Single[] {
-                    SteamVR_Actions.default_Squeeze};
+                    SteamVR_Actions.default_Squeeze,
+                    SteamVR_Actions.vizNavigation_HardGrip};
             Valve.VR.SteamVR_Input.actionsVector2 = new Valve.VR.SteamVR_Action_Vector2[] {
                     SteamVR_Actions.menuInteraction_Scroll};
             Valve.VR.SteamVR_Input.actionsVector3 = new Valve.VR.SteamVR_Action_Vector3[0];
@@ -301,6 +327,8 @@ namespace Valve.VR
                     SteamVR_Actions.vizNavigation_Position,
                     SteamVR_Actions.vizNavigation_Rotation,
                     SteamVR_Actions.vizNavigation_Scale,
+                    SteamVR_Actions.vizNavigation_HardGrip,
+                    SteamVR_Actions.vizNavigation_Select,
                     SteamVR_Actions.menuInteraction_Select,
                     SteamVR_Actions.menuInteraction_MenuControl,
                     SteamVR_Actions.menuInteraction_Scroll,
@@ -325,6 +353,8 @@ namespace Valve.VR
             SteamVR_Actions.p_vizNavigation_Position = ((SteamVR_Action_Boolean)(SteamVR_Action.Create<SteamVR_Action_Boolean>("/actions/VizNavigation/in/Position")));
             SteamVR_Actions.p_vizNavigation_Rotation = ((SteamVR_Action_Boolean)(SteamVR_Action.Create<SteamVR_Action_Boolean>("/actions/VizNavigation/in/Rotation")));
             SteamVR_Actions.p_vizNavigation_Scale = ((SteamVR_Action_Boolean)(SteamVR_Action.Create<SteamVR_Action_Boolean>("/actions/VizNavigation/in/Scale")));
+            SteamVR_Actions.p_vizNavigation_HardGrip = ((SteamVR_Action_Single)(SteamVR_Action.Create<SteamVR_Action_Single>("/actions/VizNavigation/in/HardGrip")));
+            SteamVR_Actions.p_vizNavigation_Select = ((SteamVR_Action_Boolean)(SteamVR_Action.Create<SteamVR_Action_Boolean>("/actions/VizNavigation/in/Select")));
             SteamVR_Actions.p_menuInteraction_Select = ((SteamVR_Action_Boolean)(SteamVR_Action.Create<SteamVR_Action_Boolean>("/actions/MenuInteraction/in/Select")));
             SteamVR_Actions.p_menuInteraction_MenuControl = ((SteamVR_Action_Boolean)(SteamVR_Action.Create<SteamVR_Action_Boolean>("/actions/MenuInteraction/in/MenuControl")));
             SteamVR_Actions.p_menuInteraction_Scroll = ((SteamVR_Action_Vector2)(SteamVR_Action.Create<SteamVR_Action_Vector2>("/actions/MenuInteraction/in/Scroll")));

@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using Valve.VR;
 using Valve.VR.InteractionSystem;
 
@@ -60,6 +61,8 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
     public SteamVR_ActionSet vizNavActions;
     public SteamVR_Action_Boolean vizNav_Position;
     public SteamVR_Action_Boolean vizNav_Rotation;
+    public SteamVR_Action_Boolean vizNav_Select;
+    public SteamVR_Action_Single vizNav_HardGrip;
 
     // dimExplorer actions
     public SteamVR_ActionSet dimExplorerActions;
@@ -115,6 +118,9 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
         vizNavActions = SteamVR_Input.GetActionSet("VizNavigation");
         vizNav_Position = SteamVR_Input.GetActionFromPath<SteamVR_Action_Boolean>("/actions/VizNavigation/in/Position");
         vizNav_Rotation = SteamVR_Input.GetActionFromPath<SteamVR_Action_Boolean>("/actions/VizNavigation/in/Rotation");
+        vizNav_Select = SteamVR_Input.GetActionFromPath<SteamVR_Action_Boolean>("/actions/VizNavigation/in/Select");
+
+        vizNav_HardGrip = SteamVR_Input.GetActionFromPath<SteamVR_Action_Single>("/actions/VizNavigation/in/HardGrip");
 
         // dimension explorer action set
         dimExplorerActions = SteamVR_Input.GetActionSet("DimExplorer");
@@ -133,13 +139,21 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
     {
         // --- SteamVR custom action assignments --- \\
 
+        // viz controller
+        vizNav_Select[SteamVR_Input_Sources.Any].onStateDown += vizController.DrillDown;
+        //vizNav_HardGrip[SteamVR_Input_Sources.Any].onAxis += vizController.TestGrip;
+
         // dimension explorer 
         dimExplorer_Scroll[SteamVR_Input_Sources.Any].onStateDown += dimExplorer.SubmitTagForTraversal;
         dimExplorer_Select[SteamVR_Input_Sources.Any].onStateDown += dimExplorer.SubmitTagForContextMenu;
         dimExplorer_Select[SteamVR_Input_Sources.Any].onStateDown += dimExplorer.SubmitContextBtnForQuery;
 
+        //menuInteraction_Select[SteamVR_Input_Sources.Any].onStateDown += vizController.DrillDown;
         //menuInteraction_Scroll[SteamVR_Input_Sources.Any].onAxis += mainMenu.TestScroll;
     }
+
+    
+
     public void ToggleOnlyThisActionSet(SteamVR_ActionSet targetActionSet)
     {
         SteamVR_ActionSet_Manager.DisableAllActionSets();
@@ -163,17 +177,18 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
 
         if (dimExplorer.dimExKeyboard.keyboardLoaded)
         {
-            menuInteractionActions.Activate();
             dimExplorerActions.Activate();
             vizNavActions.Deactivate();
         }
 
         if (dimExplorer.dimExKeyboard.keyboardMoving)
         {
-            menuInteractionActions.Activate();
+            
             dimExplorerActions.Deactivate();
             vizNavActions.Deactivate();
         }
+
+        menuInteractionActions.Activate();
 
         // debugging
         if (false)

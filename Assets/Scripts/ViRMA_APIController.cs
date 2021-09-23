@@ -151,7 +151,7 @@ public class ViRMA_APIController : MonoBehaviour
     // general API methods
     public static IEnumerator GetRequest(string paramsURL, Action<JSONNode> onSuccess)
     {
-        //Debug.Log(paramsURL); // testing
+        Debug.Log(paramsURL); // testing
 
         string getRequest = serverAddress + paramsURL;
         float beforeWebRequest = 0, afterWebRequest = 0, beforeJsonParse = 0, afterJsonParse = 0;

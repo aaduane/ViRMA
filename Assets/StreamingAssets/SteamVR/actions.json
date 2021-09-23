@@ -66,6 +66,14 @@
       "type": "boolean"
     },
     {
+      "name": "/actions/VizNavigation/in/HardGrip",
+      "type": "vector1"
+    },
+    {
+      "name": "/actions/VizNavigation/in/Select",
+      "type": "boolean"
+    },
+    {
       "name": "/actions/MenuInteraction/in/Select",
       "type": "boolean"
     },
