@@ -140,7 +140,7 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
         // --- SteamVR custom action assignments --- \\
 
         // viz controller
-        vizNav_Select[SteamVR_Input_Sources.Any].onStateDown += vizController.DrillDown;
+        vizNav_Select[SteamVR_Input_Sources.Any].onStateDown += vizController.DrillDownRollUp;
         //vizNav_HardGrip[SteamVR_Input_Sources.Any].onAxis += vizController.TestGrip;
 
         // dimension explorer 

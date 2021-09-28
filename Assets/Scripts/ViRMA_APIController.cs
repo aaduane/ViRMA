@@ -290,7 +290,7 @@ public class ViRMA_APIController : MonoBehaviour
                 name = response["Tag"]["Name"];
                 foreach (JSONObject child in response["Children"])
                 {
-                    int labelId = child["Tag"]["Id"];
+                    int labelId = child["Id"];
                     string labelName = child["Tag"]["Name"];
                     int bracketIndex = labelName.IndexOf("(");
                     if (bracketIndex > -1)

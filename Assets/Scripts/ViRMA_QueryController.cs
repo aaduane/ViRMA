@@ -47,6 +47,10 @@ public class ViRMA_QueryController : MonoBehaviour
         }));
 
         */
+
+        buildingQuery.SetAxis("X", 1770, "Hierarchy");
+        buildingQuery.SetAxis("Y", 3733, "Hierarchy");
+        buildingQuery.SetAxis("Z", 5, "Tagset");
     }
 
     private void Update()

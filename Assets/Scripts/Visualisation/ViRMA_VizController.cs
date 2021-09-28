@@ -56,32 +56,7 @@ public class ViRMA_VizController : MonoBehaviour
         rigidBody.drag = 0.1f;
         rigidBody.angularDrag = 0.5f;
     }
-    private void Start()
-    {
-        // dummy queries for debugging
-        Query dummyQuery = new Query();
-
-        //// OLD
-        //dummyQuery.SetAxis("X", 3, "Tagset");
-        //dummyQuery.SetAxis("Y", 7, "Tagset");
-        //dummyQuery.SetAxis("Z", 77, "Hierarchy");
-
-        //dummyQuery.AddFilter(115, "Hierarchy");
-        //dummyQuery.AddFilter(116, "Hierarchy");
-
-        //// NEW
-        dummyQuery.SetAxis("X", 1770, "Hierarchy");
-        dummyQuery.SetAxis("Y", 3733, "Hierarchy");
-        dummyQuery.SetAxis("Z", 5, "Tagset");
-        //dummyQuery.SetAxis("Z", 34, "Hierarchy");
-
-        //dummyQuery.SetAxis("X", 3733, "Hierarchy");
-        //dummyQuery.SetAxis("X", 34, "Hierarchy");
-        //dummyQuery.SetAxis("Y", 1749, "Hierarchy");
-        //dummyQuery.SetAxis("Z", 691, "Hierarchy");
-
-        StartCoroutine(SubmitVizQuery(dummyQuery));
-    }
+    
     private void Update()
     {
         if (vizFullyLoaded)
@@ -344,6 +319,20 @@ public class ViRMA_VizController : MonoBehaviour
 
                     // add gameobject to list
                     axisXPointObjs.Add(axisXPoint);
+
+                    // x axis roll up axis point
+                    if (i == axesLabels.X.Labels.Count - 1)
+                    {             
+                        GameObject axisXPointRollUp = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                        axisXPointRollUp.GetComponent<Renderer>().material = transparentMaterial;
+                        axisXPointRollUp.GetComponent<Renderer>().SetPropertyBlock(materialProperties);
+                        axisXPointRollUp.name = "AxisXPoint_RollUp";
+                        axisXPointRollUp.transform.position = new Vector3(i + 2, 0, 0) * (defaultCellSpacingRatio + 1);
+                        axisXPointRollUp.transform.localScale = Vector3.one * 0.5f;
+                        axisXPointRollUp.transform.parent = cellsandAxesWrapper.transform;
+                        axisXPointRollUp.AddComponent<ViRMA_RollUpPoint>().x = true;
+                        axisXPointRollUp.GetComponent<ViRMA_RollUpPoint>().axisId = axesLabels.X.Id;
+                    }
                 }
 
                 // x axis line
@@ -357,7 +346,6 @@ public class ViRMA_VizController : MonoBehaviour
                     axisXLine.startWidth = axisLineWidth;
                     axisXLine.endWidth = axisLineWidth;
                 }
-
             }
 
             // y axis points
@@ -669,16 +657,52 @@ public class ViRMA_VizController : MonoBehaviour
     }
 
     // node interaction (drill dowm, roll up, view cell)
-    public void DrillDown(SteamVR_Action_Boolean action, SteamVR_Input_Sources source)
+    public void DrillDownRollUp(SteamVR_Action_Boolean action, SteamVR_Input_Sources source)
     {
         if (focusedAxisPoint != null)
         {
+            if (focusedAxisPoint.GetComponent<ViRMA_AxisPoint>())
+            {
+                ViRMA_AxisPoint axisPoint = focusedAxisPoint.GetComponent<ViRMA_AxisPoint>();
+                if (axisPoint.axisType == "Node")
+                {
+                    StartCoroutine(ViRMA_APIController.GetHierarchyChildren(axisPoint.axisPointLabelId, (response) => {
+                        List<Tag> children = response;
+                        if (children.Count > 0)
+                        {
+                            string axisQueryType = "";
+                            if (axisPoint.x)
+                            {
+                                axisQueryType = "X";
+                            }
+                            else if (axisPoint.y)
+                            {
+                                axisQueryType = "Y";
+                            }
+                            else if (axisPoint.z)
+                            {
+                                axisQueryType = "Z";
+                            }
+                            globals.queryController.buildingQuery.SetAxis(axisQueryType, axisPoint.axisPointLabelId, "Hierarchy");
+                            //Debug.Log(children.Count + " children in " + axisPoint.axisPointLabel);
+                        }
+                    }));
+                }
+            }
+            else if (focusedAxisPoint.GetComponent<ViRMA_RollUpPoint>())
+            {
+                StartCoroutine(ViRMA_APIController.GetHierarchyParent(focusedAxisPoint.GetComponent<ViRMA_RollUpPoint>().axisId, (response) => {
+                    Tag parent = response;
+                    globals.queryController.buildingQuery.SetAxis("X", parent.Id, "Hierarchy");
 
-            // THIS IS FOR ROLL UP, NOT DRILL DOWN - FIX ! ! ! ! ! 
-            StartCoroutine(ViRMA_APIController.GetHierarchyParent(focusedAxisPoint.GetComponent<ViRMA_AxisPoint>().axisId, (response) => {
-                Tag parent = response;
-                Debug.Log("Parent: " + parent.Name);
-            }));
+                    //////////// TO DO:
+                    //////////// add y and z
+                    //////////// label axes with parent
+                    //////////// roll up hover inidicating new parent?
+
+                    Debug.Log("Parent: " + parent.Name);
+                }));
+            }
         }
     }
 

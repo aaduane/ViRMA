@@ -144,24 +144,27 @@ public class ViRMA_AxisPoint : MonoBehaviour
             if (!axisPointFaded)
             {
                 int fadeChecker = 0;
-                if (x && globals.vizController.focusedAxisPoint.GetComponent<ViRMA_AxisPoint>().x)
+                if (globals.vizController.focusedAxisPoint.GetComponent<ViRMA_AxisPoint>())
                 {
-                    fadeChecker++;
-                }
-                else if (y && globals.vizController.focusedAxisPoint.GetComponent<ViRMA_AxisPoint>().y)
-                {
-                    fadeChecker++;
-                }
-                else if (z && globals.vizController.focusedAxisPoint.GetComponent<ViRMA_AxisPoint>().z)
-                {
-                    fadeChecker++;
-                }
-                if (fadeChecker > 0)
-                {
-                    alpha = 0.35f;
-                    axisLabelText.color = new Color(axisLabelText.color.r, axisLabelText.color.g, axisLabelText.color.b, alpha);
-                    axisPointFaded = true;
-                }
+                    if (x && globals.vizController.focusedAxisPoint.GetComponent<ViRMA_AxisPoint>().x)
+                    {
+                        fadeChecker++;
+                    }
+                    else if (y && globals.vizController.focusedAxisPoint.GetComponent<ViRMA_AxisPoint>().y)
+                    {
+                        fadeChecker++;
+                    }
+                    else if (z && globals.vizController.focusedAxisPoint.GetComponent<ViRMA_AxisPoint>().z)
+                    {
+                        fadeChecker++;
+                    }
+                    if (fadeChecker > 0)
+                    {
+                        alpha = 0.35f;
+                        axisLabelText.color = new Color(axisLabelText.color.r, axisLabelText.color.g, axisLabelText.color.b, alpha);
+                        axisPointFaded = true;
+                    }
+                }          
             }
         }
         else
