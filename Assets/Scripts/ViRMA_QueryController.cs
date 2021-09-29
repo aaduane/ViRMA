@@ -26,8 +26,7 @@ public class ViRMA_QueryController : MonoBehaviour
 
     private void Start()
     {
-        /*
-        
+        /*    
         StartCoroutine(ViRMA_APIController.GetTagsets((tagsets) => {
             foreach (var tagset in tagsets)
             {
@@ -45,12 +44,11 @@ public class ViRMA_QueryController : MonoBehaviour
         StartCoroutine(ViRMA_APIController.SearchHierachies("computer", (nodes) => {
             StartCoroutine(globals.dimExplorer.LoadDimExplorer(nodes));
         }));
-
         */
 
-        buildingQuery.SetAxis("X", 1770, "Hierarchy");
-        buildingQuery.SetAxis("Y", 3733, "Hierarchy");
-        buildingQuery.SetAxis("Z", 5, "Tagset");
+        buildingQuery.SetAxis("X", 1770, "node");
+        buildingQuery.SetAxis("Y", 3733, "node");
+        buildingQuery.SetAxis("Z", 5, "tagset");
     }
 
     private void Update()

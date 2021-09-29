@@ -41,15 +41,15 @@ public class ViRMA_DimExplorerContextMenuBtn : MonoBehaviour
             textMesh.text = "Project to " + axisType + " Axis";
             if (axisType == "X")
             {
-                activeColor = globals.axisRed;
+                activeColor = ViRMA_Colors.axisRed;
             }
             if (axisType == "Y")
             {
-                activeColor = globals.axisGreen;
+                activeColor = ViRMA_Colors.axisGreen;
             }
             if (axisType == "Z")
             {
-                activeColor = globals.axisBlue;
+                activeColor = ViRMA_Colors.axisBlue;
             }
         }
 

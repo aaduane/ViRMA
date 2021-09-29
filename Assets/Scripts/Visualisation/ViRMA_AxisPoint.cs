@@ -7,8 +7,8 @@ using Valve.VR.InteractionSystem;
 public class ViRMA_AxisPoint : MonoBehaviour
 {
     private ViRMA_GlobalsAndActions globals;
-    public GameObject axisLabel;
-    public TextMeshPro axisLabelText;
+    public GameObject axisPointLabelObj;
+    public TextMeshPro axisPointLabelText;
     public Rigidbody axisPointRigidbody;
     public bool axisPointFaded;
 
@@ -19,11 +19,11 @@ public class ViRMA_AxisPoint : MonoBehaviour
     [HideInInspector] public bool y;
     [HideInInspector] public bool z;
 
-    public string axisType;
-    public string axisName;
+    public string axisType; 
+    public string axisLabel; 
     public int axisId;
     public string axisPointLabel;
-    public int axisPointLabelId;
+    public int axisPointId;
 
     private void Awake()
     {
@@ -38,43 +38,43 @@ public class ViRMA_AxisPoint : MonoBehaviour
 
     private void Start()
     {
-        axisLabel = Instantiate(Resources.Load("Prefabs/AxisLabel")) as GameObject;
-        axisLabelText = axisLabel.GetComponent<TextMeshPro>();
-        axisLabel.transform.SetParent(transform);
-        axisLabel.transform.localScale = axisLabel.transform.localScale * 0.5f;
-        axisLabel.transform.localPosition = Vector3.zero;
-        axisLabel.transform.localRotation = Quaternion.identity;
+        axisPointLabelObj = Instantiate(Resources.Load("Prefabs/AxisLabel")) as GameObject;
+        axisPointLabelText = axisPointLabelObj.GetComponent<TextMeshPro>();
+        axisPointLabelObj.transform.SetParent(transform);
+        axisPointLabelObj.transform.localScale = axisPointLabelObj.transform.localScale * 0.5f;
+        axisPointLabelObj.transform.localPosition = Vector3.zero;
+        axisPointLabelObj.transform.localRotation = Quaternion.identity;
 
         if (x)
         {
-            axisLabel.name = axisPointLabel + "_" + axisPointLabelId;
-            Vector3 xPos = axisLabel.transform.localPosition;
+            axisPointLabelObj.name = axisPointLabel + "_" + axisPointId;
+            Vector3 xPos = axisPointLabelObj.transform.localPosition;
             xPos.z -= 1;
-            axisLabel.transform.localPosition = xPos;
-            axisLabel.transform.localEulerAngles = new Vector3(90, 0, -90);
+            axisPointLabelObj.transform.localPosition = xPos;
+            axisPointLabelObj.transform.localEulerAngles = new Vector3(90, 0, -90);
         }
         if (y)
         {
-            axisLabel.name = axisPointLabel + "_" + axisPointLabelId;
-            Vector3 yPos = axisLabel.transform.localPosition;
+            axisPointLabelObj.name = axisPointLabel + "_" + axisPointId;
+            Vector3 yPos = axisPointLabelObj.transform.localPosition;
             yPos.x -= 1;
-            axisLabel.transform.localPosition = yPos;
-            axisLabel.GetComponent<TextMeshPro>().alignment = TextAlignmentOptions.MidlineRight;
+            axisPointLabelObj.transform.localPosition = yPos;
+            axisPointLabelObj.GetComponent<TextMeshPro>().alignment = TextAlignmentOptions.MidlineRight;
         }
         if (z)
         {
-            axisLabel.name = axisPointLabel + "_" + axisPointLabelId;
-            Vector3 zPos = axisLabel.transform.localPosition;
+            axisPointLabelObj.name = axisPointLabel + "_" + axisPointId;
+            Vector3 zPos = axisPointLabelObj.transform.localPosition;
             zPos.x -= 1;
-            axisLabel.transform.localPosition = zPos;
-            axisLabel.transform.localEulerAngles = new Vector3(90, 0, 0);
-            axisLabel.GetComponent<TextMeshPro>().alignment = TextAlignmentOptions.MidlineRight;
+            axisPointLabelObj.transform.localPosition = zPos;
+            axisPointLabelObj.transform.localEulerAngles = new Vector3(90, 0, 0);
+            axisPointLabelObj.GetComponent<TextMeshPro>().alignment = TextAlignmentOptions.MidlineRight;
         }
     }
 
     private void Update()
     {
-        LoadAxisPointLabel();
+        LoadAxisPointLabelAndCollider();
 
         AxisPointStateController();
 
@@ -161,7 +161,7 @@ public class ViRMA_AxisPoint : MonoBehaviour
                     if (fadeChecker > 0)
                     {
                         alpha = 0.35f;
-                        axisLabelText.color = new Color(axisLabelText.color.r, axisLabelText.color.g, axisLabelText.color.b, alpha);
+                        axisPointLabelText.color = new Color(axisPointLabelText.color.r, axisPointLabelText.color.g, axisPointLabelText.color.b, alpha);
                         axisPointFaded = true;
                     }
                 }          
@@ -172,19 +172,19 @@ public class ViRMA_AxisPoint : MonoBehaviour
             if (axisPointFaded)
             {
                 alpha = 1.0f;
-                axisLabelText.color = new Color(axisLabelText.color.r, axisLabelText.color.g, axisLabelText.color.b, alpha);
+                axisPointLabelText.color = new Color(axisPointLabelText.color.r, axisPointLabelText.color.g, axisPointLabelText.color.b, alpha);
                 axisPointFaded = false;
             }
         }
     }
-    private void LoadAxisPointLabel()
+    private void LoadAxisPointLabelAndCollider()
     {
-        // set axis label text when it is ready
-        if (axisLabelText.text != axisPointLabel)
+        // set axis label text when it is ready and surround it in a collider
+        if (axisPointLabelText.text != axisPointLabel)
         {
-            axisLabelText.text = axisPointLabel;
+            axisPointLabelText.text = axisPointLabel;
 
-            float offsetSize = (axisLabelText.preferredWidth * 0.5f) + 2;
+            float offsetSize = (axisPointLabelText.preferredWidth * 0.5f) + 2;
             float offsetPos = ((offsetSize / 2) * -1) + 1;
             BoxCollider axisPointCol = GetComponent<BoxCollider>();
 

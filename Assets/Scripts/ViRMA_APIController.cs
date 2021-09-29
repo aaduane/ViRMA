@@ -100,13 +100,13 @@ public class AxesLabels {
     public class AxisLabel
     {
         public int Id { get; set; }
-        public string Name { get; set; }
+        public string Label { get; set; }
         public string Type { get; set; }    
         public List<KeyValuePair<string, int>> Labels { get; set; }
-        public AxisLabel(int id, string type, string name, List<KeyValuePair<string, int>> labels)
+        public AxisLabel(int id, string type, string label, List<KeyValuePair<string, int>> labels)
         {
             Id = id;
-            Name = name;
+            Label = label;
             Type = type;
             Labels = labels;
         }
@@ -135,6 +135,8 @@ public class AxesLabels {
 
 public class ViRMA_APIController : MonoBehaviour
 {
+    static public Color32 testColor = new Color32(50, 50, 50, 50);
+
     // public
     public static bool debugging = false;
     public static string serverAddress = "https://localhost:44317/api/";
@@ -151,7 +153,7 @@ public class ViRMA_APIController : MonoBehaviour
     // general API methods
     public static IEnumerator GetRequest(string paramsURL, Action<JSONNode> onSuccess)
     {
-        Debug.Log(paramsURL); // testing
+        //Debug.Log(paramsURL); // testing
 
         string getRequest = serverAddress + paramsURL;
         float beforeWebRequest = 0, afterWebRequest = 0, beforeJsonParse = 0, afterJsonParse = 0;
@@ -207,30 +209,34 @@ public class ViRMA_APIController : MonoBehaviour
     // viz
     public static IEnumerator GetCells(Query query, Action<List<Cell>> onSuccess)
     {
-        // OLD: https://localhost:44317/api/cell?xAxis={'AxisType': 'Tagset', 'TagsetId': 3}&yAxis={'AxisType': 'Tagset', 'TagsetId': 7}&zAxis={'AxisType': 'Hierarchy', 'HierarchyNodeId': 77}&filters=[{'type': 'Tagset', 'tagId': 7},{'type': 'Hierarchy', 'nodeId': 5}]
-        // NEW: https://localhost:5001/api/cell/?yAxis={"AxisType":"Hierarchy","Id":691}&zAxis={"AxisType":"Tagset","Id":13}&filters=[{"Id":132,"type":"day of week","name":"7"},{"Id":147,"type":"day of week","name":"6"}]
+        // OLD 1:   https://localhost:44317/api/cell?xAxis={'AxisType': 'Tagset', 'TagsetId': 3}&yAxis={'AxisType': 'Tagset', 'TagsetId': 7}&zAxis={'AxisType': 'Hierarchy', 'HierarchyNodeId': 77}&filters=[{'type': 'Tagset', 'tagId': 7},{'type': 'Hierarchy', 'nodeId': 5}]
+        // OLD 2:   https://localhost:44317/api/cell/?yAxis={"AxisType":"Hierarchy","Id":691}&zAxis={"AxisType":"Tagset","Id":13}&filters=[{"Id":132,"type":"day of week","name":"7"},{"Id":147,"type":"day of week","name":"6"}]
+        // NEW:     https://localhost:44317/api/cell/?yAxis={"type":"node","id":691}&zAxis={"type":"tagset","id":13}&filters=[{"type":"tag","ids":["147","132"]}]
 
         string url = "cell?";
         if (query.X != null)
         {
             //string typeId = query.X.Type == "Tagset" ? query.X.Type + "Id" : query.X.Type + "NodeId";
             //url += "xAxis={'AxisType': '" + query.X.Type + "', '" + typeId + "': " + query.X.Id + "}&";
+            //url += "xAxis={'AxisType': '" + query.X.Type + "', 'Id': " + query.X.Id + "}&";
 
-            url += "xAxis={'AxisType': '" + query.X.Type + "', 'Id': " + query.X.Id + "}&";
+            url += "xAxis={'type': '" + query.X.Type + "', 'id': " + query.X.Id + "}&";
         }
         if (query.Y != null)
         {
             //string typeId = query.Y.Type == "Tagset" ? query.Y.Type + "Id" : query.Y.Type + "NodeId";
             //url += "yAxis={'AxisType': '" + query.Y.Type + "', '" + typeId + "': " + query.Y.Id + "}&";
+            //url += "yAxis={'AxisType': '" + query.Y.Type + "', 'Id': " + query.Y.Id + "}&";
 
-            url += "yAxis={'AxisType': '" + query.Y.Type + "', 'Id': " + query.Y.Id + "}&";
+            url += "yAxis={'type': '" + query.Y.Type + "', 'id': " + query.Y.Id + "}&";
         }
         if (query.Z != null)
         {
             //string typeId = query.Z.Type == "Tagset" ? query.Z.Type + "Id" : query.Z.Type + "NodeId";
             //url += "zAxis={'AxisType': '" + query.Z.Type + "', '" + typeId + "': " + query.Z.Id + "}&";
+            //url += "zAxis={'AxisType': '" + query.Z.Type + "', 'Id': " + query.Z.Id + "}&";
 
-            url += "zAxis={'AxisType': '" + query.Z.Type + "', 'Id': " + query.Z.Id + "}&";
+            url += "zAxis={'type': '" + query.Z.Type + "', 'id': " + query.Z.Id + "}&";
         }
         url = url.Substring(0, url.Length - 1);
 
@@ -325,10 +331,6 @@ public class ViRMA_APIController : MonoBehaviour
         if (query.X != null)
         {
             string type = query.X.Type;
-            if (type == "Hierarchy")
-            {
-                type = "Node";
-            }
             yield return GetRequest(type + "/" + query.X.Id, (response) =>
             {
                 (string name, List<KeyValuePair<string, int>> labels) = processLabelData(response);
@@ -339,10 +341,6 @@ public class ViRMA_APIController : MonoBehaviour
         if (query.Y != null)
         {
             string type = query.Y.Type;
-            if (type == "Hierarchy")
-            {
-                type = "Node";
-            }
             yield return GetRequest(type + "/" + query.Y.Id, (response) =>
             {
                 (string name, List<KeyValuePair<string, int>> labels) = processLabelData(response);
@@ -353,10 +351,6 @@ public class ViRMA_APIController : MonoBehaviour
         if (query.Z != null)
         {
             string type = query.Z.Type;
-            if (type == "Hierarchy")
-            {
-                type = "Node";
-            }
             yield return GetRequest(type + "/" + query.Z.Id, (response) =>
             {
                 (string name, List<KeyValuePair<string, int>> labels) = processLabelData(response);

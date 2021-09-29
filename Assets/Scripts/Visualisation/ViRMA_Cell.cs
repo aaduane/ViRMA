@@ -243,13 +243,13 @@ public class ViRMA_Cell : MonoBehaviour
                 axesLabels.transform.LookAt(2 * axesLabels.transform.position - Player.instance.hmdTransform.position);
 
                 axesLabels.transform.GetChild(0).GetComponent<TextMeshPro>().text = xAxisPointLabel;
-                axesLabels.transform.GetChild(0).GetComponent<TextMeshPro>().color = globals.axisRed;
+                axesLabels.transform.GetChild(0).GetComponent<TextMeshPro>().color = ViRMA_Colors.axisRed;
 
                 axesLabels.transform.GetChild(1).GetComponent<TextMeshPro>().text = yAxisPointLabel;
-                axesLabels.transform.GetChild(1).GetComponent<TextMeshPro>().color = globals.axisGreen;
+                axesLabels.transform.GetChild(1).GetComponent<TextMeshPro>().color = ViRMA_Colors.axisGreen;
 
                 axesLabels.transform.GetChild(2).GetComponent<TextMeshPro>().text = zAxisPointLabel;
-                axesLabels.transform.GetChild(2).GetComponent<TextMeshPro>().color = globals.axisBlue;
+                axesLabels.transform.GetChild(2).GetComponent<TextMeshPro>().color = ViRMA_Colors.axisBlue;
             }
         }
         else

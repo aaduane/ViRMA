@@ -171,8 +171,8 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 		normalBackgroundColor = btnBackground.color;
 		normalTextColor = btnText.color;
 
-		btnBackground.color = globals.BrightenColor(btnBackground.color);
-		btnText.color = globals.BrightenColor(btnText.color);
+		btnBackground.color = ViRMA_Colors.BrightenColor(btnBackground.color);
+		btnText.color = ViRMA_Colors.BrightenColor(btnText.color);
 	}	
 	private void SetBtnDownState()
     {

@@ -11,6 +11,8 @@ public class ViRMA_VizController : MonoBehaviour
 {
     /* --- public --- */
 
+    Color32 testColor = new Color32(50, 50, 50, 175);
+
     // cells and axes objects
     [HideInInspector] public List<Cell> cellData;
     [HideInInspector] public List<GameObject> cellObjs, axisXPointObjs, axisYPointObjs, axisZPointObjs;
@@ -296,7 +298,7 @@ public class ViRMA_VizController : MonoBehaviour
             // x axis points
             if (axesLabels.X != null)
             {
-                materialProperties.SetColor("_Color", globals.axisFadeRed);
+                materialProperties.SetColor("_Color", ViRMA_Colors.axisFadeRed);
                 for (int i = 0; i < axesLabels.X.Labels.Count; i++)
                 {
                     // create gameobject to represent axis point
@@ -312,10 +314,10 @@ public class ViRMA_VizController : MonoBehaviour
                     // apply metadata to axis point
                     ViRMA_AxisPoint axisPoint = axisXPoint.GetComponent<ViRMA_AxisPoint>();
                     axisPoint.axisId = axesLabels.X.Id;
-                    axisPoint.axisName = axesLabels.X.Name;
+                    axisPoint.axisLabel = axesLabels.X.Label;
                     axisPoint.axisType = axesLabels.X.Type;
                     axisPoint.axisPointLabel = axesLabels.X.Labels[i].Key;
-                    axisPoint.axisPointLabelId = axesLabels.X.Labels[i].Value;
+                    axisPoint.axisPointId = axesLabels.X.Labels[i].Value;
 
                     // add gameobject to list
                     axisXPointObjs.Add(axisXPoint);
@@ -323,15 +325,15 @@ public class ViRMA_VizController : MonoBehaviour
                     // x axis roll up axis point
                     if (i == axesLabels.X.Labels.Count - 1)
                     {             
-                        GameObject axisXPointRollUp = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                        GameObject axisXPointRollUp = GameObject.CreatePrimitive(PrimitiveType.Sphere);
                         axisXPointRollUp.GetComponent<Renderer>().material = transparentMaterial;
                         axisXPointRollUp.GetComponent<Renderer>().SetPropertyBlock(materialProperties);
                         axisXPointRollUp.name = "AxisXPoint_RollUp";
                         axisXPointRollUp.transform.position = new Vector3(i + 2, 0, 0) * (defaultCellSpacingRatio + 1);
-                        axisXPointRollUp.transform.localScale = Vector3.one * 0.5f;
                         axisXPointRollUp.transform.parent = cellsandAxesWrapper.transform;
                         axisXPointRollUp.AddComponent<ViRMA_RollUpPoint>().x = true;
                         axisXPointRollUp.GetComponent<ViRMA_RollUpPoint>().axisId = axesLabels.X.Id;
+                        axisXPointRollUp.GetComponent<ViRMA_RollUpPoint>().axisLabel = axesLabels.X.Label;
                     }
                 }
 
@@ -351,7 +353,7 @@ public class ViRMA_VizController : MonoBehaviour
             // y axis points
             if (axesLabels.Y != null)
             {
-                materialProperties.SetColor("_Color", globals.axisFadeGreen);
+                materialProperties.SetColor("_Color", ViRMA_Colors.axisFadeGreen);
                 for (int i = 0; i < axesLabels.Y.Labels.Count; i++)
                 {
                     // create gameobject to represent axis point
@@ -367,10 +369,10 @@ public class ViRMA_VizController : MonoBehaviour
                     // apply metadata to axis point
                     ViRMA_AxisPoint axisPoint = axisYPoint.GetComponent<ViRMA_AxisPoint>();
                     axisPoint.axisId = axesLabels.Y.Id;
-                    axisPoint.axisName = axesLabels.Y.Name;
+                    axisPoint.axisLabel = axesLabels.Y.Label;
                     axisPoint.axisType = axesLabels.Y.Type;
                     axisPoint.axisPointLabel = axesLabels.Y.Labels[i].Key;
-                    axisPoint.axisPointLabelId = axesLabels.Y.Labels[i].Value;
+                    axisPoint.axisPointId = axesLabels.Y.Labels[i].Value;
 
                     // add gameobject to list
                     axisYPointObjs.Add(axisYPoint);
@@ -392,7 +394,7 @@ public class ViRMA_VizController : MonoBehaviour
             // z axis points
             if (axesLabels.Z != null)
             {
-                materialProperties.SetColor("_Color", globals.axisFadeBlue);
+                materialProperties.SetColor("_Color", ViRMA_Colors.axisFadeBlue);
                 for (int i = 0; i < axesLabels.Z.Labels.Count; i++)
                 {
                     // create gameobject to represent axis point
@@ -408,10 +410,10 @@ public class ViRMA_VizController : MonoBehaviour
                     // apply metadata to axis point
                     ViRMA_AxisPoint axisPoint = axisZPoint.GetComponent<ViRMA_AxisPoint>();
                     axisPoint.axisId = axesLabels.Z.Id;
-                    axisPoint.axisName = axesLabels.Z.Name;
+                    axisPoint.axisLabel = axesLabels.Z.Label;
                     axisPoint.axisType = axesLabels.Z.Type;
                     axisPoint.axisPointLabel = axesLabels.Z.Labels[i].Key;
-                    axisPoint.axisPointLabelId = axesLabels.Z.Labels[i].Value;
+                    axisPoint.axisPointId = axesLabels.Z.Labels[i].Value;
 
                     // add gameobject to list
                     axisZPointObjs.Add(axisZPoint);
@@ -664,9 +666,9 @@ public class ViRMA_VizController : MonoBehaviour
             if (focusedAxisPoint.GetComponent<ViRMA_AxisPoint>())
             {
                 ViRMA_AxisPoint axisPoint = focusedAxisPoint.GetComponent<ViRMA_AxisPoint>();
-                if (axisPoint.axisType == "Node")
+                if (axisPoint.axisType == "node")
                 {
-                    StartCoroutine(ViRMA_APIController.GetHierarchyChildren(axisPoint.axisPointLabelId, (response) => {
+                    StartCoroutine(ViRMA_APIController.GetHierarchyChildren(axisPoint.axisPointId, (response) => {
                         List<Tag> children = response;
                         if (children.Count > 0)
                         {
@@ -683,8 +685,12 @@ public class ViRMA_VizController : MonoBehaviour
                             {
                                 axisQueryType = "Z";
                             }
-                            globals.queryController.buildingQuery.SetAxis(axisQueryType, axisPoint.axisPointLabelId, "Hierarchy");
-                            //Debug.Log(children.Count + " children in " + axisPoint.axisPointLabel);
+                            globals.queryController.buildingQuery.SetAxis(axisQueryType, axisPoint.axisPointId, "node");
+                            Debug.Log(children.Count + " children in " + axisPoint.axisPointLabel);
+                        }
+                        else
+                        {
+                            Debug.Log("0 children in " + axisPoint.axisPointLabel);
                         }
                     }));
                 }
@@ -693,11 +699,11 @@ public class ViRMA_VizController : MonoBehaviour
             {
                 StartCoroutine(ViRMA_APIController.GetHierarchyParent(focusedAxisPoint.GetComponent<ViRMA_RollUpPoint>().axisId, (response) => {
                     Tag parent = response;
-                    globals.queryController.buildingQuery.SetAxis("X", parent.Id, "Hierarchy");
+                    globals.queryController.buildingQuery.SetAxis("X", parent.Id, "node");
 
                     //////////// TO DO:
                     //////////// add y and z
-                    //////////// label axes with parent
+                    //////////// label axes with parent?
                     //////////// roll up hover inidicating new parent?
 
                     Debug.Log("Parent: " + parent.Name);

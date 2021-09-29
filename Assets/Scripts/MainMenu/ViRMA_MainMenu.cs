@@ -35,7 +35,7 @@ public class ViRMA_MainMenu : MonoBehaviour
 
             if (btnText && btnBackground)
             {
-                btnBackground.color = globals.lightBlack;
+                btnBackground.color = ViRMA_Colors.lightBlack;
                 btnText.color = Color.white;
             }
         }

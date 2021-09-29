@@ -131,6 +131,7 @@ public class ViRMA_DimExplorerBtn : MonoBehaviour
             {
                 SetDefaultState();
             }
+
             // if collider on button is disabled, fade the buttons, unless it's context menu is active
             if (col.enabled == false && contextMenuActiveOnBtn == false)
             {
@@ -141,20 +142,20 @@ public class ViRMA_DimExplorerBtn : MonoBehaviour
     }
     public void SetDefaultState()
     {
-        matPropBlock.SetColor("_Color", globals.lightBlack);
+        matPropBlock.SetColor("_Color", ViRMA_Colors.lightBlack);
         textMesh.color = Color.white;
     }
     public void SetHighlightState()
     {
-        matPropBlock.SetColor("_Color", globals.BrightenColor(globals.lightBlack));
+        matPropBlock.SetColor("_Color", ViRMA_Colors.BrightenColor(ViRMA_Colors.lightBlack));
         textMesh.color = Color.white;
     }
     public void SetFocusedState()
     {
         if (innerBackground == null)
         {
-            matPropBlock.SetColor("_Color", globals.lightBlack);
-            textMesh.color = globals.DarkenColor(globals.lightBlack);
+            matPropBlock.SetColor("_Color", ViRMA_Colors.lightBlack);
+            textMesh.color = ViRMA_Colors.DarkenColor(ViRMA_Colors.lightBlack);
 
             innerBackground = Instantiate(background, background.transform.parent);
 

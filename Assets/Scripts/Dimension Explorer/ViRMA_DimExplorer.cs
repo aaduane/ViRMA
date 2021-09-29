@@ -53,6 +53,7 @@ public class ViRMA_DimExplorer : MonoBehaviour
             Destroy(child.gameObject);
         }
         yield return new WaitForEndOfFrame();
+        dimensionExpLorerLoaded = false;
     }
     public IEnumerator LoadDimExplorer(List<Tag> nodes)
     {
@@ -128,7 +129,7 @@ public class ViRMA_DimExplorer : MonoBehaviour
         PositionDimExplorer();
 
         dimensionExpLorerLoaded = true;
-        dimExKeyboard.dimExqueryLoading = false;
+        dimExKeyboard.dimExQueryLoading = false;
     }
     public void DimExgroupSpacingAdjustment()
     {
@@ -313,12 +314,12 @@ public class ViRMA_DimExplorer : MonoBehaviour
             // push data to query controller
             if (axisQueryType == "filter")
             {
-                Debug.LogError("Submitting filters. Filters not ready yet!");
-                globals.queryController.buildingQuery.AddFilter(tagQueryData.Id, "Hierarchy"); 
+                Debug.LogError("Submitting filters but filters not ready yet!");
+                //globals.queryController.buildingQuery.AddFilter(tagQueryData.Id, "Hierarchy"); 
             }
             else
             {
-                globals.queryController.buildingQuery.SetAxis(axisQueryType, tagQueryData.Id, "Hierarchy");
+                globals.queryController.buildingQuery.SetAxis(axisQueryType, tagQueryData.Id, "node");
             }
 
             // destroy context menu and return dimension explorer to normal state

@@ -11,32 +11,6 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
     public ViRMA_DimExplorer dimExplorer;
     public ViRMA_MainMenu mainMenu;
 
-    // colours
-    public Color axisRed = new Color32(192, 57, 43, 255);
-    public Color axisGreen = new Color32(39, 174, 96, 255);
-    public Color axisBlue = new Color32(35, 99, 142, 255);
-
-    public Color axisFadeRed = new Color32(192, 57, 43, 150);
-    public Color axisFadeGreen = new Color32(39, 174, 96, 150);
-    public Color axisFadeBlue = new Color32(35, 99, 142, 150);
-
-    public Color32 lightBlack = new Color32(52, 73, 94, 255);
-    public Color32 lightBlue = new Color32(52, 152, 219, 255);
-    public Color32 BrightenColor(Color32 colorToBrighten)
-    {
-        float H, S, V;
-        Color.RGBToHSV(colorToBrighten, out H, out S, out V);
-        Color32 brighterColor = Color.HSVToRGB(H, S * 0.70f, V / 0.70f);
-        return brighterColor;
-    }
-    public Color32 DarkenColor(Color32 colorToDarken)
-    {
-        float H, S, V;
-        Color.RGBToHSV(colorToDarken, out H, out S, out V);
-        Color32 darkerColor = Color.HSVToRGB(H, S / 0.70f, V * 0.70f);
-        return darkerColor;
-    }
-
     // --- SteamVR action sets --- \\
 
     // Player hand/controller appearance
@@ -182,8 +156,7 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
         }
 
         if (dimExplorer.dimExKeyboard.keyboardMoving)
-        {
-            
+        {   
             dimExplorerActions.Deactivate();
             vizNavActions.Deactivate();
         }
@@ -193,6 +166,8 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
         // debugging
         if (false)
         {
+            Debug.Log("dimensionExpLorerLoaded: " + dimExplorer.dimensionExpLorerLoaded + " | vizFullyLoaded: " + vizController.vizFullyLoaded + " | keyboardLoaded: " + dimExplorer.dimExKeyboard.keyboardLoaded + " | keyboardMoving: " + dimExplorer.dimExKeyboard.keyboardMoving);
+
             string activeSetDebug = "Active Sets:";
             if (defaultActions.IsActive())
             {

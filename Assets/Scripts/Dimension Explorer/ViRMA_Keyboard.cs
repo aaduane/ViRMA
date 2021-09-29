@@ -18,7 +18,7 @@ public class ViRMA_Keyboard : MonoBehaviour
     public Hand handInteractingWithKeyboard;
 
     // flags
-    public bool dimExqueryLoading;
+    public bool dimExQueryLoading;
     public bool keyboardLoaded;
     public bool keyboardFaded;
     public bool keyboardMoving;
@@ -84,7 +84,7 @@ public class ViRMA_Keyboard : MonoBehaviour
                 if (keyText.gameObject.transform.parent.name == "CLEAR")
                 {
                     keyBackground.color = new Color32(211, 84, 0, 255);
-                    keyText.color = globals.BrightenColor(new Color32(211, 84, 0, 255));
+                    keyText.color = ViRMA_Colors.BrightenColor(new Color32(211, 84, 0, 255));
                 }
                 else if (keyText.gameObject.transform.parent.name == "CLOSE")
                 {
@@ -93,22 +93,22 @@ public class ViRMA_Keyboard : MonoBehaviour
                 }
                 else if (keyText.gameObject.transform.parent.name == "BACKSPACE")
                 {
-                    keyBackground.color = globals.lightBlack;
-                    keyText.color = globals.BrightenColor(globals.lightBlack);
+                    keyBackground.color = ViRMA_Colors.lightBlack;
+                    keyText.color = ViRMA_Colors.BrightenColor(ViRMA_Colors.lightBlack);
                 }
                 else if (keyText.gameObject.transform.parent.name == "MOVE")
                 {
                     keyBackground.color = new Color32(99, 110, 114, 255);
-                    keyText.color = globals.BrightenColor(new Color32(99, 110, 114, 255));
+                    keyText.color = ViRMA_Colors.BrightenColor(new Color32(99, 110, 114, 255));
                 }
                 else if (keyText.gameObject.transform.parent.name == "SUBMIT")
                 {
                     keyBackground.color = new Color32(39, 174, 96, 255);
-                    keyText.color = globals.BrightenColor(new Color32(39, 174, 96, 255));
+                    keyText.color = ViRMA_Colors.BrightenColor(new Color32(39, 174, 96, 255));
                 }
                 else
                 {
-                    keyBackground.color = globals.lightBlack;
+                    keyBackground.color = ViRMA_Colors.lightBlack;
                     keyText.color = Color.white;
                 }
             }
@@ -241,7 +241,7 @@ public class ViRMA_Keyboard : MonoBehaviour
                     StopCoroutine(activeQueryCoroutine);
                 }
 
-                dimExqueryLoading = true;
+                dimExQueryLoading = true;
                 key.enabled = false;
                 StartCoroutine(globals.dimExplorer.ClearDimExplorer());           
 
@@ -259,7 +259,7 @@ public class ViRMA_Keyboard : MonoBehaviour
             {
                 StopCoroutine(activeQueryCoroutine);
             }
-            dimExqueryLoading = false;
+            dimExQueryLoading = false;
             ToggleDimExKeyboard(false);
         }
         else if (buttonName == "BACKSPACE")
@@ -292,7 +292,7 @@ public class ViRMA_Keyboard : MonoBehaviour
     }
     private void LoadingIndicator()
     {
-        if (dimExqueryLoading)
+        if (dimExQueryLoading)
         {
             if (!loadingIcon.transform.parent.gameObject.activeSelf)
             {
