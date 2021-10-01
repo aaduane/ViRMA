@@ -256,7 +256,7 @@ public class ViRMA_DimExplorer : MonoBehaviour
         }
                
         // reload parent dim ex grouo
-        if (parentTagData.Name == null)
+        if (parentTagData.Label == null)
         {
             parentGroup.ClearDimExplorerGroup();
         }

@@ -10,7 +10,7 @@ using System.Linq;
 public class Tag
 {
     public int Id { get; set; }
-    public string Name { get; set; }
+    public string Label { get; set; }
     public Tag Parent { get; set; }
     public List<Tag> Siblings { get; set; }
     public List<Tag> Children { get; set; }
@@ -252,7 +252,7 @@ public class ViRMA_APIController : MonoBehaviour
             url = url.Replace("\'", "\"");
         }
 
-        //Debug.Log(url); // testing
+        Debug.Log(url); // testing
 
         yield return GetRequest(url, (response) =>
         {
@@ -375,7 +375,7 @@ public class ViRMA_APIController : MonoBehaviour
             Tag newTag = new Tag
             {
                 Id = obj.Value["Id"],
-                Name = obj.Value["Name"]
+                Label = obj.Value["Name"]
             };
             tagsets.Add(newTag);
         }
@@ -403,7 +403,7 @@ public class ViRMA_APIController : MonoBehaviour
             Tag newTag = new Tag
             {
                 Id = obj.Value["Id"],
-                Name = obj.Value["Name"]
+                Label = obj.Value["Name"]
             };
             hierarchies.Add(newTag);
         }
@@ -442,7 +442,7 @@ public class ViRMA_APIController : MonoBehaviour
             if (bracketIndex > -1) {
                 tagName = tagName.Substring(0, bracketIndex);
             }
-            newTag.Name = tagName;
+            newTag.Label = tagName;
 
             // if tag has a parent
             if (obj.Value["ParentNode"] != null)
@@ -459,7 +459,7 @@ public class ViRMA_APIController : MonoBehaviour
                 {
                     parentTagName = parentTagName.Substring(0, parentBracketIndex);
                 }
-                parentNode.Name = parentTagName;
+                parentNode.Label = parentTagName;
 
                 // attch parent tag info to new tag
                 newTag.Parent = parentNode;
@@ -469,7 +469,7 @@ public class ViRMA_APIController : MonoBehaviour
                 // when there is no parent, it means we're at the top of the hierarchy and use a tag id of zero to indicate that
                 Tag parentNode = new Tag();
                 parentNode.Id = 0;
-                parentNode.Name = ".";
+                parentNode.Label = ".";
                 newTag.Parent = parentNode;
             }
 
@@ -499,11 +499,11 @@ public class ViRMA_APIController : MonoBehaviour
                     {
                         tagName = tagName.Substring(0, bracketIndex);
                     }
-                    newTag.Name = tagName;
+                    newTag.Label = tagName;
                     node.Children.Add(newTag);
                 }
 
-                List<Tag> orderedList = node.Children.OrderBy(s => s.Name).ToList();
+                List<Tag> orderedList = node.Children.OrderBy(s => s.Label).ToList();
                 node.Children = orderedList;
             });
 
@@ -528,11 +528,11 @@ public class ViRMA_APIController : MonoBehaviour
                         {
                             tagName = tagName.Substring(0, bracketIndex);
                         }
-                        newTag.Name = tagName;
+                        newTag.Label = tagName;
                         node.Siblings.Add(newTag);
                     }
 
-                    List<Tag> orderedList = node.Siblings.OrderBy(s => s.Name).ToList();
+                    List<Tag> orderedList = node.Siblings.OrderBy(s => s.Label).ToList();
                     node.Siblings = orderedList;
                 });
             }
@@ -563,11 +563,11 @@ public class ViRMA_APIController : MonoBehaviour
                 {
                     tagName = tagName.Substring(0, bracketIndex);
                 }
-                newTag.Name = tagName;
+                newTag.Label = tagName;
                 children.Add(newTag);
             }
 
-            List<Tag> orderedList = children.OrderBy(s => s.Name).ToList();
+            List<Tag> orderedList = children.OrderBy(s => s.Label).ToList();
             onSuccess(orderedList);
         });
     }
@@ -577,10 +577,12 @@ public class ViRMA_APIController : MonoBehaviour
         {
             jsonData = response;
 
-            Tag parentTag = new Tag();
+            Tag parentTag = null;
 
             if (jsonData != null)
             {
+                parentTag = new Tag();
+
                 // tag id
                 parentTag.Id = jsonData["Id"];
 
@@ -591,7 +593,7 @@ public class ViRMA_APIController : MonoBehaviour
                 {
                     tagName = tagName.Substring(0, bracketIndex);
                 }
-                parentTag.Name = tagName;
+                parentTag.Label = tagName;
             }
             onSuccess(parentTag);
         });

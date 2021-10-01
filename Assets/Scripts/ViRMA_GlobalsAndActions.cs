@@ -15,9 +15,11 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
 
     // Player hand/controller appearance
 
+    public bool disableAllButtonHints = false;
     public bool rightControllerLoaded = false;
     public bool leftControllerLoaded = false;
-    public bool disableAllButtonHints = false;
+    public bool rightControllerFaded = false;
+    public bool leftControllerFaded = false;
     public Material controllerFadedMaterial;
     public Material leftControllerNormalMaterial;
     public Material rightControllerNormalMaterial;
@@ -115,18 +117,18 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
 
         // viz controller
         vizNav_Select[SteamVR_Input_Sources.Any].onStateDown += vizController.DrillDownRollUp;
-        //vizNav_HardGrip[SteamVR_Input_Sources.Any].onAxis += vizController.TestGrip;
-
+        
         // dimension explorer 
         dimExplorer_Scroll[SteamVR_Input_Sources.Any].onStateDown += dimExplorer.SubmitTagForTraversal;
         dimExplorer_Select[SteamVR_Input_Sources.Any].onStateDown += dimExplorer.SubmitTagForContextMenu;
         dimExplorer_Select[SteamVR_Input_Sources.Any].onStateDown += dimExplorer.SubmitContextBtnForQuery;
 
-        //menuInteraction_Select[SteamVR_Input_Sources.Any].onStateDown += vizController.DrillDown;
+        // testing
         //menuInteraction_Scroll[SteamVR_Input_Sources.Any].onAxis += mainMenu.TestScroll;
+        //vizNav_HardGrip[SteamVR_Input_Sources.Any].onAxis += TestGripAction;
     }
 
-    
+
 
     public void ToggleOnlyThisActionSet(SteamVR_ActionSet targetActionSet)
     {
@@ -267,17 +269,28 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
                 {
                     if (toFade)
                     {
-                        rend.material = controllerFadedMaterial;
+                        if (hand.handType.ToString() == "RightHand")
+                        {
+                            rend.material = controllerFadedMaterial;
+                            rightControllerFaded = true;
+                        }
+                        if (hand.handType.ToString() == "LeftHand")
+                        {
+                            rend.material = controllerFadedMaterial;
+                            leftControllerFaded = true;
+                        }
                     }
                     else
                     {
                         if (hand.handType.ToString() == "RightHand")
                         {
                             rend.material = rightControllerNormalMaterial;
+                            rightControllerFaded = false;
                         }
                         if (hand.handType.ToString() == "LeftHand")
                         {
                             rend.material = leftControllerNormalMaterial;
+                            leftControllerFaded = false;
                         }
                     }
                 }
@@ -305,6 +318,13 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
     private void TestAction(SteamVR_Action_Boolean action, SteamVR_Input_Sources source)
     {
         Debug.Log(action.GetShortName() + " | " + source);
+    }
+    public void TestGripAction(SteamVR_Action_Single fromAction, SteamVR_Input_Sources fromSource, float newAxis, float newDelta)
+    {
+        if (newAxis > 0.9f)
+        {
+            Debug.Log(newAxis);
+        }
     }
 
 }

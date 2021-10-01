@@ -114,12 +114,7 @@ public class ViRMA_QueryController : MonoBehaviour
     {
         if (vizQueryLoading == false)
         {
-            Debug.Log("Loading new query... ");
-
-            vizQueryLoading = true;
-
             //StartCoroutine(globals.dimExplorer.ClearDimExplorer());
-
             globals.vizController.GetComponent<ViRMA_VizController>().ClearViz();
 
             StartCoroutine(globals.vizController.SubmitVizQuery(buildingQuery));

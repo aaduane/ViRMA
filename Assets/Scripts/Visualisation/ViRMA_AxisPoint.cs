@@ -19,11 +19,16 @@ public class ViRMA_AxisPoint : MonoBehaviour
     [HideInInspector] public bool y;
     [HideInInspector] public bool z;
 
+    public bool childrenSet;
+    public bool labelSet;
+
     public string axisType; 
     public string axisLabel; 
     public int axisId;
     public string axisPointLabel;
     public int axisPointId;
+
+    public int axisPointChildrenCount;
 
     private void Awake()
     {
@@ -85,6 +90,20 @@ public class ViRMA_AxisPoint : MonoBehaviour
     {
         if (triggeredCol.GetComponent<ViRMA_Drumstick>())
         {
+            CheckForChildren();
+
+            if (childrenSet && axisPointChildrenCount > 0)
+            {
+                if (x)
+                {
+                    axisPointLabelText.text = axisPointLabel + " (" + axisPointChildrenCount + ") <b>↓</b>";
+                }
+                else
+                {
+                    axisPointLabelText.text = "<b>↓</b>" + " (" + axisPointChildrenCount + ") " + axisPointLabel;
+                }
+            }
+
             globals.vizController.focusedAxisPoint = gameObject;
 
             globals.ToggleControllerFade(triggeredCol.GetComponent<ViRMA_Drumstick>().hand, true);
@@ -95,6 +114,18 @@ public class ViRMA_AxisPoint : MonoBehaviour
     {
         if (triggeredCol.GetComponent<ViRMA_Drumstick>())
         {
+            if (childrenSet && axisPointChildrenCount > 0)
+            {
+                if (x)
+                {
+                    axisPointLabelText.text = axisPointLabel + " (" + axisPointChildrenCount + ") <b>↓</b>";
+                }
+                else
+                {
+                    axisPointLabelText.text = "<b>↓</b>" + " (" + axisPointChildrenCount + ") " + axisPointLabel;
+                }
+            }
+
             globals.vizController.focusedAxisPoint = gameObject;
 
             globals.ToggleControllerFade(triggeredCol.GetComponent<ViRMA_Drumstick>().hand, true);
@@ -105,6 +136,8 @@ public class ViRMA_AxisPoint : MonoBehaviour
     {
         if (triggeredCol.GetComponent<ViRMA_Drumstick>())
         {
+            axisPointLabelText.text = axisPointLabel;
+
             if (globals.vizController.focusedAxisPoint == gameObject)
             {
                 globals.vizController.focusedAxisPoint = null;
@@ -136,6 +169,20 @@ public class ViRMA_AxisPoint : MonoBehaviour
         }
     }
 
+    private void CheckForChildren()
+    {
+        if (childrenSet == false)
+        {
+            if (axisType == "node")
+            {
+                StartCoroutine(ViRMA_APIController.GetHierarchyChildren(axisPointId, (response) => {
+                    List<Tag> children = response;
+                    axisPointChildrenCount = children.Count;
+                    childrenSet = true;
+                }));
+            }
+        }    
+    }
     public void ToggleFade(bool toFade)
     {
         float alpha = 1;
@@ -180,7 +227,7 @@ public class ViRMA_AxisPoint : MonoBehaviour
     private void LoadAxisPointLabelAndCollider()
     {
         // set axis label text when it is ready and surround it in a collider
-        if (axisPointLabelText.text != axisPointLabel)
+        if (axisLabel != "" && labelSet == false)
         {
             axisPointLabelText.text = axisPointLabel;
 
@@ -203,6 +250,7 @@ public class ViRMA_AxisPoint : MonoBehaviour
                 axisPointCol.center = new Vector3(offsetPos, 0, 0);
                 axisPointCol.size = new Vector3(offsetSize, 1, 2.5f);
             }
+            labelSet = true;
         }
     }
     private void MoveAxesToFocusedCell()

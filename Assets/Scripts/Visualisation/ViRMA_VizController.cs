@@ -77,7 +77,14 @@ public class ViRMA_VizController : MonoBehaviour
     // cell and axes generation
     public IEnumerator SubmitVizQuery(Query submittedQuery)
     {
+        // unload unsed textures
+        Resources.UnloadUnusedAssets();
+
+        // set loading flags to true and fade controllers
         vizFullyLoaded = false;
+        globals.queryController.vizQueryLoading = true;
+        globals.ToggleControllerFade(Player.instance.leftHand, true);
+        globals.ToggleControllerFade(Player.instance.rightHand, true);
 
         // get cell data from server (WAIT FOR)
         yield return StartCoroutine(ViRMA_APIController.GetCells(submittedQuery, (cells) => {
@@ -105,9 +112,11 @@ public class ViRMA_VizController : MonoBehaviour
         // add cells and axes to final parent to set default starting scale and position
         SetupDefaultScaleAndPosition();
 
-        // set loading flags to true
+        // set loading flags to true and unfade controllers
         vizFullyLoaded = true;
-        globals.queryController.vizQueryLoading = false; 
+        globals.queryController.vizQueryLoading = false;
+        globals.ToggleControllerFade(Player.instance.leftHand, false);
+        globals.ToggleControllerFade(Player.instance.rightHand, false);
     }
     private void GenerateTexturesAndTextureArrays(List<Cell> cellData)
     {
@@ -124,11 +133,21 @@ public class ViRMA_VizController : MonoBehaviour
                     int index = uniqueTextures.FindIndex(a => a.Key == newCell.ImageName);
                     if (index == -1)
                     {
-                        byte[] imageBytes = File.ReadAllBytes(ViRMA_APIController.imagesDirectory + newCell.ImageName);
-                        newCell.ImageTexture = ConvertImageToDDS(imageBytes); // dds stuff
-                                                                              //newCell.ImageTexture = ConvertImageToTex(imageBytes); // jpg stuff
-                        KeyValuePair<string, Texture2D> uniqueTexture = new KeyValuePair<string, Texture2D>(newCell.ImageName, newCell.ImageTexture);
-                        uniqueTextures.Add(uniqueTexture);
+                        //byte[] imageBytes = File.ReadAllBytes(ViRMA_APIController.imagesDirectory + newCell.ImageName);
+                        byte[] imageBytes = new byte[0];
+                        try
+                        {
+                            imageBytes = File.ReadAllBytes(ViRMA_APIController.imagesDirectory + newCell.ImageName);
+                            newCell.ImageTexture = ConvertImageToDDS(imageBytes); // dds stuff
+                            //newCell.ImageTexture = ConvertImageToTex(imageBytes); // jpg stuff
+                            KeyValuePair<string, Texture2D> uniqueTexture = new KeyValuePair<string, Texture2D>(newCell.ImageName, newCell.ImageTexture);
+                            uniqueTextures.Add(uniqueTexture);
+                        }
+                        catch(FileNotFoundException e)
+                        {
+                            Debug.LogError(e.Message);
+                            newCell.Filtered = true;
+                        }               
                     }
                     else
                     {
@@ -334,6 +353,7 @@ public class ViRMA_VizController : MonoBehaviour
                         axisXPointRollUp.AddComponent<ViRMA_RollUpPoint>().x = true;
                         axisXPointRollUp.GetComponent<ViRMA_RollUpPoint>().axisId = axesLabels.X.Id;
                         axisXPointRollUp.GetComponent<ViRMA_RollUpPoint>().axisLabel = axesLabels.X.Label;
+                        axisXPointRollUp.GetComponent<ViRMA_RollUpPoint>().axisType = axesLabels.X.Type;
                     }
                 }
 
@@ -376,6 +396,21 @@ public class ViRMA_VizController : MonoBehaviour
 
                     // add gameobject to list
                     axisYPointObjs.Add(axisYPoint);
+
+                    // y axis roll up axis point
+                    if (i == axesLabels.Y.Labels.Count - 1)
+                    {
+                        GameObject axisYPointRollUp = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                        axisYPointRollUp.GetComponent<Renderer>().material = transparentMaterial;
+                        axisYPointRollUp.GetComponent<Renderer>().SetPropertyBlock(materialProperties);
+                        axisYPointRollUp.name = "AxisYPoint_RollUp";
+                        axisYPointRollUp.transform.position = new Vector3(0, i + 2, 0) * (defaultCellSpacingRatio + 1);
+                        axisYPointRollUp.transform.parent = cellsandAxesWrapper.transform;
+                        axisYPointRollUp.AddComponent<ViRMA_RollUpPoint>().y = true;
+                        axisYPointRollUp.GetComponent<ViRMA_RollUpPoint>().axisId = axesLabels.Y.Id;
+                        axisYPointRollUp.GetComponent<ViRMA_RollUpPoint>().axisLabel = axesLabels.Y.Label;
+                        axisYPointRollUp.GetComponent<ViRMA_RollUpPoint>().axisType = axesLabels.Y.Type;
+                    }
                 }
 
                 // y axis line
@@ -417,6 +452,21 @@ public class ViRMA_VizController : MonoBehaviour
 
                     // add gameobject to list
                     axisZPointObjs.Add(axisZPoint);
+
+                    // z axis roll up axis point
+                    if (i == axesLabels.Z.Labels.Count - 1)
+                    {
+                        GameObject axisZPointRollUp = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                        axisZPointRollUp.GetComponent<Renderer>().material = transparentMaterial;
+                        axisZPointRollUp.GetComponent<Renderer>().SetPropertyBlock(materialProperties);
+                        axisZPointRollUp.name = "AxisYPoint_RollUp";
+                        axisZPointRollUp.transform.position = new Vector3(0, 0, i + 2) * (defaultCellSpacingRatio + 1);
+                        axisZPointRollUp.transform.parent = cellsandAxesWrapper.transform;
+                        axisZPointRollUp.AddComponent<ViRMA_RollUpPoint>().z = true;
+                        axisZPointRollUp.GetComponent<ViRMA_RollUpPoint>().axisId = axesLabels.Z.Id;
+                        axisZPointRollUp.GetComponent<ViRMA_RollUpPoint>().axisLabel = axesLabels.Z.Label;
+                        axisZPointRollUp.GetComponent<ViRMA_RollUpPoint>().axisType = axesLabels.Z.Type;
+                    }
                 }
 
                 // z axis line
@@ -686,37 +736,44 @@ public class ViRMA_VizController : MonoBehaviour
                                 axisQueryType = "Z";
                             }
                             globals.queryController.buildingQuery.SetAxis(axisQueryType, axisPoint.axisPointId, "node");
-                            Debug.Log(children.Count + " children in " + axisPoint.axisPointLabel);
+                            // Debug.Log(children.Count + " children in " + axisPoint.axisPointLabel);
                         }
                         else
                         {
-                            Debug.Log("0 children in " + axisPoint.axisPointLabel);
+                            //Debug.Log("0 children in " + axisPoint.axisPointLabel);
                         }
                     }));
                 }
             }
             else if (focusedAxisPoint.GetComponent<ViRMA_RollUpPoint>())
             {
+                ViRMA_RollUpPoint axisPoint = focusedAxisPoint.GetComponent<ViRMA_RollUpPoint>();
                 StartCoroutine(ViRMA_APIController.GetHierarchyParent(focusedAxisPoint.GetComponent<ViRMA_RollUpPoint>().axisId, (response) => {
                     Tag parent = response;
-                    globals.queryController.buildingQuery.SetAxis("X", parent.Id, "node");
-
-                    //////////// TO DO:
-                    //////////// add y and z
-                    //////////// label axes with parent?
-                    //////////// roll up hover inidicating new parent?
-
-                    Debug.Log("Parent: " + parent.Name);
+                    if (parent != null)
+                    {
+                        string axisQueryType = "";
+                        if (axisPoint.x)
+                        {
+                            axisQueryType = "X";
+                        }
+                        else if (axisPoint.y)
+                        {
+                            axisQueryType = "Y";
+                        }
+                        else if (axisPoint.z)
+                        {
+                            axisQueryType = "Z";
+                        }
+                        globals.queryController.buildingQuery.SetAxis(axisQueryType, parent.Id, "node");
+                        // Debug.Log("Parent: " + parent.Name);
+                    }
+                    else
+                    {
+                        //Debug.Log("No parent!");
+                    }
                 }));
             }
-        }
-    }
-
-    public void TestGrip(SteamVR_Action_Single fromAction, SteamVR_Input_Sources fromSource, float newAxis, float newDelta)
-    {
-        if (newAxis > 0.9f)
-        {
-            Debug.Log(newAxis);
         }
     }
 

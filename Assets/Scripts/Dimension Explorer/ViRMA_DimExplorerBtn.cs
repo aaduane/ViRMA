@@ -60,9 +60,9 @@ public class ViRMA_DimExplorerBtn : MonoBehaviour
     {
         tagData = tag;
 
-        gameObject.name = tagData.Name;
+        gameObject.name = tagData.Label;
 
-        textMesh.text = tagData.Name;
+        textMesh.text = tagData.Label;
 
         textMesh.ForceMeshUpdate();
 

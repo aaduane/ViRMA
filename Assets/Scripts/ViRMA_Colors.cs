@@ -7,6 +7,8 @@ public class ViRMA_Colors : MonoBehaviour
     public static Color32 axisBlue = new Color32(35, 99, 142, 255);
 
     public static Color32 axisTextRed = new Color32(166, 33, 18, 255);
+    public static Color32 axisTextGreen = new Color32(22, 145, 73, 255);
+    public static Color32 axisTextBlue = new Color32(21, 82, 122, 255);
 
     public static Color32 axisFadeRed = new Color32(192, 57, 43, 175);
     public static Color32 axisFadeGreen = new Color32(39, 174, 96, 175);
