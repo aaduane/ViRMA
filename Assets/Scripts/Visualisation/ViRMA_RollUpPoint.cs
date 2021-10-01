@@ -91,7 +91,7 @@ public class ViRMA_RollUpPoint : MonoBehaviour
             {
                 if (x)
                 {
-                    axisLabelText.text = parentAxisLabel + " (" + parentChildrenCount + ") <b>↓</b>";
+                    axisLabelText.text = parentAxisLabel + " (" + parentChildrenCount + ") <b>↑</b>";
                 }
                 else
                 {
@@ -115,7 +115,7 @@ public class ViRMA_RollUpPoint : MonoBehaviour
             {
                 if (x)
                 {
-                    axisLabelText.text = parentAxisLabel + " (" + parentChildrenCount + ") <b>↓</b>";
+                    axisLabelText.text = parentAxisLabel + " (" + parentChildrenCount + ") <b>↑</b>";
                 }
                 else
                 {
