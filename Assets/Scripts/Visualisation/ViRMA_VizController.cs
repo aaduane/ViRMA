@@ -11,8 +11,6 @@ public class ViRMA_VizController : MonoBehaviour
 {
     /* --- public --- */
 
-    Color32 testColor = new Color32(50, 50, 50, 175);
-
     // cells and axes objects
     [HideInInspector] public List<Cell> cellData;
     [HideInInspector] public List<GameObject> cellObjs, axisXPointObjs, axisYPointObjs, axisZPointObjs;
@@ -550,6 +548,13 @@ public class ViRMA_VizController : MonoBehaviour
             Destroy(child.gameObject);
         }
     }
+    public void HideViz()
+    {
+        vizFullyLoaded = false;
+        activeBrowsingState = false;
+        transform.position = new Vector3(0, 9999, 0);
+        transform.rotation = Quaternion.identity;
+    }
 
 
     // node navigation (position, rotation, scale)
@@ -775,6 +780,10 @@ public class ViRMA_VizController : MonoBehaviour
                 }));
             }
         }
+    }
+    public void SubmitCell(SteamVR_Action_Boolean action, SteamVR_Input_Sources source)
+    {
+
     }
 
 

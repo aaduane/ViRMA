@@ -10,6 +10,7 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
     public ViRMA_QueryController queryController;
     public ViRMA_DimExplorer dimExplorer;
     public ViRMA_MainMenu mainMenu;
+    public ViRMA_Timeline timeline;
 
     // --- SteamVR action sets --- \\
 
@@ -52,6 +53,7 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
         queryController = GameObject.Find("QueryController").GetComponent<ViRMA_QueryController>();
         dimExplorer = GameObject.Find("DimensionExplorer").GetComponent<ViRMA_DimExplorer>();
         mainMenu = GameObject.Find("MainMenu").GetComponent<ViRMA_MainMenu>();
+        timeline = GameObject.Find("Timeline").GetComponent<ViRMA_Timeline>();
 
         // assign all action sets
         AssignAllActionSets();
@@ -127,19 +129,14 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
         //menuInteraction_Scroll[SteamVR_Input_Sources.Any].onAxis += mainMenu.TestScroll;
         //vizNav_HardGrip[SteamVR_Input_Sources.Any].onAxis += TestGripAction;
     }
-
-
-
     public void ToggleOnlyThisActionSet(SteamVR_ActionSet targetActionSet)
     {
         SteamVR_ActionSet_Manager.DisableAllActionSets();
         defaultActions.Activate();
         targetActionSet.Activate();
     }
-
     private void ActionActivityController()
     {
-
         if (dimExplorer.dimensionExpLorerLoaded)
         {
             dimExplorerActions.Activate();

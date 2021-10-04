@@ -168,7 +168,6 @@ public class ViRMA_AxisPoint : MonoBehaviour
             ToggleFade(false);
         }
     }
-
     private void CheckForChildren()
     {
         if (childrenSet == false)

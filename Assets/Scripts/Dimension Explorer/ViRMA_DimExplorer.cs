@@ -314,8 +314,9 @@ public class ViRMA_DimExplorer : MonoBehaviour
             // push data to query controller
             if (axisQueryType == "filter")
             {
-                Debug.LogError("Submitting filters but filters not ready yet!");
                 //globals.queryController.buildingQuery.AddFilter(tagQueryData.Id, "Hierarchy"); 
+
+                globals.queryController.buildingQuery.AddFilter(tagQueryData.Id, "node");
             }
             else
             {

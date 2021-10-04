@@ -46,9 +46,18 @@ public class ViRMA_QueryController : MonoBehaviour
         }));
         */
 
-        buildingQuery.SetAxis("X", 1770, "node");
-        buildingQuery.SetAxis("Y", 3733, "node");
-        buildingQuery.SetAxis("Z", 5, "tagset");
+        //buildingQuery.SetAxis("X", 1770, "node");
+        //buildingQuery.SetAxis("Y", 3733, "node");
+        //buildingQuery.SetAxis("Z", 5, "tagset");
+
+        buildingQuery.SetAxis("X", 13, "tagset");
+        buildingQuery.SetAxis("Y", 691, "node");
+
+        buildingQuery.AddFilter(147, "tag");
+        buildingQuery.AddFilter(132, "tag");
+
+        //buildingQuery.RemoveFilter(147, "tag");
+        //buildingQuery.RemoveFilter(132, "tag");
     }
 
     private void Update()

@@ -44,13 +44,13 @@ public class Query
     }
     public class Filter
     {
-        public int Id { get; set; }
         public string Type { get; set; }
-
-        public Filter(int id, string type)
+        public List<int> Ids { get; set; }
+        
+        public Filter(string type, List<int> ids)
         {
-            Id = id;
             Type = type;
+            Ids = ids;
         }
     }
     public void SetAxis(string axis, int id, string type)
@@ -74,16 +74,75 @@ public class Query
     }
     public void AddFilter(int id, string type)
     {
+        /*
         Filter addFilter = new Filter(id, type);
         if (!Filters.Contains(addFilter))
         {
             Filters.Add(addFilter);
-        }       
+        }
+        */
+
+        if (Filters.Count == 0)
+        {
+            List<int> newIdList = new List<int>() { id };
+            Filter newFilter = new Filter(type, newIdList);
+            Filters.Add(newFilter);
+        }
+        else
+        {
+            for (int i = 0; i < Filters.Count; i++)
+            {
+                if (Filters[i].Type == type)
+                {
+                    if (!Filters[i].Ids.Contains(id))
+                    {
+                        Filters[i].Ids.Add(id);
+                        break;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+
+                if (i == Filters.Count - 1)
+                {
+                    List<int> newIdList = new List<int>() { id };
+                    Filter newFilter = new Filter(type, newIdList);
+                    Filters.Add(newFilter);
+                }
+            }
+        }
     }
     public void RemoveFilter(int id, string type)
     {
-        Filter removeFilter = new Filter(id, type);
-        Filters.Remove(removeFilter);
+        /*
+        foreach (Filter filter in Filters)
+        {
+            if (filter.Id == id && filter.Type == type)
+            {
+                Filters.Remove(filter);
+                break;
+            }
+        }
+        */
+
+        for (int i = 0; i < Filters.Count; i++)
+        {
+            if (Filters[i].Type == type)
+            {
+                if (Filters[i].Ids.Contains(id))
+                {
+                    Filters[i].Ids.Remove(id);
+                    if (Filters[i].Ids.Count == 0)
+                    {
+                        Filters.Remove(Filters[i]);
+                    }
+                    break;
+                }
+            }
+        }
+
     }
     public void ClearFilters()
     {
@@ -242,11 +301,22 @@ public class ViRMA_APIController : MonoBehaviour
 
         if (query.Filters.Count > 0)
         {
+            //  <filter>={"type":"node","ids":["40"]}  
+            //  --parentnode_id, one parent node, here: all main hierarchy
+            //  -- nodes do not need to come from the same hierarchy
+            //  <filter>={ "type":"node","ids":["691","956"]}
+            //  --parentnode_ids, two parent nodes, here: either of the two dog nodes
+
+            // &filters=[{"type":"tag","ids":["147","132"]}]
+
             url += "&filters=[";
             foreach (Query.Filter filter in query.Filters)
             {
-                string typeId = filter.Type == "Tagset" ? "tagId" : "nodeId";
-                url += "{'type': '" + filter.Type.ToLower() + "', '" + typeId + "': " + filter.Id + "},";
+                //string typeId = filter.Type == "Tagset" ? "tagId" : "nodeId";
+                //url += "{'type': '" + filter.Type.ToLower() + "', '" + typeId + "': " + filter.Id + "},";
+
+                string idString = string.Join("','", filter.Ids);
+                url += "{'type': '" + filter.Type.ToLower() + "', 'ids': ['" + idString + "']},";
             }
             url = url.Substring(0, url.Length - 1) + "]";
             url = url.Replace("\'", "\"");
@@ -409,7 +479,6 @@ public class ViRMA_APIController : MonoBehaviour
         }
         onSuccess(hierarchies);
     }
-
 
     // dimension explorer
     public static IEnumerator SearchHierachies(string searchParam, Action<List<Tag>> onSuccess)
@@ -599,6 +668,17 @@ public class ViRMA_APIController : MonoBehaviour
         });
     }
      
+    // timeline 
+    public static IEnumerator GetTimeline(string searchParam, Action<List<string>> onSuccess)
+    {
+        yield return GetRequest("someURL", (response) =>
+        {
+            jsonData = response;
 
+            List<string> fileNames = new List<string>(); // make new timeline image object?
+
+            onSuccess(fileNames);
+        });
+    }
 
 } 

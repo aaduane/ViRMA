@@ -183,7 +183,6 @@ public class ViRMA_RollUpPoint : MonoBehaviour
             labelSet = true;
         }
     }
-
     private IEnumerator CheckForParentThenChildren()
     {
         if (parentSet == false)
