@@ -1,6 +1,11 @@
 ﻿using UnityEngine;
 using Valve.VR.InteractionSystem;
 using System.Collections.Generic;
+using System.Collections;
+
+using System;
+using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
 
 public class ViRMA_QueryController : MonoBehaviour
 {
@@ -15,7 +20,7 @@ public class ViRMA_QueryController : MonoBehaviour
     string activeYAxisType;
     int activeZAxisId;
     string activeZAxisType;
-    List<string> activeFilters;
+    List<Query.Filter> activeFilters = new List<Query.Filter>();
 
     private void Awake()
     {
@@ -53,11 +58,34 @@ public class ViRMA_QueryController : MonoBehaviour
         buildingQuery.SetAxis("X", 13, "tagset");
         buildingQuery.SetAxis("Y", 691, "node");
 
-        buildingQuery.AddFilter(147, "tag");
-        buildingQuery.AddFilter(132, "tag");
+        buildingQuery.AddFilter(1770, "node");
+        buildingQuery.AddFilter(3733, "node");
+        buildingQuery.AddFilter(147, "tag", 100);
+        buildingQuery.AddFilter(132, "tag", 100);
+        buildingQuery.AddFilter(45, "tag", 99);
 
-        //buildingQuery.RemoveFilter(147, "tag");
-        //buildingQuery.RemoveFilter(132, "tag");
+        //buildingQuery.RemoveFilter(147, "tag", 100);
+        //buildingQuery.RemoveFilter(132, "tag", 100);
+        //buildingQuery.RemoveFilter(1770, "node");
+
+        //StartCoroutine(LateStart());
+    }
+
+    IEnumerator LateStart()
+    {
+        yield return new WaitForSeconds(2);
+
+        buildingQuery.RemoveFilter(1770, "node");
+
+        yield return new WaitForSeconds(2);
+
+        buildingQuery.AddFilter(1770, "node");
+        buildingQuery.AddFilter(3733, "node");
+        buildingQuery.AddFilter(1771, "node");
+
+        yield return new WaitForSeconds(2);
+
+        buildingQuery.RemoveFilter(147, "tag", 100);
     }
 
     private void Update()
@@ -113,6 +141,51 @@ public class ViRMA_QueryController : MonoBehaviour
             }
         }
 
+        if (buildingQuery.Filters != null)
+        {      
+            if (buildingQuery.Filters.Count != activeFilters.Count)
+            {
+                //Debug.Log("Filter counts don't match!");
+                counter++;
+                activeFilters = ObjectExtensions.Copy(buildingQuery.Filters);
+            }
+            else
+            {
+                for (int i = 0; i < buildingQuery.Filters.Count; i++)
+                {
+                    // check FilterId
+                    if (buildingQuery.Filters[i].FilterId != activeFilters[i].FilterId)
+                    {
+                        //Debug.Log("FilterId in Filters have changed!");
+                        counter++;
+                        activeFilters = ObjectExtensions.Copy(buildingQuery.Filters);
+                        break;
+                    }
+
+                    // check Type
+                    if (buildingQuery.Filters[i].Type != activeFilters[i].Type)
+                    {
+                        //Debug.Log("Type in Filters have changed!");
+                        counter++;
+                        activeFilters = ObjectExtensions.Copy(buildingQuery.Filters);
+                        break;
+                    }
+
+                    // check IDs
+                    string buildingQueryChecker = string.Join(",", buildingQuery.Filters[i].Ids);
+                    string activeFiltersChecker = string.Join(",", activeFilters[i].Ids);
+                    if (buildingQueryChecker != activeFiltersChecker)
+                    {
+                        //Debug.Log("IDs in filters have changed!");
+                        counter++;
+                        activeFilters = ObjectExtensions.Copy(buildingQuery.Filters);
+                        break;
+                    }
+                }
+            }
+            
+        }
+
         if (counter > 0)
         {
             ReloadViz();
@@ -124,13 +197,16 @@ public class ViRMA_QueryController : MonoBehaviour
         if (vizQueryLoading == false)
         {
             //StartCoroutine(globals.dimExplorer.ClearDimExplorer());
+
             globals.vizController.GetComponent<ViRMA_VizController>().ClearViz();
 
             StartCoroutine(globals.vizController.SubmitVizQuery(buildingQuery));
+
+            //Debug.Log("Loading new viz!");
         }
         else
         {
-            Debug.Log("Query aready loading!");
+            //Debug.Log("Query aready loading!");
         }
     }
 

@@ -46,11 +46,21 @@ public class Query
     {
         public string Type { get; set; }
         public List<int> Ids { get; set; }
-        
-        public Filter(string type, List<int> ids)
+        public string FilterId { get; set; }
+
+        public Filter(string type, List<int> ids, int parentId = -1)
         {
             Type = type;
             Ids = ids;
+
+            if (parentId != -1)
+            {
+                FilterId = type + "_" + parentId;
+            }
+            else
+            {
+                FilterId = "null_0";
+            }
         }
     }
     public void SetAxis(string axis, int id, string type)
@@ -72,8 +82,70 @@ public class Query
             Debug.LogError("Invalid axis selected.");
         }
     }
-    public void AddFilter(int id, string type)
+    public void AddFilter(int id, string type, int parentId = -1)
     {
+        if (Filters.Count == 0)
+        {
+            // if no filters exist yet, just add the first filter
+            List<int> newIdList = new List<int>() { id };
+            Filter newFilter = new Filter(type, newIdList, parentId);
+            Filters.Add(newFilter);
+        }
+        else
+        {
+            // if filter to be added has no parent id (e.g. nodes from a hierarchy)
+            if (parentId == -1)
+            {
+                // check if an identical filter with no parent id exists already
+                bool alreadyAdded = false;
+                for (int i = 0; i < Filters.Count; i++)
+                {
+                    if (Filters[i].Type == type)
+                    {
+                        if (Filters[i].Ids.Contains(id))
+                        {
+                            alreadyAdded = true;
+                            break;
+                        }
+                    }              
+                }
+                // if an identical filter does not exist, make and add it
+                if (alreadyAdded == false)
+                {
+                    List<int> newIdList = new List<int>() { id };
+                    Filter newFilter = new Filter(type, newIdList);
+                    Filters.Add(newFilter);
+                }
+            }
+            else
+            {
+                // if filter to be added has a parent id (e.g. tags from tagsets)
+                bool alreadyAdded = false;
+                string newFilterId = type + "_" + parentId;
+                for (int i = 0; i < Filters.Count; i++)
+                {
+                    // check if a filter with the same parent id already exists and add it if it does
+                    if (Filters[i].FilterId == newFilterId)
+                    {
+                        if (!Filters[i].Ids.Contains(id))
+                        {
+                            Filters[i].Ids.Add(id);
+                            alreadyAdded = true;
+                            break;
+                        }
+                    }
+                }
+                // if a filter with the same parent id does not exist, create a new one and add it
+                if (alreadyAdded == false)
+                {
+                    List<int> newIdList = new List<int>() { id };
+                    Filter newFilter = new Filter(type, newIdList, parentId);
+                    Filters.Add(newFilter);
+                }
+            }
+        }
+
+
         /*
         Filter addFilter = new Filter(id, type);
         if (!Filters.Contains(addFilter))
@@ -82,10 +154,11 @@ public class Query
         }
         */
 
+        /*
         if (Filters.Count == 0)
         {
             List<int> newIdList = new List<int>() { id };
-            Filter newFilter = new Filter(type, newIdList);
+            Filter newFilter = new Filter(type, newIdList, parentId);
             Filters.Add(newFilter);
         }
         else
@@ -108,14 +181,41 @@ public class Query
                 if (i == Filters.Count - 1)
                 {
                     List<int> newIdList = new List<int>() { id };
-                    Filter newFilter = new Filter(type, newIdList);
+                    Filter newFilter = new Filter(type, newIdList, parentId);
                     Filters.Add(newFilter);
                 }
             }
         }
+        */
     }
-    public void RemoveFilter(int id, string type)
+    public void RemoveFilter(int id, string type, int parentId = -1)
     {
+        string targetFilterId = "null_0";
+        if (parentId != -1)
+        {
+            targetFilterId = type + "_" + parentId;
+        }
+
+        for (int i = 0; i < Filters.Count; i++)
+        {
+            if (Filters[i].FilterId == targetFilterId)
+            {
+                if (Filters[i].Type == type)
+                {
+                    if (Filters[i].Ids.Contains(id))
+                    {
+                        Filters[i].Ids.Remove(id);
+                        if (Filters[i].Ids.Count == 0)
+                        {
+                            Filters.Remove(Filters[i]);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+
         /*
         foreach (Filter filter in Filters)
         {
@@ -127,6 +227,7 @@ public class Query
         }
         */
 
+        /*
         for (int i = 0; i < Filters.Count; i++)
         {
             if (Filters[i].Type == type)
@@ -142,7 +243,7 @@ public class Query
                 }
             }
         }
-
+        */
     }
     public void ClearFilters()
     {
@@ -194,8 +295,6 @@ public class AxesLabels {
 
 public class ViRMA_APIController : MonoBehaviour
 {
-    static public Color32 testColor = new Color32(50, 50, 50, 50);
-
     // public
     public static bool debugging = false;
     public static string serverAddress = "https://localhost:44317/api/";
@@ -270,30 +369,33 @@ public class ViRMA_APIController : MonoBehaviour
     {
         // OLD 1:   https://localhost:44317/api/cell?xAxis={'AxisType': 'Tagset', 'TagsetId': 3}&yAxis={'AxisType': 'Tagset', 'TagsetId': 7}&zAxis={'AxisType': 'Hierarchy', 'HierarchyNodeId': 77}&filters=[{'type': 'Tagset', 'tagId': 7},{'type': 'Hierarchy', 'nodeId': 5}]
         // OLD 2:   https://localhost:44317/api/cell/?yAxis={"AxisType":"Hierarchy","Id":691}&zAxis={"AxisType":"Tagset","Id":13}&filters=[{"Id":132,"type":"day of week","name":"7"},{"Id":147,"type":"day of week","name":"6"}]
-        // NEW:     https://localhost:44317/api/cell/?yAxis={"type":"node","id":691}&zAxis={"type":"tagset","id":13}&filters=[{"type":"tag","ids":["147","132"]}]
+        // NEW:     https://localhost:44317/api/cell/?yAxis={"type":"node","id":691}&zAxis={"type":"tagset","id":13}&filters=[{"type":"tag","ids":["147","132"]}]       
 
         string url = "cell?";
         if (query.X != null)
         {
-            //string typeId = query.X.Type == "Tagset" ? query.X.Type + "Id" : query.X.Type + "NodeId";
-            //url += "xAxis={'AxisType': '" + query.X.Type + "', '" + typeId + "': " + query.X.Id + "}&";
-            //url += "xAxis={'AxisType': '" + query.X.Type + "', 'Id': " + query.X.Id + "}&";
+            // OLD:
+            // string typeId = query.X.Type == "Tagset" ? query.X.Type + "Id" : query.X.Type + "NodeId";
+            // url += "xAxis={'AxisType': '" + query.X.Type + "', '" + typeId + "': " + query.X.Id + "}&";
+            // url += "xAxis={'AxisType': '" + query.X.Type + "', 'Id': " + query.X.Id + "}&";
 
             url += "xAxis={'type': '" + query.X.Type + "', 'id': " + query.X.Id + "}&";
         }
         if (query.Y != null)
         {
-            //string typeId = query.Y.Type == "Tagset" ? query.Y.Type + "Id" : query.Y.Type + "NodeId";
-            //url += "yAxis={'AxisType': '" + query.Y.Type + "', '" + typeId + "': " + query.Y.Id + "}&";
-            //url += "yAxis={'AxisType': '" + query.Y.Type + "', 'Id': " + query.Y.Id + "}&";
+            // OLD:
+            // string typeId = query.Y.Type == "Tagset" ? query.Y.Type + "Id" : query.Y.Type + "NodeId";
+            // url += "yAxis={'AxisType': '" + query.Y.Type + "', '" + typeId + "': " + query.Y.Id + "}&";
+            // url += "yAxis={'AxisType': '" + query.Y.Type + "', 'Id': " + query.Y.Id + "}&";
 
             url += "yAxis={'type': '" + query.Y.Type + "', 'id': " + query.Y.Id + "}&";
         }
         if (query.Z != null)
         {
-            //string typeId = query.Z.Type == "Tagset" ? query.Z.Type + "Id" : query.Z.Type + "NodeId";
-            //url += "zAxis={'AxisType': '" + query.Z.Type + "', '" + typeId + "': " + query.Z.Id + "}&";
-            //url += "zAxis={'AxisType': '" + query.Z.Type + "', 'Id': " + query.Z.Id + "}&";
+            // OLD:
+            // string typeId = query.Z.Type == "Tagset" ? query.Z.Type + "Id" : query.Z.Type + "NodeId";
+            // url += "zAxis={'AxisType': '" + query.Z.Type + "', '" + typeId + "': " + query.Z.Id + "}&";
+            // url += "zAxis={'AxisType': '" + query.Z.Type + "', 'Id': " + query.Z.Id + "}&";
 
             url += "zAxis={'type': '" + query.Z.Type + "', 'id': " + query.Z.Id + "}&";
         }
@@ -301,14 +403,6 @@ public class ViRMA_APIController : MonoBehaviour
 
         if (query.Filters.Count > 0)
         {
-            //  <filter>={"type":"node","ids":["40"]}  
-            //  --parentnode_id, one parent node, here: all main hierarchy
-            //  -- nodes do not need to come from the same hierarchy
-            //  <filter>={ "type":"node","ids":["691","956"]}
-            //  --parentnode_ids, two parent nodes, here: either of the two dog nodes
-
-            // &filters=[{"type":"tag","ids":["147","132"]}]
-
             url += "&filters=[";
             foreach (Query.Filter filter in query.Filters)
             {
@@ -336,13 +430,13 @@ public class ViRMA_APIController : MonoBehaviour
             newCell.Coordinates = new Vector3(obj.Value["x"], obj.Value["y"], obj.Value["z"]);
             if (obj.Value["CubeObjects"].Count > 0)
             {
-                //newCell.ImageName = obj.Value["CubeObjects"][0]["FileName"];
+                // OLD: 
+                // newCell.ImageName = obj.Value["CubeObjects"][0]["FileName"];
+                // newCell.ImageName = obj.Value["CubeObjects"][0]["FileURI"];
 
                 newCell.ImageName = obj.Value["CubeObjects"][0]["FileURI"];
                 string imageNameDDS = newCell.ImageName.Substring(0, newCell.ImageName.Length - 4) + ".dds";
-                newCell.ImageName = imageNameDDS;
-
-                //newCell.ImageName = obj.Value["CubeObjects"][0]["FileURI"];
+                newCell.ImageName = imageNameDDS;             
             }
             else
             {
@@ -671,6 +765,8 @@ public class ViRMA_APIController : MonoBehaviour
     // timeline 
     public static IEnumerator GetTimeline(string searchParam, Action<List<string>> onSuccess)
     {
+        // https://localhost:44317/api/cell/?filters=[{"type":"node","ids":["699"]},{"type":"tag","ids":["17"]},{"type":"tag","ids":["147","132"]}]&all=[]
+
         yield return GetRequest("someURL", (response) =>
         {
             jsonData = response;
