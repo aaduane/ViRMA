@@ -2,10 +2,7 @@
 using Valve.VR.InteractionSystem;
 using System.Collections.Generic;
 using System.Collections;
-
 using System;
-using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
 
 public class ViRMA_QueryController : MonoBehaviour
 {
@@ -58,16 +55,14 @@ public class ViRMA_QueryController : MonoBehaviour
         buildingQuery.SetAxis("X", 13, "tagset");
         buildingQuery.SetAxis("Y", 691, "node");
 
-        buildingQuery.AddFilter(1770, "node");
-        buildingQuery.AddFilter(3733, "node");
-        buildingQuery.AddFilter(147, "tag", 100);
-        buildingQuery.AddFilter(132, "tag", 100);
-        buildingQuery.AddFilter(45, "tag", 99);
-
+        //buildingQuery.AddFilter(1770, "node");
+        //buildingQuery.AddFilter(3733, "node");
+        //buildingQuery.AddFilter(147, "tag", 100);
+        //buildingQuery.AddFilter(132, "tag", 100);
+        //buildingQuery.AddFilter(45, "tag", 99);
         //buildingQuery.RemoveFilter(147, "tag", 100);
         //buildingQuery.RemoveFilter(132, "tag", 100);
         //buildingQuery.RemoveFilter(1770, "node");
-
         //StartCoroutine(LateStart());
     }
 
@@ -90,6 +85,8 @@ public class ViRMA_QueryController : MonoBehaviour
 
     private void Update()
     {
+        QueryReloadController();
+
         /*
         if (buildingQuery.X != null)
         {
@@ -108,7 +105,10 @@ public class ViRMA_QueryController : MonoBehaviour
             Debug.Log(buildingQuery.Filters.Count + " direct filters!");
         }
         */
+    }
 
+    private void QueryReloadController()
+    {
         int counter = 0;
 
         if (buildingQuery.X != null)
@@ -117,7 +117,7 @@ public class ViRMA_QueryController : MonoBehaviour
             {
                 counter++;
                 activeXAxisId = buildingQuery.X.Id;
-                activeXAxisType = buildingQuery.X.Type;        
+                activeXAxisType = buildingQuery.X.Type;
             }
         }
 
@@ -142,7 +142,7 @@ public class ViRMA_QueryController : MonoBehaviour
         }
 
         if (buildingQuery.Filters != null)
-        {      
+        {
             if (buildingQuery.Filters.Count != activeFilters.Count)
             {
                 //Debug.Log("Filter counts don't match!");
@@ -183,7 +183,7 @@ public class ViRMA_QueryController : MonoBehaviour
                     }
                 }
             }
-            
+
         }
 
         if (counter > 0)
@@ -191,7 +191,6 @@ public class ViRMA_QueryController : MonoBehaviour
             ReloadViz();
         }
     }
-
     public void ReloadViz()
     {
         if (vizQueryLoading == false)

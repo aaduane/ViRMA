@@ -15,6 +15,7 @@ public class ViRMA_VizController : MonoBehaviour
     [HideInInspector] public List<Cell> cellData;
     [HideInInspector] public List<GameObject> cellObjs, axisXPointObjs, axisYPointObjs, axisZPointObjs;
     [HideInInspector] public LineRenderer axisXLine, axisYLine, axisZLine;
+    [HideInInspector] public AxesLabels activeAxesLabels;
     public GameObject focusedCell;
     public GameObject focusedAxisPoint;
 
@@ -291,6 +292,8 @@ public class ViRMA_VizController : MonoBehaviour
     {
         // get label data from server
         yield return StartCoroutine(ViRMA_APIController.GetAxesLabels(submittedQuery, (axesLabels) => {
+
+            activeAxesLabels = axesLabels;
 
             // // global style for propety blocks
             Material transparentMaterial = Resources.Load("Materials/BasicTransparent") as Material;
@@ -713,7 +716,8 @@ public class ViRMA_VizController : MonoBehaviour
         }
     }
 
-    // node interaction (drill dowm, roll up, view cell)
+
+    // node interaction (drill dowm, roll up, timeline for cell)
     public void DrillDownRollUp(SteamVR_Action_Boolean action, SteamVR_Input_Sources source)
     {
         if (focusedAxisPoint != null)
@@ -781,9 +785,12 @@ public class ViRMA_VizController : MonoBehaviour
             }
         }
     }
-    public void SubmitCell(SteamVR_Action_Boolean action, SteamVR_Input_Sources source)
+    public void SubmitCellForTimeline(SteamVR_Action_Boolean action, SteamVR_Input_Sources source)
     {
-
+        if (focusedCell != null)
+        {
+            globals.timeline.LoadTimeline(focusedCell);
+        }      
     }
 
 

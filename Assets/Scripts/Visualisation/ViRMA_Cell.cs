@@ -221,33 +221,43 @@ public class ViRMA_Cell : MonoBehaviour
         {
             if (axesLabels == null)
             {
-                // x 
-                int xAxisPointIndex = (int)thisCellData.Coordinates.x;
-                GameObject xAxisPointObj = globals.vizController.axisXPointObjs[xAxisPointIndex];
-                string xAxisPointLabel = xAxisPointObj.GetComponent<ViRMA_AxisPoint>().axisPointLabel;
-
-                // y
-                int yAxisPointIndex = (int)thisCellData.Coordinates.y;
-                GameObject yAxisPointObj = globals.vizController.axisYPointObjs[yAxisPointIndex];
-                string yAxisPointLabel = yAxisPointObj.GetComponent<ViRMA_AxisPoint>().axisPointLabel;            
-
-                // z 
-                int zAxisPointIndex = (int)thisCellData.Coordinates.z;
-                GameObject zAxisPointObj = globals.vizController.axisZPointObjs[zAxisPointIndex];
-                string zAxisPointLabel = zAxisPointObj.GetComponent<ViRMA_AxisPoint>().axisPointLabel;
-
+                // create xyz label
                 axesLabels = Instantiate(Resources.Load("Prefabs/AxesLabels")) as GameObject;
                 axesLabels.transform.SetParent(transform.parent.transform);
                 axesLabels.transform.localScale = Vector3.one * 0.3f;
                 axesLabels.transform.localPosition = new Vector3(transform.localPosition.x, transform.localPosition.y + 3f, transform.localPosition.z);
                 axesLabels.transform.LookAt(2 * axesLabels.transform.position - Player.instance.hmdTransform.position);
 
+                // x part
+                string xAxisPointLabel = "";
+                int xAxisPointIndex = (int)thisCellData.Coordinates.x;
+                if (globals.vizController.axisXPointObjs.Count > 1)
+                {
+                    GameObject xAxisPointObj = globals.vizController.axisXPointObjs[xAxisPointIndex];
+                    xAxisPointLabel = xAxisPointObj.GetComponent<ViRMA_AxisPoint>().axisPointLabel;
+                }
                 axesLabels.transform.GetChild(0).GetComponent<TextMeshPro>().text = xAxisPointLabel;
                 axesLabels.transform.GetChild(0).GetComponent<TextMeshPro>().color = ViRMA_Colors.axisRed;
 
+                // y part
+                string yAxisPointLabel = "";
+                int yAxisPointIndex = (int)thisCellData.Coordinates.y;
+                if (globals.vizController.axisYPointObjs.Count > 1)
+                {
+                    GameObject yAxisPointObj = globals.vizController.axisYPointObjs[yAxisPointIndex];
+                    yAxisPointLabel = yAxisPointObj.GetComponent<ViRMA_AxisPoint>().axisPointLabel;
+                }
                 axesLabels.transform.GetChild(1).GetComponent<TextMeshPro>().text = yAxisPointLabel;
                 axesLabels.transform.GetChild(1).GetComponent<TextMeshPro>().color = ViRMA_Colors.axisGreen;
 
+                // z part
+                string zAxisPointLabel = "";
+                int zAxisPointIndex = (int)thisCellData.Coordinates.z;     
+                if (globals.vizController.axisZPointObjs.Count > 1)
+                {
+                    GameObject zAxisPointObj = globals.vizController.axisZPointObjs[zAxisPointIndex];
+                    zAxisPointLabel = zAxisPointObj.GetComponent<ViRMA_AxisPoint>().axisPointLabel;
+                }
                 axesLabels.transform.GetChild(2).GetComponent<TextMeshPro>().text = zAxisPointLabel;
                 axesLabels.transform.GetChild(2).GetComponent<TextMeshPro>().color = ViRMA_Colors.axisBlue;
             }
@@ -262,7 +272,6 @@ public class ViRMA_Cell : MonoBehaviour
 
         }
     }
-
 
     /*
     private void OnHandHoverBegin(Hand hand)
