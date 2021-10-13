@@ -11,13 +11,13 @@ public class ViRMA_QueryController : MonoBehaviour
     [HideInInspector] public bool vizQueryLoading;
 
     // active query parameters
-    int activeXAxisId;
-    string activeXAxisType;
-    int activeYAxisId;
-    string activeYAxisType;
-    int activeZAxisId;
-    string activeZAxisType;
-    List<Query.Filter> activeFilters = new List<Query.Filter>();
+    public int activeXAxisId;
+    public string activeXAxisType;
+    public int activeYAxisId;
+    public string activeYAxisType;
+    public int activeZAxisId;
+    public string activeZAxisType;
+    public List<Query.Filter> activeFilters = new List<Query.Filter>();
 
     private void Awake()
     {
@@ -57,8 +57,8 @@ public class ViRMA_QueryController : MonoBehaviour
 
         //buildingQuery.AddFilter(1770, "node");
         //buildingQuery.AddFilter(3733, "node");
-        //buildingQuery.AddFilter(147, "tag", 100);
-        //buildingQuery.AddFilter(132, "tag", 100);
+        buildingQuery.AddFilter(147, "tag", 100);
+        buildingQuery.AddFilter(132, "tag", 100);
         //buildingQuery.AddFilter(45, "tag", 99);
         //buildingQuery.RemoveFilter(147, "tag", 100);
         //buildingQuery.RemoveFilter(132, "tag", 100);

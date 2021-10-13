@@ -762,18 +762,42 @@ public class ViRMA_APIController : MonoBehaviour
     }
      
     // timeline 
-    public static IEnumerator GetTimeline(string searchParam, Action<List<string>> onSuccess)
+    public static IEnumerator GetTimeline(List<Query.Filter> cellFiltersForTimeline, Action<List<KeyValuePair<int, string>>> onSuccess)
     {
-        // https://localhost:44317/api/cell/?filters=[{"type":"node","ids":["699"]},{"type":"tag","ids":["17"]},{"type":"tag","ids":["147","132"]}]&all=[]
-
-        yield return GetRequest("someURL", (response) =>
+        string url = "cell?filters=[";
+        foreach (Query.Filter filter in cellFiltersForTimeline)
         {
-            jsonData = response;
+            string idString = string.Join("','", filter.Ids);
+            url += "{'type': '" + filter.Type.ToLower() + "', 'ids': ['" + idString + "']},";
+        }
+        url = url.Substring(0, url.Length - 1) + "]&all=[]";
+        url = url.Replace("\'", "\"");
 
-            List<string> fileNames = new List<string>(); // make new timeline image object?
 
-            onSuccess(fileNames);
+
+        // debugging
+        Debug.Log(url);
+        // cell?filters=[{"type":"tag","ids":["147","132"]},{"type":"tagset","ids":["539"]},{"type":"node","ids":["744"]}]&all=[] // does not work
+        // cell?filters=[{'type':'node','ids':['699']},{'type':'tag','ids':['17']},{'type':'tag','ids':['147','132']}]&all=[] // works
+        url = "cell?filters=[{'type':'node','ids':['699']},{'type':'tag','ids':['17']},{'type':'tag','ids':['147','132']}]&all=[]";
+
+
+
+        List<KeyValuePair<int, string>> results = new List<KeyValuePair<int, string>>();
+        yield return GetRequest(url, (response) =>
+        {
+            jsonData = response;        
         });
+
+        foreach (var obj in jsonData)
+        {
+            int imageId = obj.Value["Id"];
+            string imagePath = obj.Value["FileURI"];
+            KeyValuePair<int, string> imageIdPath = new KeyValuePair<int, string>(imageId, imagePath);
+            results.Add(imageIdPath);
+        }
+
+        onSuccess(results);
     }
 
 } 

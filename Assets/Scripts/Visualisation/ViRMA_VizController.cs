@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using TMPro;
 using UnityEngine;
 using Valve.VR;
 using Valve.VR.InteractionSystem;
@@ -789,7 +788,7 @@ public class ViRMA_VizController : MonoBehaviour
     {
         if (focusedCell != null)
         {
-            globals.timeline.LoadTimeline(focusedCell);
+            globals.timeline.LoadTimelineData(focusedCell);
         }      
     }
 
