@@ -68,7 +68,7 @@ public class ViRMA_Timeline : MonoBehaviour
     {
         foreach (KeyValuePair<int, string> result in results)
         {
-            //Debug.Log(result.Key + " | " + result.Value);
+            Debug.Log(result.Key + " | " + result.Value);
         }
     }
 

@@ -767,6 +767,10 @@ public class ViRMA_APIController : MonoBehaviour
         string url = "cell?filters=[";
         foreach (Query.Filter filter in cellFiltersForTimeline)
         {
+            if (filter.Type.ToLower() == "tagset")
+            {
+                filter.Type = "tag";
+            }
             string idString = string.Join("','", filter.Ids);
             url += "{'type': '" + filter.Type.ToLower() + "', 'ids': ['" + idString + "']},";
         }
@@ -779,7 +783,7 @@ public class ViRMA_APIController : MonoBehaviour
         Debug.Log(url);
         // cell?filters=[{"type":"tag","ids":["147","132"]},{"type":"tagset","ids":["539"]},{"type":"node","ids":["744"]}]&all=[] // does not work
         // cell?filters=[{'type':'node','ids':['699']},{'type':'tag','ids':['17']},{'type':'tag','ids':['147','132']}]&all=[] // works
-        url = "cell?filters=[{'type':'node','ids':['699']},{'type':'tag','ids':['17']},{'type':'tag','ids':['147','132']}]&all=[]";
+        // url = "cell?filters=[{'type':'node','ids':['699']},{'type':'tag','ids':['17']},{'type':'tag','ids':['147','132']}]&all=[]";
 
 
 
