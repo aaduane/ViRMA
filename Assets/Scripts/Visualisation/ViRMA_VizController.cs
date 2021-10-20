@@ -66,10 +66,10 @@ public class ViRMA_VizController : MonoBehaviour
 
             // prevent viz from moving too far away if moving
             CellNavigationLimiter();
+        }
 
-            // draw axes line renderers 
-            DrawAxesLines();
-        }     
+        // draw axes line renderers 
+        DrawAxesLines();
     }
 
     // cell and axes generation
@@ -136,8 +136,8 @@ public class ViRMA_VizController : MonoBehaviour
                         try
                         {
                             imageBytes = File.ReadAllBytes(ViRMA_APIController.imagesDirectory + newCell.ImageName);
-                            newCell.ImageTexture = ConvertImageToDDS(imageBytes); // dds stuff
-                            //newCell.ImageTexture = ConvertImageToTex(imageBytes); // jpg stuff
+                            newCell.ImageTexture = ViRMA_APIController.ConvertImageFromDDS(imageBytes); // dds stuff
+                            //newCell.ImageTexture = ViRMA_APIController.ConvertImageFromJPEG(imageBytes); // jpg stuff
                             KeyValuePair<string, Texture2D> uniqueTexture = new KeyValuePair<string, Texture2D>(newCell.ImageName, newCell.ImageTexture);
                             uniqueTextures.Add(uniqueTexture);
                         }
@@ -145,7 +145,7 @@ public class ViRMA_VizController : MonoBehaviour
                         {
                             Debug.LogError(e.Message);
                             newCell.Filtered = true;
-                        }               
+                        }
                     }
                     else
                     {
@@ -169,7 +169,7 @@ public class ViRMA_VizController : MonoBehaviour
                 {
                     Material newtextureArrayMaterial = new Material(Resources.Load(cellMaterial) as Material);
                     Texture2D newTextureArray = new Texture2D(textureWidth, textureHeight * maxTexturesPerArray, TextureFormat.DXT1, false); // dds stuff
-                                                                                                                                             //Texture2D newTextureArray = new Texture2D(textureWidth, textureHeight * maxTexturesPerArray, TextureFormat.RGB24, false); // jpg stuff
+                    //Texture2D newTextureArray = new Texture2D(textureWidth, textureHeight * maxTexturesPerArray, TextureFormat.RGB24, false); // jpg stuff
                     for (int j = 0; j < maxTexturesPerArray; j++)
                     {
                         int uniqueTextureIndex = j + maxTexturesPerArray * i;
@@ -200,7 +200,7 @@ public class ViRMA_VizController : MonoBehaviour
                     Material newtextureArrayMaterial = new Material(Resources.Load(cellMaterial) as Material);
                     int lastTextureArraySize = uniqueTextures.Count - (maxTexturesPerArray * (totalTextureArrays - 1));
                     Texture2D newTextureArray = new Texture2D(textureWidth, textureHeight * lastTextureArraySize, TextureFormat.DXT1, false); // dds stuff
-                                                                                                                                              //Texture2D newTextureArray = new Texture2D(textureWidth, textureHeight * lastTextureArraySize, TextureFormat.RGB24, false); // jpg stuff
+                    //Texture2D newTextureArray = new Texture2D(textureWidth, textureHeight * lastTextureArraySize, TextureFormat.RGB24, false); // jpg stuff
                     for (int j = 0; j < lastTextureArraySize; j++)
                     {
                         int uniqueTextureIndex = j + maxTexturesPerArray * i;
@@ -231,32 +231,6 @@ public class ViRMA_VizController : MonoBehaviour
             //float after = Time.realtimeSinceStartup; // testing
             // Debug.Log("TEXTURE PARSE TIME ~ ~ ~ ~ ~ " + (after - before).ToString("n3") + " seconds"); // testing
         }
-    }
-    private static Texture2D ConvertImageToDDS(byte[] ddsBytes)
-    {
-        byte ddsSizeCheck = ddsBytes[4];
-        if (ddsSizeCheck != 124)
-        {
-            throw new Exception("Invalid DDS DXTn texture size! (not 124)");
-        }
-        int height = ddsBytes[13] * 256 + ddsBytes[12];
-        int width = ddsBytes[17] * 256 + ddsBytes[16];
-
-        int ddsHeaderSize = 128;
-        byte[] dxtBytes = new byte[ddsBytes.Length - ddsHeaderSize];
-        Buffer.BlockCopy(ddsBytes, ddsHeaderSize, dxtBytes, 0, ddsBytes.Length - ddsHeaderSize);
-        Texture2D texture = new Texture2D(width, height, TextureFormat.DXT1, false);
-
-        texture.LoadRawTextureData(dxtBytes);
-        texture.Apply();
-        return (texture);
-    }
-    private static Texture2D ConvertImageToTex(byte[] texBytes)
-    {
-        Texture2D tex = new Texture2D(1, 1);
-        tex.LoadImage(texBytes);
-        TextureScale.Bilinear(tex, 1024, 768);
-        return (tex);
     }
     private void GenerateCells(List<Cell> cellData)
     {
@@ -550,12 +524,25 @@ public class ViRMA_VizController : MonoBehaviour
             Destroy(child.gameObject);
         }
     }
-    public void HideViz()
+    public void HideViz(bool toHide)
     {
-        vizFullyLoaded = false;
-        activeBrowsingState = false;
-        transform.position = new Vector3(0, 9999, 0);
-        transform.rotation = Quaternion.identity;
+        if (toHide)
+        {
+            transform.position = new Vector3(0, 9999, 0);
+            transform.rotation = Quaternion.identity;
+
+            activeVizPosition = transform.position;
+            activeVizRotation = transform.rotation;
+
+            vizFullyLoaded = false;          
+        }
+        else
+        {
+            transform.position = activeVizPosition;
+            transform.rotation = activeVizRotation;
+
+            vizFullyLoaded = true;
+        }      
     }
 
 
