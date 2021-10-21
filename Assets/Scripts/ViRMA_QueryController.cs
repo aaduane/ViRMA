@@ -57,8 +57,10 @@ public class ViRMA_QueryController : MonoBehaviour
 
         //buildingQuery.AddFilter(1770, "node");
         //buildingQuery.AddFilter(3733, "node");
+
         buildingQuery.AddFilter(147, "tag", 100);
         buildingQuery.AddFilter(132, "tag", 100);
+
         //buildingQuery.AddFilter(45, "tag", 99);
         //buildingQuery.RemoveFilter(147, "tag", 100);
         //buildingQuery.RemoveFilter(132, "tag", 100);

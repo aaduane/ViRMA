@@ -92,6 +92,14 @@
     {
       "name": "/actions/DimExplorer/in/Scroll",
       "type": "boolean"
+    },
+    {
+      "name": "/actions/Timeline/in/Select",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/Timeline/in/Scroll",
+      "type": "boolean"
     }
   ],
   "action_sets": [
@@ -109,6 +117,10 @@
     },
     {
       "name": "/actions/DimExplorer",
+      "usage": "single"
+    },
+    {
+      "name": "/actions/Timeline",
       "usage": "single"
     }
   ],

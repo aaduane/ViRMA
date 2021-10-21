@@ -25,6 +25,8 @@ namespace Valve.VR
         
         private static SteamVR_Input_ActionSet_DimExplorer p_DimExplorer;
         
+        private static SteamVR_Input_ActionSet_Timeline p_Timeline;
+        
         public static SteamVR_Input_ActionSet_default _default
         {
             get
@@ -57,17 +59,27 @@ namespace Valve.VR
             }
         }
         
+        public static SteamVR_Input_ActionSet_Timeline Timeline
+        {
+            get
+            {
+                return SteamVR_Actions.p_Timeline.GetCopy<SteamVR_Input_ActionSet_Timeline>();
+            }
+        }
+        
         private static void StartPreInitActionSets()
         {
             SteamVR_Actions.p__default = ((SteamVR_Input_ActionSet_default)(SteamVR_ActionSet.Create<SteamVR_Input_ActionSet_default>("/actions/default")));
             SteamVR_Actions.p_VizNavigation = ((SteamVR_Input_ActionSet_VizNavigation)(SteamVR_ActionSet.Create<SteamVR_Input_ActionSet_VizNavigation>("/actions/VizNavigation")));
             SteamVR_Actions.p_MenuInteraction = ((SteamVR_Input_ActionSet_MenuInteraction)(SteamVR_ActionSet.Create<SteamVR_Input_ActionSet_MenuInteraction>("/actions/MenuInteraction")));
             SteamVR_Actions.p_DimExplorer = ((SteamVR_Input_ActionSet_DimExplorer)(SteamVR_ActionSet.Create<SteamVR_Input_ActionSet_DimExplorer>("/actions/DimExplorer")));
+            SteamVR_Actions.p_Timeline = ((SteamVR_Input_ActionSet_Timeline)(SteamVR_ActionSet.Create<SteamVR_Input_ActionSet_Timeline>("/actions/Timeline")));
             Valve.VR.SteamVR_Input.actionSets = new Valve.VR.SteamVR_ActionSet[] {
                     SteamVR_Actions._default,
                     SteamVR_Actions.VizNavigation,
                     SteamVR_Actions.MenuInteraction,
-                    SteamVR_Actions.DimExplorer};
+                    SteamVR_Actions.DimExplorer,
+                    SteamVR_Actions.Timeline};
         }
     }
 }

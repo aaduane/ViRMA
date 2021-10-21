@@ -46,6 +46,11 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
     public SteamVR_Action_Boolean dimExplorer_Select;
     public SteamVR_Action_Boolean dimExplorer_Scroll;
 
+    // timeline actions
+    public SteamVR_ActionSet timelineActions;
+    public SteamVR_Action_Boolean timeline_Select;
+    public SteamVR_Action_Boolean timeline_Scroll;
+
     private void Awake()
     {
         // assign all global scripts
@@ -60,9 +65,6 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
 
         // assign specific actions to functionality in ViRMA scripts
         AssignAllCustomActions();
-
-        // this is only used during testing
-        ActiveDevelopmentTesting();
     }
     private void Update()
     {
@@ -97,13 +99,17 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
         vizNav_Position = SteamVR_Input.GetActionFromPath<SteamVR_Action_Boolean>("/actions/VizNavigation/in/Position");
         vizNav_Rotation = SteamVR_Input.GetActionFromPath<SteamVR_Action_Boolean>("/actions/VizNavigation/in/Rotation");
         vizNav_Select = SteamVR_Input.GetActionFromPath<SteamVR_Action_Boolean>("/actions/VizNavigation/in/Select");
-
-        vizNav_HardGrip = SteamVR_Input.GetActionFromPath<SteamVR_Action_Single>("/actions/VizNavigation/in/HardGrip");
+        //vizNav_HardGrip = SteamVR_Input.GetActionFromPath<SteamVR_Action_Single>("/actions/VizNavigation/in/HardGrip");
 
         // dimension explorer action set
         dimExplorerActions = SteamVR_Input.GetActionSet("DimExplorer");
         dimExplorer_Select = SteamVR_Input.GetActionFromPath<SteamVR_Action_Boolean>("/actions/DimExplorer/in/Select");
         dimExplorer_Scroll = SteamVR_Input.GetActionFromPath<SteamVR_Action_Boolean>("/actions/DimExplorer/in/Scroll");
+
+        // timeline action set
+        timelineActions = SteamVR_Input.GetActionSet("Timeline");
+        timeline_Select = SteamVR_Input.GetActionFromPath<SteamVR_Action_Boolean>("/actions/Timeline/in/Select");
+        timeline_Scroll = SteamVR_Input.GetActionFromPath<SteamVR_Action_Boolean>("/actions/Timeline/in/Scroll");
 
         /*
         Debug.Log(dimExplorerActions.allActions);
@@ -125,6 +131,9 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
         dimExplorer_Scroll[SteamVR_Input_Sources.Any].onStateDown += dimExplorer.SubmitTagForTraversal;
         dimExplorer_Select[SteamVR_Input_Sources.Any].onStateDown += dimExplorer.SubmitTagForContextMenu;
         dimExplorer_Select[SteamVR_Input_Sources.Any].onStateDown += dimExplorer.SubmitContextBtnForQuery;
+
+        //timeline explorer 
+        timeline_Select[SteamVR_Input_Sources.Any].onStateDown += timeline.SubmitChildForContextMenu;
 
         // testing
         //menuInteraction_Scroll[SteamVR_Input_Sources.Any].onAxis += mainMenu.TestScroll;
@@ -308,11 +317,6 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
     }
 
     // testing
-    private void ActiveDevelopmentTesting()
-    {
-        //vizController.gameObject.SetActive(true);
-        //queryController.gameObject.SetActive(true);
-    }
     private void TestAction(SteamVR_Action_Boolean action, SteamVR_Input_Sources source)
     {
         Debug.Log(action.GetShortName() + " | " + source);

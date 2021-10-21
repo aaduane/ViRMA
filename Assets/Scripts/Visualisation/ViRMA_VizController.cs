@@ -457,6 +457,83 @@ public class ViRMA_VizController : MonoBehaviour
             }    
         }));
     }
+    private void CalculateCellsAndAxesBounds()
+    {
+        Vector3 currentPosition = transform.position;
+
+        transform.position = Vector3.zero;
+
+        // calculate bounding box
+        Renderer[] meshes = cellsandAxesWrapper.GetComponentsInChildren<Renderer>();
+        Bounds bounds = new Bounds(cellsandAxesWrapper.transform.position, Vector3.zero);
+        foreach (Renderer mesh in meshes)
+        {
+            bounds.Encapsulate(mesh.bounds);
+        }
+        cellsAndAxesBounds = bounds;
+
+        transform.position = currentPosition;
+    }
+    private void SetupDefaultScaleAndPosition()
+    {
+        // set wrapper position and parent cells/axes to wrapper and set default starting scale
+        transform.position = cellsAndAxesBounds.center;
+        cellsandAxesWrapper.transform.parent = transform;
+        defaultParentSize = (maxParentScale + minParentScale) / 2f;
+        transform.localScale = Vector3.one * defaultParentSize;
+
+        // get the bounds of the newly resized cells/axes
+        Renderer[] meshes = GetComponentsInChildren<Renderer>();
+        Bounds bounds = new Bounds(transform.position, Vector3.zero);
+        foreach (Renderer mesh in meshes)
+        {
+            bounds.Encapsulate(mesh.bounds);
+        }
+
+        // if there is an active browsing state, maintain location of viz
+        if (activeBrowsingState)
+        {
+            transform.position = activeVizPosition;
+            transform.rotation = activeVizRotation;
+        }
+        else
+        {
+            // calculate distance to place cells/axes in front of player based on longest axis
+            float distance = Mathf.Max(Mathf.Max(bounds.size.x, bounds.size.y), bounds.size.z);
+            distance = distance < 1 ? 1.0f : distance;
+            Vector3 flattenedVector = Player.instance.bodyDirectionGuess;
+            flattenedVector.y = 0;
+            flattenedVector.Normalize();
+            Vector3 spawnPos = Player.instance.hmdTransform.position + flattenedVector * distance;
+            transform.position = spawnPos;
+            transform.LookAt(2 * transform.position - Player.instance.hmdTransform.position); // flip viz 180 degrees from 'LookAt'
+        }
+
+        // set new layer to prevent physical interactions with other objects on that layer
+        foreach (Transform child in cellsandAxesWrapper.transform)
+        {
+            child.gameObject.layer = 9;
+        }
+
+        // recalculate bounds to dertmine positional limits 
+        CalculateCellsAndAxesBounds();
+    }
+    private void CenterParentOnCellsAndAxes()
+    {
+        Transform[] children = cellsandAxesWrapper.transform.GetComponentsInChildren<Transform>();
+        Vector3 newPosition = Vector3.one;
+        foreach (var child in children)
+        {
+            newPosition += child.position;
+            child.parent = null;
+        }
+        newPosition /= children.Length;
+        cellsandAxesWrapper.transform.position = newPosition;
+        foreach (var child in children)
+        {
+            child.parent = cellsandAxesWrapper.transform;
+        }
+    }
     private void DrawAxesLines()
     {
         // x axis
@@ -777,87 +854,6 @@ public class ViRMA_VizController : MonoBehaviour
         {
             globals.timeline.LoadTimelineData(focusedCell);
         }      
-    }
-
-
-    // general  
-    private void CalculateCellsAndAxesBounds()
-    {
-        Vector3 currentPosition = transform.position;
-
-        transform.position = Vector3.zero;
-
-        // calculate bounding box
-        Renderer[] meshes = cellsandAxesWrapper.GetComponentsInChildren<Renderer>();
-        Bounds bounds = new Bounds(cellsandAxesWrapper.transform.position, Vector3.zero);
-        foreach (Renderer mesh in meshes)
-        {
-            bounds.Encapsulate(mesh.bounds);
-        }
-        cellsAndAxesBounds = bounds;
-
-        transform.position = currentPosition;
-    }
-    private void SetupDefaultScaleAndPosition()
-    {
-        // set wrapper position and parent cells/axes to wrapper and set default starting scale
-        transform.position = cellsAndAxesBounds.center;
-        cellsandAxesWrapper.transform.parent = transform;
-        defaultParentSize = (maxParentScale + minParentScale) / 2f;
-        transform.localScale = Vector3.one * defaultParentSize;
-
-        // get the bounds of the newly resized cells/axes
-        Renderer[] meshes = GetComponentsInChildren<Renderer>();
-        Bounds bounds = new Bounds(transform.position, Vector3.zero);
-        foreach (Renderer mesh in meshes)
-        {
-            bounds.Encapsulate(mesh.bounds);
-        }
-
-        // if there is an active browsing state, maintain location of viz
-        if (activeBrowsingState)
-        {
-            transform.position = activeVizPosition;
-            transform.rotation = activeVizRotation;
-        }
-        else
-        {
-            // calculate distance to place cells/axes in front of player based on longest axis
-            float distance = Mathf.Max(Mathf.Max(bounds.size.x, bounds.size.y), bounds.size.z);
-            distance = distance < 1 ? 1.0f : distance;
-            Vector3 flattenedVector = Player.instance.bodyDirectionGuess;
-            flattenedVector.y = 0;
-            flattenedVector.Normalize();
-            Vector3 spawnPos = Player.instance.hmdTransform.position + flattenedVector * distance;
-            transform.position = spawnPos;
-            //transform.LookAt(Player.instance.hmdTransform.position);
-            transform.LookAt(2 * transform.position - Player.instance.hmdTransform.position); // flip viz 180 degrees
-        }
-
-        // set new layer to prevent physical interactions with other objects on that layer and set flag that query is finished loading
-        foreach (Transform child in cellsandAxesWrapper.transform)
-        {
-            child.gameObject.layer = 9;
-        }
-
-        // recalculate bounds to dertmine positional limits 
-        CalculateCellsAndAxesBounds();
-    }
-    private void CenterParentOnCellsAndAxes()
-    {
-        Transform[] children = cellsandAxesWrapper.transform.GetComponentsInChildren<Transform>();
-        Vector3 newPosition = Vector3.one;
-        foreach (var child in children)
-        {
-            newPosition += child.position;
-            child.parent = null;
-        }
-        newPosition /= children.Length;
-        cellsandAxesWrapper.transform.position = newPosition;
-        foreach (var child in children)
-        {
-            child.parent = cellsandAxesWrapper.transform;
-        }
     }
 
 

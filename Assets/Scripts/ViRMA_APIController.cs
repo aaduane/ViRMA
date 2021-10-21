@@ -415,7 +415,7 @@ public class ViRMA_APIController : MonoBehaviour
             url = url.Replace("\'", "\"");
         }
 
-        Debug.Log(url); // testing
+        Debug.Log("GetCells: " + url); // debugging
 
         yield return GetRequest(url, (response) =>
         {
@@ -778,7 +778,7 @@ public class ViRMA_APIController : MonoBehaviour
         url = url.Replace("\'", "\"");
 
         // url = "cell?filters=[{'type':'node','ids':['699']},{'type':'tag','ids':['17']},{'type':'tag','ids':['147','132']}]&all=[]";
-        Debug.Log(url); // testing
+        Debug.Log("GetTimeline: " + url); // debugging
 
         List<KeyValuePair<int, string>> results = new List<KeyValuePair<int, string>>();
         yield return GetRequest(url, (response) =>

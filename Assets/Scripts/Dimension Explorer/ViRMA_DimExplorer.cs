@@ -357,9 +357,7 @@ public class ViRMA_DimExplorer : MonoBehaviour
     {
         if (Player.instance)
         {
-            Vector3 adjustVelocity = horizontalRigidbody.velocity;
-
-            int DimExPosChecker = 0;
+            int dimExPosChecker = 0;
 
             // check if dim explorer is moving horizontally toward it's max right position
             float distToMaxRightTemp = Vector3.Distance(maxRight, transform.position);
@@ -370,7 +368,7 @@ public class ViRMA_DimExplorer : MonoBehaviour
             else if (distToMaxRightTemp > distToMaxRight)
             {
                 distToMaxRight = distToMaxRightTemp;
-                DimExPosChecker++;
+                dimExPosChecker++;
             }
 
             // check if dim explorer is moving horizontally toward it's max left position
@@ -382,16 +380,14 @@ public class ViRMA_DimExplorer : MonoBehaviour
             else if (distToMaxLeftTemp > distToMaxLeft)
             {
                 distToMaxLeft = distToMaxLeftTemp;
-                DimExPosChecker++;
+                dimExPosChecker++;
             }
 
             // if dim explorer is moving away from both it's max positions, set it's velocity to zero
-            if (DimExPosChecker > 1)
+            if (dimExPosChecker > 1)
             {
-                adjustVelocity = Vector3.zero;
+                horizontalRigidbody.velocity = Vector3.zero;
             }
-
-            horizontalRigidbody.velocity = adjustVelocity;
         }
     }
     private void DimExplorerMovement()
