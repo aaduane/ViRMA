@@ -7,6 +7,9 @@ using Valve.VR.InteractionSystem;
 public class ViRMA_DimExplorer : MonoBehaviour
 {
     private ViRMA_GlobalsAndActions globals;
+    public ViRMA_Keyboard dimExKeyboard;
+    public GameObject hoveredTagBtn;
+    public GameObject hoveredFilterBtn;
 
     public Rigidbody horizontalRigidbody;
     public List<Rigidbody> verticalRigidbodies;
@@ -18,12 +21,7 @@ public class ViRMA_DimExplorer : MonoBehaviour
     private float distToMaxRight;
     private float distToMaxLeft;
 
-    public bool dimensionExpLorerLoaded;
-
-    public GameObject tagBtnHoveredByUser;
-    public GameObject filterBtnHoveredByUser;
-
-    public ViRMA_Keyboard dimExKeyboard;
+    public bool dimensionExpLorerLoaded;  
 
     private void Awake()
     {
@@ -201,9 +199,9 @@ public class ViRMA_DimExplorer : MonoBehaviour
     }   
     public void SubmitTagForTraversal(SteamVR_Action_Boolean action, SteamVR_Input_Sources source)
     {
-        if (tagBtnHoveredByUser != null)
+        if (hoveredTagBtn != null)
         {
-            Tag submittedTagData = tagBtnHoveredByUser.GetComponent<ViRMA_DimExplorerBtn>().tagData;
+            Tag submittedTagData = hoveredTagBtn.GetComponent<ViRMA_DimExplorerBtn>().tagData;
             StartCoroutine(GetTraversedHierarchyNodes(submittedTagData));
         }       
     }
@@ -212,19 +210,19 @@ public class ViRMA_DimExplorer : MonoBehaviour
         dimensionExpLorerLoaded = false;
 
         // assign parent groupings
-        GameObject parentGroupObj = tagBtnHoveredByUser.transform.parent.GetComponent<ViRMA_DimExplorerGroup>().parentDimExGrp;
+        GameObject parentGroupObj = hoveredTagBtn.transform.parent.GetComponent<ViRMA_DimExplorerGroup>().parentDimExGrp;
         ViRMA_DimExplorerGroup parentGroup = parentGroupObj.GetComponent<ViRMA_DimExplorerGroup>();
         Tag parentTagData = new Tag();
 
 
         // assign children groupings
-        GameObject childrenGroupObj = tagBtnHoveredByUser.transform.parent.GetComponent<ViRMA_DimExplorerGroup>().childrenDimExGrp;
+        GameObject childrenGroupObj = hoveredTagBtn.transform.parent.GetComponent<ViRMA_DimExplorerGroup>().childrenDimExGrp;
         ViRMA_DimExplorerGroup childrenGroup = childrenGroupObj.GetComponent<ViRMA_DimExplorerGroup>();
         List<Tag> childrenTagData = new List<Tag>();
 
 
         // assign siblings groupings
-        GameObject siblingsGroupObj = tagBtnHoveredByUser.transform.parent.GetComponent<ViRMA_DimExplorerGroup>().siblingsDimExGrp;
+        GameObject siblingsGroupObj = hoveredTagBtn.transform.parent.GetComponent<ViRMA_DimExplorerGroup>().siblingsDimExGrp;
         ViRMA_DimExplorerGroup siblingsGroup = siblingsGroupObj.GetComponent<ViRMA_DimExplorerGroup>();
         List<Tag> siblingsTagData = new List<Tag>();
 
@@ -293,23 +291,23 @@ public class ViRMA_DimExplorer : MonoBehaviour
     }
     public void SubmitTagForContextMenu(SteamVR_Action_Boolean action, SteamVR_Input_Sources source)
     {
-        if (tagBtnHoveredByUser != null)
+        if (hoveredTagBtn != null)
         {
-            GameObject submuttedTagBtn = tagBtnHoveredByUser;
-            tagBtnHoveredByUser = null;
+            GameObject submuttedTagBtn = hoveredTagBtn;
+            hoveredTagBtn = null;
 
             ToggleDimExFade(true);
 
-            submuttedTagBtn.GetComponent<ViRMA_DimExplorerBtn>().LoadContextMenu();
+            submuttedTagBtn.GetComponent<ViRMA_DimExplorerBtn>().LoadDimExContextMenu();
         }    
     }
     public void SubmitContextBtnForQuery(SteamVR_Action_Boolean action, SteamVR_Input_Sources source)
     {
-        if (filterBtnHoveredByUser != null)
+        if (hoveredFilterBtn != null)
         {
             // grab data from context menu
-            string axisQueryType = filterBtnHoveredByUser.GetComponent<ViRMA_DimExplorerContextMenuBtn>().axisQueryType;
-            Tag tagQueryData = filterBtnHoveredByUser.GetComponent<ViRMA_DimExplorerContextMenuBtn>().tagQueryData;
+            string axisQueryType = hoveredFilterBtn.GetComponent<ViRMA_DimExplorerContextMenuBtn>().axisQueryType;
+            Tag tagQueryData = hoveredFilterBtn.GetComponent<ViRMA_DimExplorerContextMenuBtn>().tagQueryData;
 
             // push data to query controller
             if (axisQueryType == "filter")
@@ -323,8 +321,8 @@ public class ViRMA_DimExplorer : MonoBehaviour
 
             // destroy context menu and return dimension explorer to normal state
             ToggleDimExFade(false);
-            filterBtnHoveredByUser.transform.parent.transform.parent.GetComponent<ViRMA_DimExplorerBtn>().contextMenuActiveOnBtn = false;
-            Destroy(filterBtnHoveredByUser.transform.parent.gameObject);
+            hoveredFilterBtn.transform.parent.transform.parent.GetComponent<ViRMA_DimExplorerBtn>().contextMenuActiveOnBtn = false;
+            Destroy(hoveredFilterBtn.transform.parent.gameObject);
         }
     }
     public void ToggleDimExFade(bool toFade)

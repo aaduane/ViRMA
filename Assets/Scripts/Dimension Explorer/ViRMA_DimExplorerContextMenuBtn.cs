@@ -27,7 +27,7 @@ public class ViRMA_DimExplorerContextMenuBtn : MonoBehaviour
         innerBgPropBlock = new MaterialPropertyBlock();
     }
 
-    public void LoadContextMenuBtn(string axisType)
+    public void LoadDimExContextMenuBtn(string axisType)
     {
         axisQueryType = axisType;
 
@@ -68,7 +68,7 @@ public class ViRMA_DimExplorerContextMenuBtn : MonoBehaviour
     {
         if (triggeredCol.GetComponent<ViRMA_Drumstick>())
         {
-            globals.dimExplorer.filterBtnHoveredByUser = gameObject;
+            globals.dimExplorer.hoveredFilterBtn = gameObject;
 
             innerBgRend.GetPropertyBlock(innerBgPropBlock);
             innerBgPropBlock.SetColor("_Color", Color.white);
@@ -81,9 +81,9 @@ public class ViRMA_DimExplorerContextMenuBtn : MonoBehaviour
     {
         if (triggeredCol.GetComponent<ViRMA_Drumstick>())
         {
-            if (globals.dimExplorer.filterBtnHoveredByUser == gameObject)
+            if (globals.dimExplorer.hoveredFilterBtn == gameObject)
             {
-                globals.dimExplorer.filterBtnHoveredByUser = null;
+                globals.dimExplorer.hoveredFilterBtn = null;
             }
 
             innerBgRend.GetPropertyBlock(innerBgPropBlock);

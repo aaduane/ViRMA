@@ -134,6 +134,7 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
 
         //timeline explorer 
         timeline_Select[SteamVR_Input_Sources.Any].onStateDown += timeline.SubmitChildForContextMenu;
+        timeline_Select[SteamVR_Input_Sources.Any].onStateDown += timeline.SubmitContextMenuBtn;
 
         // testing
         //menuInteraction_Scroll[SteamVR_Input_Sources.Any].onAxis += mainMenu.TestScroll;

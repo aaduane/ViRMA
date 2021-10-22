@@ -42,16 +42,16 @@ public class ViRMA_DimExplorerBtn : MonoBehaviour
     {
         if (triggeredCol.GetComponent<ViRMA_Drumstick>())
         {
-            globals.dimExplorer.tagBtnHoveredByUser = gameObject;
+            globals.dimExplorer.hoveredTagBtn = gameObject;
         }
     }
     private void OnTriggerExit(Collider triggeredCol)
     {
         if (triggeredCol.GetComponent<ViRMA_Drumstick>())
         {
-            if (globals.dimExplorer.tagBtnHoveredByUser == gameObject)
+            if (globals.dimExplorer.hoveredTagBtn == gameObject)
             {
-                globals.dimExplorer.tagBtnHoveredByUser = null;
+                globals.dimExplorer.hoveredTagBtn = null;
             }          
         }
     }
@@ -87,7 +87,7 @@ public class ViRMA_DimExplorerBtn : MonoBehaviour
         }
         bgRend.SetPropertyBlock(matPropBlock);
     }
-    public void LoadContextMenu()
+    public void LoadDimExContextMenu()
     {
         contextMenuActiveOnBtn = true;      
 
@@ -99,7 +99,6 @@ public class ViRMA_DimExplorerBtn : MonoBehaviour
         contextMenu.transform.localRotation = Quaternion.identity;
 
         contextMenu.AddComponent<Rigidbody>().useGravity = false;
-
         contextMenu.AddComponent<BoxCollider>().isTrigger = true;
         contextMenu.GetComponent<BoxCollider>().size = new Vector3(0.5f, 0.25f, 0.15f);
         contextMenu.GetComponent<BoxCollider>().center = new Vector3(col.center.x, col.center.y, (col.size.z * 10f / 2f) * -1);     
@@ -119,7 +118,7 @@ public class ViRMA_DimExplorerBtn : MonoBehaviour
 
             // controls appearance of button in various states
             bgRend.GetPropertyBlock(matPropBlock);
-            if (globals.dimExplorer.tagBtnHoveredByUser == gameObject || searchedForTag || contextMenuActiveOnBtn)
+            if (globals.dimExplorer.hoveredTagBtn == gameObject || searchedForTag || contextMenuActiveOnBtn)
             {
                 SetFocusedState();
             }

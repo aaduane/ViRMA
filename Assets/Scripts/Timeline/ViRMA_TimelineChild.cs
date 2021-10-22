@@ -9,14 +9,15 @@ public class ViRMA_TimelineChild : MonoBehaviour
     // globals
     private ViRMA_GlobalsAndActions globals;
     private Renderer childRend;
-    private string timelineChildMaterial = "Materials/BasicTransparent";
 
-    // child paramters
+    // target timeline child paramters
     public int id;
     public string fileName;
-    public DateTime localTime;
-    public DateTime universalTime;
-    public List<string> semanticTags;
+
+    // border stuff
+    private GameObject border;
+    public bool hasBorder;
+    public bool contextMenuActiveOnChild;
 
     private void Awake()
     {
@@ -30,15 +31,19 @@ public class ViRMA_TimelineChild : MonoBehaviour
         if (triggeredCol.GetComponent<ViRMA_Drumstick>())
         {
             globals.timeline.hoveredChild = gameObject;
+
+            ToggleBorder(true);
         }
     }
     private void OnTriggerExit(Collider triggeredCol)
     {
         if (triggeredCol.GetComponent<ViRMA_Drumstick>())
         {
-            if (globals.dimExplorer.tagBtnHoveredByUser == gameObject)
+            if (globals.timeline.hoveredChild == gameObject)
             {
                 globals.timeline.hoveredChild = null;
+
+                ToggleBorder(false);
             }
         }
     }
@@ -60,11 +65,55 @@ public class ViRMA_TimelineChild : MonoBehaviour
             Debug.LogError(e.Message);
         }
     }
-    public void LoadContextMenu()
+    public void LoadTImelineContextMenu()
     {
-        Debug.Log(gameObject.name);
+        GameObject contextMenu = new GameObject("TimelineContextMenu");
+        contextMenu.AddComponent<ViRMA_TimelineContextMenu>();
+        contextMenu.GetComponent<ViRMA_TimelineContextMenu>().targetChild = gameObject;
+        contextMenu.GetComponent<ViRMA_TimelineContextMenu>().id = id;
+        contextMenu.GetComponent<ViRMA_TimelineContextMenu>().fileName = fileName;
 
+        contextMenu.transform.parent = transform.parent;
+        contextMenu.transform.localPosition = transform.localPosition;
+        contextMenu.transform.localRotation = transform.localRotation;
 
+        contextMenu.AddComponent<Rigidbody>().useGravity = false;
+        contextMenu.AddComponent<BoxCollider>().isTrigger = true;
+
+        float hitBoxThickness = 0.15f;
+        contextMenu.GetComponent<BoxCollider>().size = new Vector3(transform.lossyScale.x, transform.lossyScale.y, hitBoxThickness);
+        contextMenu.GetComponent<BoxCollider>().center = new Vector3(0, 0, (hitBoxThickness / 2) * -1);
+
+        contextMenuActiveOnChild = true;
+        ToggleBorder(false);
+    }
+    public void ToggleBorder(bool toToggle)
+    {
+        if (toToggle)
+        {
+            if (hasBorder == false && contextMenuActiveOnChild == false)
+            {
+                border = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                Destroy(border.GetComponent<Rigidbody>());
+                Destroy(border.GetComponent<BoxCollider>());
+                border.name = "TimelineChildBorder";
+                border.transform.parent = transform.parent;
+                border.transform.localPosition = transform.localPosition;
+                border.transform.localRotation = transform.localRotation;
+                float borderThickness = transform.localScale.x * 0.1f;
+                border.transform.localScale = new Vector3(transform.localScale.x + borderThickness, transform.localScale.y + borderThickness, transform.localScale.z * 0.5f);
+                border.GetComponent<Renderer>().material.color = ViRMA_Colors.axisTextBlue;           
+                hasBorder = true;
+            }      
+        }
+        else
+        {
+            if (border)
+            {
+                Destroy(border);
+            }
+            hasBorder = false;
+        }
     }
 
 }

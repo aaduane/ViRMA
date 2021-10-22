@@ -9,6 +9,7 @@ public class ViRMA_Timeline : MonoBehaviour
     private ViRMA_GlobalsAndActions globals;
     private Rigidbody timelineRb;
     public GameObject hoveredChild;
+    public GameObject hoveredContextMenuBtn;
 
     public Cell timelineCellData;
     public AxesLabels activeVizLabels;
@@ -26,6 +27,8 @@ public class ViRMA_Timeline : MonoBehaviour
     private float distToMaxRight;
     private float distToMaxLeft;
 
+    
+
     private void Awake()
     {
         globals = Player.instance.gameObject.GetComponent<ViRMA_GlobalsAndActions>();
@@ -34,7 +37,7 @@ public class ViRMA_Timeline : MonoBehaviour
 
         timelineScale = 0.3f; // global scale of timeline
         childRelativeSpacing = 0.25f; // % width of the child to space by
-        timelinePositionDistance = 0.5f; // how far away to place the timeline
+        timelinePositionDistance = 0.6f; // how far away to place the timeline
     }
 
     private void Start()
@@ -238,12 +241,20 @@ public class ViRMA_Timeline : MonoBehaviour
             }
         }
     }
-
     public void SubmitChildForContextMenu(SteamVR_Action_Boolean action, SteamVR_Input_Sources source)
     {
         if (hoveredChild != null)
         {
-            hoveredChild.GetComponent<ViRMA_TimelineChild>().LoadContextMenu();
+            hoveredChild.GetComponent<ViRMA_TimelineChild>().LoadTImelineContextMenu();
+        }
+    }
+    public void SubmitContextMenuBtn(SteamVR_Action_Boolean action, SteamVR_Input_Sources source)
+    {
+        if (hoveredContextMenuBtn != null)
+        {
+            Debug.Log(hoveredContextMenuBtn.GetComponent<ViRMA_TimeLineContextMenuBtn>().btnType);
+            Debug.Log(hoveredContextMenuBtn.GetComponent<ViRMA_TimeLineContextMenuBtn>().id);
+            Debug.Log(hoveredContextMenuBtn.GetComponent<ViRMA_TimeLineContextMenuBtn>().fileName);
         }
     }
 
