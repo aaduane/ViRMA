@@ -19,6 +19,10 @@ public class ViRMA_TimelineChild : MonoBehaviour
     public bool hasBorder;
     public bool contextMenuActiveOnChild;
 
+    // prev/next btn stuff
+    public bool isNextBtn;
+    public bool isPrevBtn;
+
     private void Awake()
     {
         globals = Player.instance.gameObject.GetComponent<ViRMA_GlobalsAndActions>();
@@ -50,20 +54,23 @@ public class ViRMA_TimelineChild : MonoBehaviour
 
     public void GetTimelineChildTexture()
     {
-        byte[] imageBytes = new byte[0];
-        try
+        if (fileName.Length > 0)
         {
-            imageBytes = File.ReadAllBytes(ViRMA_APIController.imagesDirectory + fileName);
-            Texture2D imageTexture = ViRMA_APIController.ConvertImageFromDDS(imageBytes);
-            Material timelineChildMaterial = new Material(Resources.Load("Materials/BasicTransparent") as Material);
-            timelineChildMaterial.mainTexture = imageTexture;
-            childRend.material = timelineChildMaterial;
-            childRend.material.SetTextureScale("_MainTex", new Vector2(-1, 1));
-        }
-        catch (FileNotFoundException e)
-        {
-            Debug.LogError(e.Message);
-        }
+            byte[] imageBytes = new byte[0];
+            try
+            {
+                imageBytes = File.ReadAllBytes(ViRMA_APIController.imagesDirectory + fileName);
+                Texture2D imageTexture = ViRMA_APIController.ConvertImageFromDDS(imageBytes);
+                Material timelineChildMaterial = new Material(Resources.Load("Materials/BasicTransparent") as Material);
+                timelineChildMaterial.mainTexture = imageTexture;
+                childRend.material = timelineChildMaterial;
+                childRend.material.SetTextureScale("_MainTex", new Vector2(-1, 1));
+            }
+            catch (FileNotFoundException e)
+            {
+                Debug.LogError(e.Message);
+            }
+        }     
     }
     public void LoadTImelineContextMenu()
     {
