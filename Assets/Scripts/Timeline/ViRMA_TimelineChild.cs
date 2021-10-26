@@ -98,27 +98,44 @@ public class ViRMA_TimelineChild : MonoBehaviour
     {
         if (toToggle)
         {
-            if (hasBorder == false && contextMenuActiveOnChild == false)
+            if (isNextBtn || isPrevBtn)
             {
-                border = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                Destroy(border.GetComponent<Rigidbody>());
-                Destroy(border.GetComponent<BoxCollider>());
-                border.name = "TimelineChildBorder";
-                border.transform.parent = transform.parent;
-                border.transform.localPosition = transform.localPosition;
-                border.transform.localRotation = transform.localRotation;
-                float borderThickness = transform.localScale.x * 0.1f;
-                border.transform.localScale = new Vector3(transform.localScale.x + borderThickness, transform.localScale.y + borderThickness, transform.localScale.z * 0.5f);
-                border.GetComponent<Renderer>().material.color = ViRMA_Colors.axisTextBlue;           
-                hasBorder = true;
-            }      
+                Color currentColor = GetComponent<Renderer>().material.GetColor("_Color");
+                GetComponent<Renderer>().material.SetColor("_Color", ViRMA_Colors.BrightenColor(currentColor));
+            }
+            else
+            {
+                if (hasBorder == false && contextMenuActiveOnChild == false)
+                {
+                    border = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                    Destroy(border.GetComponent<Rigidbody>());
+                    Destroy(border.GetComponent<BoxCollider>());
+                    border.name = "TimelineChildBorder";
+                    border.transform.parent = transform.parent;
+                    border.transform.localPosition = transform.localPosition;
+                    border.transform.localRotation = transform.localRotation;
+                    float borderThickness = transform.localScale.x * 0.1f;
+                    border.transform.localScale = new Vector3(transform.localScale.x + borderThickness, transform.localScale.y + borderThickness, transform.localScale.z * 0.5f);
+                    border.GetComponent<Renderer>().material.color = ViRMA_Colors.axisTextBlue;
+                    hasBorder = true;
+                }
+            }              
         }
         else
         {
-            if (border)
+            if (isNextBtn || isPrevBtn)
             {
-                Destroy(border);
+                Color currentColor = GetComponent<Renderer>().material.GetColor("_Color");
+                GetComponent<Renderer>().material.SetColor("_Color", ViRMA_Colors.DarkenColor(currentColor));
             }
+            else
+            {
+                if (border)
+                {
+                    Destroy(border);
+                }
+            }
+        
             hasBorder = false;
         }
     }

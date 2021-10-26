@@ -327,8 +327,7 @@ public class ViRMA_APIController : MonoBehaviour
         yield return request.SendWebRequest();
         if (request.isNetworkError || request.isHttpError)
         {
-            Debug.LogError(request.error);
-            yield break;
+            throw new Exception("Cannot connect to database! Is it running?");
         }
         string json = request.downloadHandler.text;
 
