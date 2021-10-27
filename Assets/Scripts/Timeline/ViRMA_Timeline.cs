@@ -12,6 +12,9 @@ public class ViRMA_Timeline : MonoBehaviour
     public GameObject timelineChildrenWrapper;
     public GameObject nextBtn;
     public GameObject prevBtn;
+    private GameObject firstRealChild;
+    private GameObject lastRealChild;
+    public List<GameObject> timelineSectionChildren;
     public GameObject hoveredChild;
     public GameObject hoveredContextMenuBtn;
 
@@ -29,16 +32,16 @@ public class ViRMA_Timeline : MonoBehaviour
     private Vector3 activeTimelinePosition;
     private Quaternion activeTImelineRotation;
 
-    int resultsRenderSize;
-    int resultsPagesTotal;
-    int currentResultsPage;
-
     public Bounds timelineBounds;
-    private Vector3 maxRight;
     private Vector3 maxLeft;
+    private Vector3 maxRight;
     private float distToMaxRight;
     private float distToMaxLeft;
-    public bool timelineLoaded;   
+    public bool timelineLoaded;
+
+    public int resultsRenderSize;
+    public int resultsPagesTotal;
+    public int currentResultsPage;
 
     private void Awake()
     {
@@ -46,14 +49,14 @@ public class ViRMA_Timeline : MonoBehaviour
         timelineRb = GetComponent<Rigidbody>();
         timelineLoaded = false;
 
+        activeTimelinePosition = Vector3.one * Mathf.Infinity;
+        activeTImelineRotation = Quaternion.identity;
+
         timelineScale = 0.3f; // global scale of timeline
         childRelativeSpacing = 0.25f; // % width of the child to space by
         timelinePositionDistance = 0.6f; // how far away to place the timeline
 
-        resultsRenderSize = 10; // max results to render at a time
-
-        activeTimelinePosition = Vector3.one * Mathf.Infinity;
-        activeTImelineRotation = Quaternion.identity;
+        resultsRenderSize = 10; // max results to render at a time       
     }
     private void Start()
     {
@@ -107,7 +110,7 @@ public class ViRMA_Timeline : MonoBehaviour
         {
             int timelinePosChecker = 0;
 
-            float distToMaxRightTemp = Vector3.Distance(maxRight, transform.position);
+            float distToMaxRightTemp = Vector3.Distance(maxLeft, transform.position);
             if (distToMaxRightTemp < distToMaxRight)
             {
                 distToMaxRight = distToMaxRightTemp;
@@ -118,7 +121,7 @@ public class ViRMA_Timeline : MonoBehaviour
                 timelinePosChecker++;
             }
 
-            float distToMaxLeftTemp = Vector3.Distance(maxLeft, transform.position);
+            float distToMaxLeftTemp = Vector3.Distance(maxRight, transform.position);
             if (distToMaxLeftTemp < distToMaxLeft)
             {
                 distToMaxLeft = distToMaxLeftTemp;
@@ -161,16 +164,6 @@ public class ViRMA_Timeline : MonoBehaviour
     }
 
     // general
-    public void CalculateBounds()
-    {
-        Renderer[] meshes = GetComponentsInChildren<Renderer>();
-        Bounds bounds = new Bounds(transform.position, Vector3.zero);
-        foreach (Renderer mesh in meshes)
-        {
-            bounds.Encapsulate(mesh.bounds);
-        }
-        timelineBounds = bounds;
-    }
     public void ClearTimeline(bool hardReset = false)
     {
         // flad as timeline as unloaded
@@ -199,13 +192,13 @@ public class ViRMA_Timeline : MonoBehaviour
     }
     private void PositionTimeline(int newPageIndex)
     {
+        // if this is the first time positioning the timeline, pick a space in front of the user, otherwise use the active position and rotation
         if (activeTimelinePosition == Vector3.one * Mathf.Infinity || activeTImelineRotation == Quaternion.identity)
         {
             float distance = timelinePositionDistance;
             Vector3 flattenedVector = Player.instance.bodyDirectionGuess;
             flattenedVector.y = 0;
             flattenedVector.Normalize();
-
             transform.position = Player.instance.hmdTransform.position + (flattenedVector * distance);
             transform.LookAt(2 * transform.position - Player.instance.hmdTransform.position);
 
@@ -218,28 +211,30 @@ public class ViRMA_Timeline : MonoBehaviour
             transform.rotation = activeTImelineRotation;
         }
 
-        // original
-        //float maxDistanceX = timelineBounds.size.x;
-        //Vector3 rightOffset = transform.right * maxDistanceX;
-        //maxRight = transform.position - rightOffset;
-        //maxLeft = transform.position;
+        // generate max right and left positions for timeline to move between
+        Transform lastChild = timelineChildrenWrapper.transform.GetChild(timelineChildrenWrapper.transform.childCount - 1);
+        float offsetDistance = Vector3.Distance(transform.position, lastChild.position);
+        Vector3 offset = transform.right * offsetDistance;
+        maxLeft = transform.position - offset;
+        maxRight = transform.position;
 
-
-        // testing
-        float maxDistanceX = Vector3.Distance(transform.position, timelineChildrenWrapper.transform.GetChild(timelineChildrenWrapper.transform.childCount - 1).transform.position);
-        Vector3 rightOffset = transform.right * maxDistanceX;
-        maxRight = transform.position - rightOffset;
-        maxLeft = transform.position;
-
-
-        // capture first and last timeline child world positions on load for offset ???
-        // remove calculatebounds ? 
-
-
-        // if going backwards, position timeline page at end
+        // set timeline to correct position, and offset it slightly so nav buttons aren't the first thing seen
         if (newPageIndex < currentResultsPage)
         {
-            transform.position = maxRight;
+            // when clicking previous button 
+            float distBetweenChildAndNav = Vector3.Distance(lastRealChild.transform.position, nextBtn.transform.position);
+            Vector3 childNavOffset = transform.right * distBetweenChildAndNav;
+            transform.position = maxLeft + childNavOffset;
+        }
+        else
+        {
+            // when clicking next button
+            if (prevBtn)
+            {
+                float distBetweenChildAndNav = Vector3.Distance(firstRealChild.transform.position, prevBtn.transform.position);
+                Vector3 childNavOffset = transform.right * distBetweenChildAndNav;
+                transform.position = maxRight - childNavOffset;
+            }       
         }
     }
     public void LoadTimelineData(GameObject submittedCell)
@@ -318,7 +313,7 @@ public class ViRMA_Timeline : MonoBehaviour
         globals.vizController.HideViz(true);
 
         // clear old timeline if one exists
-        ClearTimeline(true);
+        ClearTimeline();
 
         // create wrapper
         timelineChildrenWrapper = new GameObject("TimelineChildrenWrapper");
@@ -338,12 +333,7 @@ public class ViRMA_Timeline : MonoBehaviour
         {
             // create timeline child game object using cell prefab
             GameObject timelineChild = Instantiate(timelineChildPrefab);
-            timelineChild.AddComponent<ViRMA_TimelineChild>();
-
-            // add available metadata to game object script (id and filename)
-            timelineChild.GetComponent<ViRMA_TimelineChild>().id = currentResultsSection[i].Key;
-            timelineChild.GetComponent<ViRMA_TimelineChild>().fileName = currentResultsSection[i].Value;
-            timelineChild.name = currentResultsSection[i].Value + "_" + currentResultsSection[i].Key;
+            timelineChild.AddComponent<ViRMA_TimelineChild>().LoadTimelineChild(currentResultsSection[i].Key, currentResultsSection[i].Value);
 
             // set wrapper as parent and adjust scale for image aspect ratio
             timelineChild.transform.parent = timelineChildrenWrapper.transform;
@@ -355,15 +345,26 @@ public class ViRMA_Timeline : MonoBehaviour
             float xPos = offset + (childWidth * i);
             timelineChild.transform.position = new Vector3(xPos, 0, 0);
 
-            // load timeline child texture
-            timelineChild.GetComponent<ViRMA_TimelineChild>().GetTimelineChildTexture();
+            // grab first and last real children in timeline (i.e. not nav btns)
+            if (i == 0)
+            {
+                firstRealChild = timelineChild;
+            }
+            else if (i == currentResultsSection.Count - 1)
+            {
+                lastRealChild = timelineChild;
+            }
+
+            // add child to list for reference
+            timelineSectionChildren.Add(timelineChild);
         }
+
+        // get associated metadata for each child in section (API does not support concurrent HTTP requests)
+        StartCoroutine(GetTimelineSectionMetadata()); 
 
         ToggleTimelineSectionNavigation(pageIndex);
 
         timelineChildrenWrapper.transform.localScale = Vector3.one * timelineScale;
-
-        //CalculateBounds();
 
         PositionTimeline(pageIndex);
 
@@ -391,14 +392,13 @@ public class ViRMA_Timeline : MonoBehaviour
         {
             nextBtn = Instantiate(timelineNavPrefab);
             nextBtn.AddComponent<ViRMA_TimelineChild>().isNextBtn = true;
-            nextBtn.GetComponentInChildren<TextMesh>().text = "Next";
+            nextBtn.GetComponentInChildren<TextMesh>().text = "Next\n(" + (newPageIndex + 1) + "/" + resultsPagesTotal + ")";
             nextBtn.GetComponent<Renderer>().material.SetColor("_Color", ViRMA_Colors.axisTextBlue);
             nextBtn.name = "NextBtn";
-            Transform lastChild = timelineChildrenWrapper.transform.GetChild(timelineChildrenWrapper.transform.childCount - 1);
             nextBtn.transform.parent = timelineChildrenWrapper.transform;
             nextBtn.transform.SetAsLastSibling();
             nextBtn.transform.localScale = new Vector3(1, 1, 0.01f);
-            Vector3 nextBtnPos = new Vector3(lastChild.transform.localPosition.x + lastChild.transform.localScale.x, lastChild.transform.localPosition.y, lastChild.transform.localPosition.z);
+            Vector3 nextBtnPos = new Vector3(lastRealChild.transform.localPosition.x + lastRealChild.transform.localScale.x, lastRealChild.transform.localPosition.y, lastRealChild.transform.localPosition.z);
             nextBtn.transform.localPosition = nextBtnPos;
         }
 
@@ -406,20 +406,34 @@ public class ViRMA_Timeline : MonoBehaviour
         {
             prevBtn = Instantiate(timelineNavPrefab);
             prevBtn.AddComponent<ViRMA_TimelineChild>().isPrevBtn = true;
-            prevBtn.GetComponentInChildren<TextMesh>().text = "Previous";
+            prevBtn.GetComponentInChildren<TextMesh>().text = "Previous\n(" + newPageIndex + "/" + resultsPagesTotal + ")";
             prevBtn.GetComponent<Renderer>().material.SetColor("_Color", ViRMA_Colors.axisTextBlue);
             prevBtn.name = "PrevBtn";
-            Transform firstChild = timelineChildrenWrapper.transform.GetChild(0);
             prevBtn.transform.parent = timelineChildrenWrapper.transform;
             prevBtn.transform.SetAsFirstSibling();
             prevBtn.transform.localScale = new Vector3(1, 1, 0.01f);
-            float adjustment = timelineChildrenWrapper.transform.GetChild(1).transform.localScale.x;
+            float adjustment = firstRealChild.transform.localScale.x;
             for (int i = 0; i < timelineChildrenWrapper.transform.childCount; i++)
             {
                 Transform adjustedChild = timelineChildrenWrapper.transform.GetChild(i);
                 adjustedChild.transform.localPosition = new Vector3(adjustedChild.transform.localPosition.x + adjustment, adjustedChild.transform.localPosition.y, adjustedChild.transform.localPosition.z);
             }
             prevBtn.transform.localPosition = Vector3.zero;
+        }
+    }
+    private IEnumerator GetTimelineSectionMetadata()
+    {
+        foreach (GameObject timelineSectionChild in timelineSectionChildren)
+        {
+            int targetId = timelineSectionChild.GetComponent<ViRMA_TimelineChild>().id;
+            yield return StartCoroutine(ViRMA_APIController.GetTimelineMetadata(targetId, (metadata) => {
+
+                //var testing = String.Join(" | ", metadata.ToArray());
+                //Debug.Log(targetId + " : " + testing);
+
+                timelineSectionChild.GetComponent<ViRMA_TimelineChild>().tags = metadata;
+
+            }));
         }
     }
 
@@ -450,7 +464,6 @@ public class ViRMA_Timeline : MonoBehaviour
             Debug.Log(hoveredContextMenuBtn.GetComponent<ViRMA_TimeLineContextMenuBtn>().id);
             Debug.Log(hoveredContextMenuBtn.GetComponent<ViRMA_TimeLineContextMenuBtn>().fileName);
         }
-    }
-
+    } 
 
 }

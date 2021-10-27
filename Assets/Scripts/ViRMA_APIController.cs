@@ -800,6 +800,24 @@ public class ViRMA_APIController : MonoBehaviour
     {
         // cell?filters=[{'type':'daterange','ids':['2'],'ranges':[['23-08-2016','23-08-2016']]},{"type":"timerange","ids":["3"],"ranges":[["10:00","11:00"]]}]&all=[]
     }
+    public static IEnumerator GetTimelineMetadata(int targetId, Action<List<string>> onSuccess)
+    {
+        string url = "tag?cubeObjectId=" + targetId;
+
+        yield return GetRequest(url, (response) =>
+        {
+            jsonData = response;
+        });
+
+        List<string> results = new List<string>();
+        foreach (var obj in jsonData)
+        {
+            string tag = obj.Value.ToString().Trim('"');
+            results.Add(tag);
+        }
+
+        onSuccess(results);
+    }
 
     // static helper methods
     public static DateTime LSC2021GetTimestamp(string imagePath)

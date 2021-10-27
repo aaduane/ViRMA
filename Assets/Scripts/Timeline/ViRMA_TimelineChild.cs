@@ -13,11 +13,17 @@ public class ViRMA_TimelineChild : MonoBehaviour
     // target timeline child paramters
     public int id;
     public string fileName;
+    public List<string> tags;
+    public DateTime timestamp;
 
     // border stuff
     private GameObject border;
     public bool hasBorder;
     public bool contextMenuActiveOnChild;
+
+    private float initializationTime;
+    private bool delayComplete;
+    private bool metadataLoaded;
 
     // prev/next btn stuff
     public bool isNextBtn;
@@ -28,15 +34,39 @@ public class ViRMA_TimelineChild : MonoBehaviour
         globals = Player.instance.gameObject.GetComponent<ViRMA_GlobalsAndActions>();
         childRend = GetComponent<Renderer>();
     }
+    private void Start()
+    {
+        initializationTime = Time.realtimeSinceStartup;
+    }
+    private void Update()
+    {
+        if (delayComplete == false)
+        {
+            float timeSinceInitialization = Time.realtimeSinceStartup - initializationTime;
+            if (timeSinceInitialization > 0.1f)
+            {
+                delayComplete = true;
+            }
+        }       
+
+        if (tags != null && metadataLoaded == false)
+        {
+            LoadTimestampTooltip();
+            metadataLoaded = true;
+        }
+    }
 
     // triggers for UI drumsticks
     private void OnTriggerEnter(Collider triggeredCol)
     {
         if (triggeredCol.GetComponent<ViRMA_Drumstick>())
         {
-            globals.timeline.hoveredChild = gameObject;
+            if (delayComplete)
+            {
+                globals.timeline.hoveredChild = gameObject;
 
-            ToggleBorder(true);
+                ToggleBorder(true);
+            }
         }
     }
     private void OnTriggerExit(Collider triggeredCol)
@@ -47,9 +77,23 @@ public class ViRMA_TimelineChild : MonoBehaviour
             {
                 globals.timeline.hoveredChild = null;
 
-                ToggleBorder(false);
+                if (contextMenuActiveOnChild == false)
+                {
+                    ToggleBorder(false);
+                }          
             }
         }
+    }
+
+    public void LoadTimelineChild(int targetId, string targetFilename)
+    {
+        id = targetId;
+        fileName = targetFilename;
+        name = id + "_" + fileName;
+
+        GetTimelineChildTexture();
+
+        //GetTimelineChildMetadata(); // API does not support concurrent HTTP requests (must happen in ViRMA_Timeline.cs)
     }
 
     public void GetTimelineChildTexture()
@@ -70,7 +114,7 @@ public class ViRMA_TimelineChild : MonoBehaviour
             {
                 Debug.LogError(e.Message);
             }
-        }     
+        }
     }
     public void LoadTImelineContextMenu()
     {
@@ -92,7 +136,6 @@ public class ViRMA_TimelineChild : MonoBehaviour
         contextMenu.GetComponent<BoxCollider>().center = new Vector3(0, 0, (hitBoxThickness / 2) * -1);
 
         contextMenuActiveOnChild = true;
-        ToggleBorder(false);
     }
     public void ToggleBorder(bool toToggle)
     {
@@ -138,6 +181,41 @@ public class ViRMA_TimelineChild : MonoBehaviour
         
             hasBorder = false;
         }
+    }
+    public void GetTimelineChildMetadata()
+    {
+        if (id != 0)
+        {
+            StartCoroutine(ViRMA_APIController.GetTimelineMetadata(id, (metadata) => {
+                tags = metadata;
+                var testing = String.Join(" | ", tags.ToArray());
+                Debug.Log(id + " : " + testing);
+            }));
+        }
+    }
+    public void LoadTimestampTooltip()
+    {
+        DateTime date = new DateTime();
+        DateTime time = new DateTime();
+
+        for (int i = 0; i < tags.Count; i++)
+        {
+            string targetTag = tags[i];
+
+            if (DateTime.TryParseExact(targetTag, "dd/MM/yyyy", null, System.Globalization.DateTimeStyles.None, out DateTime outDate))
+            {
+                date = outDate;
+            }
+
+            if (DateTime.TryParseExact(targetTag, "HH:mm", null, System.Globalization.DateTimeStyles.None, out DateTime outTime)) 
+            {
+                time = outTime;
+            }
+        }
+
+        timestamp = new DateTime(date.Year, date.Month, date.Day, time.Hour, time.Minute, time.Second);
+
+        // need to render timestamp to test mesh... 
     }
 
 }

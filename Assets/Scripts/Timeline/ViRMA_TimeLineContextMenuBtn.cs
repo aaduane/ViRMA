@@ -52,7 +52,6 @@ public class ViRMA_TimeLineContextMenuBtn : MonoBehaviour
             textMesh.color = Color.white;
         }
     }
-
     public void LoadTimelineContextMenuBtn(string btnName)
     {
         btnType = btnName;
