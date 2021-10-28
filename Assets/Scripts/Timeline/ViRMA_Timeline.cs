@@ -166,6 +166,8 @@ public class ViRMA_Timeline : MonoBehaviour
     // general
     public void ClearTimeline(bool hardReset = false)
     {
+        timelineSectionChildren.Clear();
+
         // flad as timeline as unloaded
         timelineLoaded = false;
 

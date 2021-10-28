@@ -820,42 +820,6 @@ public class ViRMA_APIController : MonoBehaviour
     }
 
     // static helper methods
-    public static DateTime LSC2021GetTimestamp(string imagePath)
-    {
-        string fileName = imagePath.Substring(11, imagePath.Length - 15);
-        int year = 0, month = 0, day = 0, hour = 0, minute = 0, second = 0;
-
-        if (imagePath.Length == 48)
-        {
-            // 2015-02-23/b00000000_21i6bq_20150223_070647e.jpg // reference
-            // 2018-05-05/B00005720_21I6X0_20180505_000005E.JPG // reference
-
-            year = Convert.ToInt32(fileName.Substring(17, 4));
-            month = Convert.ToInt32(fileName.Substring(21, 2));
-            day = Convert.ToInt32(fileName.Substring(23, 2));
-            hour = Convert.ToInt32(fileName.Substring(26, 2));
-            minute = Convert.ToInt32(fileName.Substring(28, 2));
-            second = Convert.ToInt32(fileName.Substring(30, 2));
-        }
-        else if (imagePath.Length == 34)
-        {
-            // 2016-08-17/20160817_074551_000.jpg // reference
-
-            year = Convert.ToInt32(fileName.Substring(0, 4));
-            month = Convert.ToInt32(fileName.Substring(4, 2));
-            day = Convert.ToInt32(fileName.Substring(6, 2));
-            hour = Convert.ToInt32(fileName.Substring(9, 2));
-            minute = Convert.ToInt32(fileName.Substring(11, 2));
-            second = Convert.ToInt32(fileName.Substring(13, 2));
-        }
-        else
-        {
-            Debug.LogError("LSC filename found that is not 34 or 48 characters long! | " + imagePath);
-        }
-
-        DateTime imageDateTime = new DateTime(year, month, day, hour, minute, second);
-        return imageDateTime;
-    }
     public static Texture2D ConvertImageFromDDS(byte[] ddsBytes)
     {
         byte ddsSizeCheck = ddsBytes[4];

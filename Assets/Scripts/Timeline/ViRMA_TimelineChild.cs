@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using Valve.VR.InteractionSystem;
+using TMPro;
 
 public class ViRMA_TimelineChild : MonoBehaviour
 {
@@ -96,7 +97,6 @@ public class ViRMA_TimelineChild : MonoBehaviour
 
         //GetTimelineChildMetadata(); // API does not support concurrent HTTP requests (must happen in ViRMA_Timeline.cs)
     }
-
     public void GetTimelineChildTexture()
     {
         if (fileName.Length > 0)
@@ -106,7 +106,7 @@ public class ViRMA_TimelineChild : MonoBehaviour
             {
                 imageBytes = File.ReadAllBytes(ViRMA_APIController.imagesDirectory + fileName);
                 Texture2D imageTexture = ViRMA_APIController.ConvertImageFromDDS(imageBytes);
-                Material timelineChildMaterial = new Material(Resources.Load("Materials/BasicTransparent") as Material);
+                Material timelineChildMaterial = new Material(Resources.Load("Materials/UnlitCell") as Material);
                 timelineChildMaterial.mainTexture = imageTexture;
                 childRend.material = timelineChildMaterial;
                 childRend.material.SetTextureScale("_MainTex", new Vector2(-1, 1));
@@ -221,15 +221,22 @@ public class ViRMA_TimelineChild : MonoBehaviour
     private void LoadTooltip()
     {
         tooltip = new GameObject();
-        tooltip.AddComponent<TextMesh>().text = timestamp.ToString("HH:mm dd/MM/yyyy");
+        TextMeshPro textMesh = tooltip.AddComponent<TextMeshPro>();
+        tooltip.name = timestamp.ToString("HH:mm dd/MM/yyyy");
+        textMesh.text = timestamp.ToString("HH:mm dd/MM/yyyy");
+
+        tooltip.GetComponent<RectTransform>().sizeDelta = new Vector2(1, 1);
+
+        textMesh.alignment = TextAlignmentOptions.Center;
+        textMesh.horizontalAlignment = HorizontalAlignmentOptions.Center;
+        textMesh.verticalAlignment = VerticalAlignmentOptions.Middle;
+        textMesh.fontSize = 0.75f;
+        textMesh.outlineWidth = 0.1f;
+
         tooltip.transform.parent = transform;
-
-        tooltip.transform.localScale = Vector3.one;
-        tooltip.transform.localPosition = Vector3.zero;
+        tooltip.transform.localScale = new Vector3(1 / transform.localScale.x, 1 / transform.localScale.y, 1); // adjust for parent's scale
+        tooltip.transform.localPosition = new Vector3(0.29f, -0.45f, -1f);
         tooltip.transform.localRotation = Quaternion.identity;
-
-        // x ---> 0.666
-        
     }
 
 }
