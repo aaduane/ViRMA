@@ -301,8 +301,8 @@ public class ViRMA_APIController : MonoBehaviour
     //public static string imagesDirectory = System.IO.Directory.GetCurrentDirectory().ToString() + "/LaugavegurDataDDS/"; 
     //public static string imagesDirectory = "C:/Users/aaron/Documents/Unity Projects/ViRMA/LaugavegurDataDDS/"; 
 
-    public static string imagesDirectory = System.IO.Directory.GetCurrentDirectory().ToString() + "/../lsc-2021-dds/"; 
-    //public static string imagesDirectory = "C:/Users/aaron/Documents/Unity Projects/lsc-2021-dds/"; 
+    public static string imagesDirectory = System.IO.Directory.GetCurrentDirectory().ToString() + "/../LSC2021/";
+    //public static string imagesDirectory = "C:/Users/aaron/Documents/Unity Projects/LSC2021/"; 
 
     // private
     private static JSONNode jsonData;
