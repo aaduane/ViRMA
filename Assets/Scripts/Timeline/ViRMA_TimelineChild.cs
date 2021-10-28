@@ -9,6 +9,7 @@ public class ViRMA_TimelineChild : MonoBehaviour
     // globals
     private ViRMA_GlobalsAndActions globals;
     private Renderer childRend;
+    private GameObject tooltip;
 
     // target timeline child paramters
     public int id;
@@ -51,7 +52,7 @@ public class ViRMA_TimelineChild : MonoBehaviour
 
         if (tags != null && metadataLoaded == false)
         {
-            LoadTimestampTooltip();
+            GetTimestamp();
             metadataLoaded = true;
         }
     }
@@ -193,7 +194,7 @@ public class ViRMA_TimelineChild : MonoBehaviour
             }));
         }
     }
-    public void LoadTimestampTooltip()
+    public void GetTimestamp()
     {
         DateTime date = new DateTime();
         DateTime time = new DateTime();
@@ -215,7 +216,20 @@ public class ViRMA_TimelineChild : MonoBehaviour
 
         timestamp = new DateTime(date.Year, date.Month, date.Day, time.Hour, time.Minute, time.Second);
 
-        // need to render timestamp to test mesh... 
+        LoadTooltip();
+    }
+    private void LoadTooltip()
+    {
+        tooltip = new GameObject();
+        tooltip.AddComponent<TextMesh>().text = timestamp.ToString("HH:mm dd/MM/yyyy");
+        tooltip.transform.parent = transform;
+
+        tooltip.transform.localScale = Vector3.one;
+        tooltip.transform.localPosition = Vector3.zero;
+        tooltip.transform.localRotation = Quaternion.identity;
+
+        // x ---> 0.666
+        
     }
 
 }
