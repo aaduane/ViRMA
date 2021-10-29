@@ -121,9 +121,7 @@ public class ViRMA_TimelineChild : MonoBehaviour
     {
         GameObject contextMenu = new GameObject("TimelineContextMenu");
         contextMenu.AddComponent<ViRMA_TimelineContextMenu>();
-        contextMenu.GetComponent<ViRMA_TimelineContextMenu>().targetChild = gameObject;
-        contextMenu.GetComponent<ViRMA_TimelineContextMenu>().id = id;
-        contextMenu.GetComponent<ViRMA_TimelineContextMenu>().fileName = fileName;
+        contextMenu.GetComponent<ViRMA_TimelineContextMenu>().targetTimelineChild = gameObject;
 
         contextMenu.transform.parent = transform.parent;
         contextMenu.transform.localPosition = transform.localPosition;
@@ -231,7 +229,7 @@ public class ViRMA_TimelineChild : MonoBehaviour
         textMesh.horizontalAlignment = HorizontalAlignmentOptions.Center;
         textMesh.verticalAlignment = VerticalAlignmentOptions.Middle;
         textMesh.fontSize = 0.75f;
-        textMesh.outlineWidth = 0.1f;
+        textMesh.outlineWidth = 0.2f;
 
         tooltip.transform.parent = transform;
         tooltip.transform.localScale = new Vector3(1 / transform.localScale.x, 1 / transform.localScale.y, 1); // adjust for parent's scale

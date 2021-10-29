@@ -7,41 +7,50 @@ using Valve.VR.InteractionSystem;
 
 public class ViRMA_Timeline : MonoBehaviour
 {
+    public float timelineScale;
+    public float childRelativeSpacing;
+    public float timelinePositionDistance;
+    public int resultsRenderSize;
+    public int contextTimelineTimespan;
+
     private ViRMA_GlobalsAndActions globals;
     private Rigidbody timelineRb;
+
+    public Cell timelineCellData;
+    public AxesLabels activeVizLabels;
+
+
+
+    public int currentTimelineSection;
+    public int totalTimeLineSections;
+
+    public List<KeyValuePair<int, string>> timelineResults;
+    public List<KeyValuePair<int, string>> contextTimelineResults;
+
+    private int targetContextTimelineChildId;
+    public GameObject targetContextTimelineChild;
+
+
     public GameObject timelineChildrenWrapper;
+    public GameObject timelineChildPrefab;
+    public GameObject timelineNavPrefab;  
     public GameObject nextBtn;
     public GameObject prevBtn;
     private GameObject firstRealChild;
     private GameObject lastRealChild;
     public List<GameObject> timelineSectionChildren;
     public GameObject hoveredChild;
-    public GameObject hoveredContextMenuBtn;
-
-    public GameObject timelineChildPrefab;
-    public GameObject timelineNavPrefab;
-
-    public Cell timelineCellData;
-    public AxesLabels activeVizLabels;
-    public List<KeyValuePair<int, string>> timelineResults;
-
-    public float timelineScale;
-    public float childRelativeSpacing;
-    public float timelinePositionDistance;
+    public GameObject hoveredContextMenuBtn; 
 
     private Vector3 activeTimelinePosition;
     private Quaternion activeTImelineRotation;
-
-    public Bounds timelineBounds;
     private Vector3 maxLeft;
     private Vector3 maxRight;
     private float distToMaxRight;
-    private float distToMaxLeft;
-    public bool timelineLoaded;
+    private float distToMaxLeft;  
 
-    public int resultsRenderSize;
-    public int resultsPagesTotal;
-    public int currentResultsPage;
+    public bool timelineLoaded;
+    public bool isContextTimeline;
 
     private void Awake()
     {
@@ -54,9 +63,9 @@ public class ViRMA_Timeline : MonoBehaviour
 
         timelineScale = 0.3f; // global scale of timeline
         childRelativeSpacing = 0.25f; // % width of the child to space by
-        timelinePositionDistance = 0.6f; // how far away to place the timeline
-
-        resultsRenderSize = 10; // max results to render at a time       
+        timelinePositionDistance = 0.6f; // how far away to place the timeline in front of user
+        resultsRenderSize = 100; // max results to render at a time
+        contextTimelineTimespan = 30; // number of minutes on each side of target for context timeline
     }
     private void Start()
     {
@@ -221,7 +230,7 @@ public class ViRMA_Timeline : MonoBehaviour
         maxRight = transform.position;
 
         // set timeline to correct position, and offset it slightly so nav buttons aren't the first thing seen
-        if (newPageIndex < currentResultsPage)
+        if (newPageIndex < currentTimelineSection)
         {
             // when clicking previous button 
             float distBetweenChildAndNav = Vector3.Distance(lastRealChild.transform.position, nextBtn.transform.position);
@@ -238,9 +247,168 @@ public class ViRMA_Timeline : MonoBehaviour
                 transform.position = maxRight - childNavOffset;
             }       
         }
+
+        // if the target context menu child is rendered, use it as the focus
+        if (targetContextTimelineChild)
+        {
+            Transform firstChild = timelineChildrenWrapper.transform.GetChild(0);
+            float distBetweenChildAndStart = Vector3.Distance(firstChild.position, targetContextTimelineChild.transform.position);
+            Vector3 targetChildOffset = transform.right * distBetweenChildAndStart;
+            transform.position = maxRight - targetChildOffset;
+        }
+    }
+    private IEnumerator GetTimelineSectionMetadata()
+    {
+        foreach (GameObject timelineSectionChild in timelineSectionChildren)
+        {
+            int targetId = timelineSectionChild.GetComponent<ViRMA_TimelineChild>().id;
+            yield return StartCoroutine(ViRMA_APIController.GetTimelineMetadata(targetId, (metadata) => {
+
+                //var testing = String.Join(" | ", metadata.ToArray());
+                //Debug.Log(targetId + " : " + testing);
+
+                timelineSectionChild.GetComponent<ViRMA_TimelineChild>().tags = metadata;
+
+            }));
+        }
+    }
+    private void ToggleTimelineSectionNavigation(int newPageIndex)
+    {
+        if (nextBtn)
+        {
+            nextBtn.transform.parent = null;
+            Destroy(nextBtn);
+            nextBtn = null;
+        }
+
+        if (prevBtn)
+        {
+            prevBtn.transform.parent = null;
+            Destroy(prevBtn);
+            prevBtn = null;
+        }
+
+        if (newPageIndex < totalTimeLineSections - 1)
+        {
+            nextBtn = Instantiate(timelineNavPrefab);
+            nextBtn.AddComponent<ViRMA_TimelineChild>().isNextBtn = true;
+            nextBtn.GetComponentInChildren<TextMesh>().text = "Next\n(" + (newPageIndex + 2) + "/" + totalTimeLineSections + ")";
+            nextBtn.GetComponent<Renderer>().material.SetColor("_Color", ViRMA_Colors.axisTextBlue);
+            nextBtn.name = "NextBtn";
+            nextBtn.transform.parent = timelineChildrenWrapper.transform;
+            nextBtn.transform.SetAsLastSibling();
+            nextBtn.transform.localScale = new Vector3(1, 1, 0.01f);
+            Vector3 nextBtnPos = new Vector3(lastRealChild.transform.localPosition.x + lastRealChild.transform.localScale.x, lastRealChild.transform.localPosition.y, lastRealChild.transform.localPosition.z);
+            nextBtn.transform.localPosition = nextBtnPos;
+        }
+
+        if (newPageIndex > 0)
+        {
+            prevBtn = Instantiate(timelineNavPrefab);
+            prevBtn.AddComponent<ViRMA_TimelineChild>().isPrevBtn = true;
+            prevBtn.GetComponentInChildren<TextMesh>().text = "Previous\n(" + newPageIndex + "/" + totalTimeLineSections + ")";
+            prevBtn.GetComponent<Renderer>().material.SetColor("_Color", ViRMA_Colors.axisTextBlue);
+            prevBtn.name = "PrevBtn";
+            prevBtn.transform.parent = timelineChildrenWrapper.transform;
+            prevBtn.transform.SetAsFirstSibling();
+            prevBtn.transform.localScale = new Vector3(1, 1, 0.01f);
+            float adjustment = firstRealChild.transform.localScale.x;
+            for (int i = 0; i < timelineChildrenWrapper.transform.childCount; i++)
+            {
+                Transform adjustedChild = timelineChildrenWrapper.transform.GetChild(i);
+                adjustedChild.transform.localPosition = new Vector3(adjustedChild.transform.localPosition.x + adjustment, adjustedChild.transform.localPosition.y, adjustedChild.transform.localPosition.z);
+            }
+            prevBtn.transform.localPosition = Vector3.zero;
+        }
+    }
+    private void LoadTimelineSection(int pageIndex)
+    {
+        // hide main viz
+        globals.vizController.HideViz(true);
+
+        // clear old timeline if one exists
+        ClearTimeline();
+
+        // create wrapper
+        timelineChildrenWrapper = new GameObject("TimelineChildrenWrapper");
+        timelineChildrenWrapper.transform.parent = transform;
+
+
+        List<KeyValuePair<int, string>> loadedTimelineResults;
+        if (isContextTimeline)
+        {
+            loadedTimelineResults = contextTimelineResults;
+        }
+        else
+        {
+            loadedTimelineResults = timelineResults;
+        }
+
+
+        // calculate correct start and end indexes to render correct section results
+        int startIndex = pageIndex * resultsRenderSize;
+        int resultsToShow = resultsRenderSize;
+        if (startIndex + resultsToShow > loadedTimelineResults.Count)
+        {
+            resultsToShow = loadedTimelineResults.Count - startIndex;
+        }
+
+        // get section range from results and render it
+        targetContextTimelineChild = null;
+        List<KeyValuePair<int, string>> currentResultsSection = loadedTimelineResults.GetRange(startIndex, resultsToShow);
+        for (int i = 0; i < currentResultsSection.Count; i++)
+        {
+            // create timeline child game object using cell prefab
+            GameObject timelineChild = Instantiate(timelineChildPrefab);
+            timelineChild.AddComponent<ViRMA_TimelineChild>().LoadTimelineChild(currentResultsSection[i].Key, currentResultsSection[i].Value);
+
+            // if this is a context timeline, reference the target child to be focused on
+            if (isContextTimeline && targetContextTimelineChildId == currentResultsSection[i].Key)
+            {
+                targetContextTimelineChild = timelineChild;
+            }
+
+            // set wrapper as parent and adjust scale for image aspect ratio
+            timelineChild.transform.parent = timelineChildrenWrapper.transform;
+            timelineChild.transform.localScale = new Vector3(1.5f, 1, 0.01f);
+
+            // set the distance between children as a % width of the child
+            float childWidth = timelineChild.transform.localScale.x;
+            float offset = childWidth * childRelativeSpacing * i;
+            float xPos = offset + (childWidth * i);
+            timelineChild.transform.position = new Vector3(xPos, 0, 0);
+
+            // grab first and last real children in timeline (i.e. not nav btns)
+            if (i == 0)
+            {
+                firstRealChild = timelineChild;
+            }
+            else if (i == currentResultsSection.Count - 1)
+            {
+                lastRealChild = timelineChild;
+            }
+
+            // add child to list for reference
+            timelineSectionChildren.Add(timelineChild);
+        }
+
+        // get associated metadata for each child in section (API does not support concurrent HTTP requests)
+        StartCoroutine(GetTimelineSectionMetadata());
+
+        ToggleTimelineSectionNavigation(pageIndex);
+
+        timelineChildrenWrapper.transform.localScale = Vector3.one * timelineScale;
+
+        PositionTimeline(pageIndex);
+
+        currentTimelineSection = pageIndex;
+
+        timelineLoaded = true;
     }
     public void LoadTimelineData(GameObject submittedCell)
     {
+        isContextTimeline = false;
+
         if (submittedCell.GetComponent<ViRMA_Cell>())
         {
             // deep clone query filters for timeline API call
@@ -292,153 +460,68 @@ public class ViRMA_Timeline : MonoBehaviour
                 {
                     if (timelineResults.Count % resultsRenderSize == 0)
                     {
-                        resultsPagesTotal = (timelineResults.Count / resultsRenderSize);
+                        totalTimeLineSections = (timelineResults.Count / resultsRenderSize);
                     }
                     else
                     {
-                        resultsPagesTotal = (timelineResults.Count / resultsRenderSize) + 1;
+                        totalTimeLineSections = (timelineResults.Count / resultsRenderSize) + 1;
                     }
                 }
                 else
                 {
-                    resultsPagesTotal = 1;
+                    totalTimeLineSections = 1;
                 }
 
+                //LoadTimelineSection(0);
                 LoadTimelineSection(0);
 
             }));
         }
-    }
-    private void LoadTimelineSection(int pageIndex)
+    }    
+    private void LoadContextTimelineData(ViRMA_TimelineChild targetTimelineChild)
     {
-        // hide main viz
-        globals.vizController.HideViz(true);
+        isContextTimeline = true;
 
-        // clear old timeline if one exists
-        ClearTimeline();
+        StartCoroutine(ViRMA_APIController.GetContextTimeline(targetTimelineChild.timestamp, contextTimelineTimespan, (results) => {
 
-        // create wrapper
-        timelineChildrenWrapper = new GameObject("TimelineChildrenWrapper");
-        timelineChildrenWrapper.transform.parent = transform;
+            contextTimelineResults = results;
 
-        // calculate correct start and end indexes to render correct section results
-        int startIndex = pageIndex * resultsRenderSize;
-        int resultsToShow = resultsRenderSize;
-        if (startIndex + resultsToShow > timelineResults.Count)
-        {
-            resultsToShow = timelineResults.Count - startIndex;
-        }   
-
-        // get section range from results and render it
-        List<KeyValuePair<int, string>> currentResultsSection = timelineResults.GetRange(startIndex, resultsToShow);
-        for (int i = 0; i < currentResultsSection.Count; i++)
-        {
-            // create timeline child game object using cell prefab
-            GameObject timelineChild = Instantiate(timelineChildPrefab);
-            timelineChild.AddComponent<ViRMA_TimelineChild>().LoadTimelineChild(currentResultsSection[i].Key, currentResultsSection[i].Value);
-
-            // set wrapper as parent and adjust scale for image aspect ratio
-            timelineChild.transform.parent = timelineChildrenWrapper.transform;
-            timelineChild.transform.localScale = new Vector3(1.5f, 1, 0.01f);
-
-            // set the distance between children as a % width of the child
-            float childWidth = timelineChild.transform.localScale.x;
-            float offset = childWidth * childRelativeSpacing * i;
-            float xPos = offset + (childWidth * i);
-            timelineChild.transform.position = new Vector3(xPos, 0, 0);
-
-            // grab first and last real children in timeline (i.e. not nav btns)
-            if (i == 0)
+            if (contextTimelineResults.Count >= resultsRenderSize)
             {
-                firstRealChild = timelineChild;
+                if (contextTimelineResults.Count % resultsRenderSize == 0)
+                {
+                    totalTimeLineSections = (contextTimelineResults.Count / resultsRenderSize);
+                }
+                else
+                {
+                    totalTimeLineSections = (contextTimelineResults.Count / resultsRenderSize) + 1;
+                }
             }
-            else if (i == currentResultsSection.Count - 1)
+            else
             {
-                lastRealChild = timelineChild;
+                totalTimeLineSections = 1;
             }
 
-            // add child to list for reference
-            timelineSectionChildren.Add(timelineChild);
-        }
-
-        // get associated metadata for each child in section (API does not support concurrent HTTP requests)
-        StartCoroutine(GetTimelineSectionMetadata()); 
-
-        ToggleTimelineSectionNavigation(pageIndex);
-
-        timelineChildrenWrapper.transform.localScale = Vector3.one * timelineScale;
-
-        PositionTimeline(pageIndex);
-
-        currentResultsPage = pageIndex;
-
-        timelineLoaded = true;
-    }
-    private void ToggleTimelineSectionNavigation(int newPageIndex)
-    {
-        if (nextBtn)
-        {
-            nextBtn.transform.parent = null;
-            Destroy(nextBtn);
-            nextBtn = null;
-        }
-
-        if (prevBtn)
-        {
-            prevBtn.transform.parent = null;
-            Destroy(prevBtn);
-            prevBtn = null;
-        }
-
-        if (newPageIndex < resultsPagesTotal - 1)
-        {
-            nextBtn = Instantiate(timelineNavPrefab);
-            nextBtn.AddComponent<ViRMA_TimelineChild>().isNextBtn = true;
-            nextBtn.GetComponentInChildren<TextMesh>().text = "Next\n(" + (newPageIndex + 1) + "/" + resultsPagesTotal + ")";
-            nextBtn.GetComponent<Renderer>().material.SetColor("_Color", ViRMA_Colors.axisTextBlue);
-            nextBtn.name = "NextBtn";
-            nextBtn.transform.parent = timelineChildrenWrapper.transform;
-            nextBtn.transform.SetAsLastSibling();
-            nextBtn.transform.localScale = new Vector3(1, 1, 0.01f);
-            Vector3 nextBtnPos = new Vector3(lastRealChild.transform.localPosition.x + lastRealChild.transform.localScale.x, lastRealChild.transform.localPosition.y, lastRealChild.transform.localPosition.z);
-            nextBtn.transform.localPosition = nextBtnPos;
-        }
-
-        if (newPageIndex > 0)
-        {
-            prevBtn = Instantiate(timelineNavPrefab);
-            prevBtn.AddComponent<ViRMA_TimelineChild>().isPrevBtn = true;
-            prevBtn.GetComponentInChildren<TextMesh>().text = "Previous\n(" + newPageIndex + "/" + resultsPagesTotal + ")";
-            prevBtn.GetComponent<Renderer>().material.SetColor("_Color", ViRMA_Colors.axisTextBlue);
-            prevBtn.name = "PrevBtn";
-            prevBtn.transform.parent = timelineChildrenWrapper.transform;
-            prevBtn.transform.SetAsFirstSibling();
-            prevBtn.transform.localScale = new Vector3(1, 1, 0.01f);
-            float adjustment = firstRealChild.transform.localScale.x;
-            for (int i = 0; i < timelineChildrenWrapper.transform.childCount; i++)
+            int targetSection = 0;
+            for (int i = 0; i < contextTimelineResults.Count; i++)
             {
-                Transform adjustedChild = timelineChildrenWrapper.transform.GetChild(i);
-                adjustedChild.transform.localPosition = new Vector3(adjustedChild.transform.localPosition.x + adjustment, adjustedChild.transform.localPosition.y, adjustedChild.transform.localPosition.z);
+                if (contextTimelineResults[i].Key == targetTimelineChild.id)
+                {
+                    targetContextTimelineChildId = contextTimelineResults[i].Key;
+                    targetSection = i / resultsRenderSize;
+
+                    //Debug.Log(i + " divided by " + resultsRenderSize + " --> Target Section: " + targetSection);
+
+                    break;       
+                }
             }
-            prevBtn.transform.localPosition = Vector3.zero;
-        }
-    }
-    private IEnumerator GetTimelineSectionMetadata()
-    {
-        foreach (GameObject timelineSectionChild in timelineSectionChildren)
-        {
-            int targetId = timelineSectionChild.GetComponent<ViRMA_TimelineChild>().id;
-            yield return StartCoroutine(ViRMA_APIController.GetTimelineMetadata(targetId, (metadata) => {
 
-                //var testing = String.Join(" | ", metadata.ToArray());
-                //Debug.Log(targetId + " : " + testing);
-
-                timelineSectionChild.GetComponent<ViRMA_TimelineChild>().tags = metadata;
-
-            }));
-        }
+            LoadTimelineSection(targetSection);
+            
+        }));
     }
 
+    
     // steamVR actions
     public void SubmitChildForContextMenu(SteamVR_Action_Boolean action, SteamVR_Input_Sources source)
     {
@@ -450,11 +533,13 @@ public class ViRMA_Timeline : MonoBehaviour
             }
             else if (hoveredChild.GetComponent<ViRMA_TimelineChild>().isNextBtn)
             {
-                LoadTimelineSection(currentResultsPage + 1);
+                //LoadTimelineSection(timelineCurrentSection + 1);
+                LoadTimelineSection(currentTimelineSection + 1);
             }
             else if (hoveredChild.GetComponent<ViRMA_TimelineChild>().isPrevBtn)
             {
-                LoadTimelineSection(currentResultsPage - 1);
+                //LoadTimelineSection(timelineCurrentSection - 1);
+                LoadTimelineSection(currentTimelineSection - 1);
             }       
         }
     }
@@ -462,10 +547,24 @@ public class ViRMA_Timeline : MonoBehaviour
     {
         if (hoveredContextMenuBtn != null)
         {
-            Debug.Log(hoveredContextMenuBtn.GetComponent<ViRMA_TimeLineContextMenuBtn>().btnType);
-            Debug.Log(hoveredContextMenuBtn.GetComponent<ViRMA_TimeLineContextMenuBtn>().id);
-            Debug.Log(hoveredContextMenuBtn.GetComponent<ViRMA_TimeLineContextMenuBtn>().fileName);
+            ViRMA_TimeLineContextMenuBtn btnOption = hoveredContextMenuBtn.GetComponent<ViRMA_TimeLineContextMenuBtn>();
+            ViRMA_TimelineChild targetTimelineChild = btnOption.targetTimelineChild.GetComponent<ViRMA_TimelineChild>();
+
+            if (btnOption.btnType.ToLower() == "context")
+            {
+                LoadContextTimelineData(targetTimelineChild);
+            }
+
+            if (btnOption.btnType.ToLower() == "submit")
+            {
+                string fileName = btnOption.targetTimelineChild.GetComponent<ViRMA_TimelineChild>().fileName;
+                string submission = fileName.Substring(0, fileName.Length - 4);
+
+                Debug.Log("Submit " + submission + " to LSC!");
+            }
         }
-    } 
+    }
+
+
 
 }

@@ -796,9 +796,34 @@ public class ViRMA_APIController : MonoBehaviour
 
         onSuccess(results);
     }
-    public static void GetContextTimeline()
+    public static IEnumerator GetContextTimeline(DateTime timestamp, int minutes, Action<List<KeyValuePair<int, string>>> onSuccess)
     {
-        // cell?filters=[{'type':'daterange','ids':['2'],'ranges':[['23-08-2016','23-08-2016']]},{"type":"timerange","ids":["3"],"ranges":[["10:00","11:00"]]}]&all=[]
+        // cell?filters=[{'type':'daterange','ids':['2'],'ranges':[['23-08-2016','23-08-2016']]},{'type':'timerange','ids':['3'],'ranges':[['10:00','11:00']]}]&all=[]
+
+        TimeSpan timeSpan = new TimeSpan(0, minutes, 0);
+        DateTime future = timestamp.Add(timeSpan);
+        DateTime past = timestamp.Subtract(timeSpan);
+        
+        string url = "cell?filters=[{'type':'daterange','ids':['2'],'ranges':[['" + past.ToString("dd-MM-yyyy") + "','" + future.ToString("dd-MM-yyyy") + "']]},{'type':'timerange','ids':['3'],'ranges':[['" + past.ToString("HH:mm") + "','" + future.ToString("HH:mm") + "']]}]&all=[]";
+
+        Debug.Log(url); // testing
+
+        List<KeyValuePair<int, string>> results = new List<KeyValuePair<int, string>>();
+        yield return GetRequest(url, (response) =>
+        {
+            jsonData = response;
+        });
+
+        foreach (var obj in jsonData)
+        {
+            int imageId = obj.Value["Id"];
+            string imagePath = obj.Value["FileURI"];
+            string imageNameDDS = imagePath.Substring(0, imagePath.Length - 4) + ".dds";
+            KeyValuePair<int, string> imageIdPath = new KeyValuePair<int, string>(imageId, imageNameDDS);
+            results.Add(imageIdPath);
+        }
+
+        onSuccess(results);
     }
     public static IEnumerator GetTimelineMetadata(int targetId, Action<List<string>> onSuccess)
     {

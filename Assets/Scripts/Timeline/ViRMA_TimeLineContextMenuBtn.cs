@@ -6,9 +6,8 @@ public class ViRMA_TimeLineContextMenuBtn : MonoBehaviour
 {
     private ViRMA_GlobalsAndActions globals;
 
-    public int id;
-    public string fileName;
-    public string btnType;
+    public GameObject targetTimelineChild;
+    public string btnType;  
 
     // assigned inside prefab
     public TextMeshPro textMesh;
@@ -52,9 +51,11 @@ public class ViRMA_TimeLineContextMenuBtn : MonoBehaviour
             textMesh.color = Color.white;
         }
     }
-    public void LoadTimelineContextMenuBtn(string btnName)
+    public void LoadTimelineContextMenuBtn(string btnName, GameObject timelineChild)
     {
         btnType = btnName;
+        targetTimelineChild = timelineChild;
+
         textMesh.text = btnName;
         textMesh.color = Color.white;
 
