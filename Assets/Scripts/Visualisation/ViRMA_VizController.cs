@@ -604,11 +604,11 @@ public class ViRMA_VizController : MonoBehaviour
     {
         if (toHide)
         {
-            transform.position = new Vector3(0, 9999, 0);
-            transform.rotation = Quaternion.identity;
-
             activeVizPosition = transform.position;
             activeVizRotation = transform.rotation;
+
+            transform.position = new Vector3(0, 9999, 0);
+            transform.rotation = Quaternion.identity;
 
             vizFullyLoaded = false;          
         }

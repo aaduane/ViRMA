@@ -15,7 +15,6 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
     // --- SteamVR action sets --- \\
 
     // Player hand/controller appearance
-
     public bool disableAllButtonHints = false;
     public bool rightControllerLoaded = false;
     public bool leftControllerLoaded = false;
@@ -50,6 +49,7 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
     public SteamVR_ActionSet timelineActions;
     public SteamVR_Action_Boolean timeline_Select;
     public SteamVR_Action_Boolean timeline_Scroll;
+    public SteamVR_Action_Boolean timeline_Back;
 
     private void Awake()
     {
@@ -110,6 +110,7 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
         timelineActions = SteamVR_Input.GetActionSet("Timeline");
         timeline_Select = SteamVR_Input.GetActionFromPath<SteamVR_Action_Boolean>("/actions/Timeline/in/Select");
         timeline_Scroll = SteamVR_Input.GetActionFromPath<SteamVR_Action_Boolean>("/actions/Timeline/in/Scroll");
+        timeline_Back = SteamVR_Input.GetActionFromPath<SteamVR_Action_Boolean>("/actions/Timeline/in/Back");
 
         /*
         Debug.Log(dimExplorerActions.allActions);
@@ -135,6 +136,7 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
         //timeline explorer 
         timeline_Select[SteamVR_Input_Sources.Any].onStateDown += timeline.SubmitChildForContextMenu;
         timeline_Select[SteamVR_Input_Sources.Any].onStateDown += timeline.SubmitContextMenuBtn;
+        timeline_Back[SteamVR_Input_Sources.Any].onStateDown += timeline.BackButton;
 
         // testing
         //menuInteraction_Scroll[SteamVR_Input_Sources.Any].onAxis += mainMenu.TestScroll;
@@ -169,6 +171,15 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
         {   
             dimExplorerActions.Deactivate();
             vizNavActions.Deactivate();
+        }
+
+        if (timeline.timelineLoaded)
+        {
+            timelineActions.Activate();
+        }
+        else
+        {
+            timelineActions.Deactivate();
         }
 
         menuInteractionActions.Activate();

@@ -56,6 +56,14 @@ public class ViRMA_TimelineChild : MonoBehaviour
             GetTimestamp();
             metadataLoaded = true;
         }
+
+        if (globals.timeline.targetContextTimelineChild)
+        {
+            if (globals.timeline.targetContextTimelineChild == gameObject)
+            {
+                ToggleBorder(true);
+            }
+        }
     }
 
     // triggers for UI drumsticks
@@ -67,7 +75,14 @@ public class ViRMA_TimelineChild : MonoBehaviour
             {
                 globals.timeline.hoveredChild = gameObject;
 
-                ToggleBorder(true);
+                if (isPrevBtn || isNextBtn)
+                {
+                    ToggleBorder(true);             
+                }   
+                else
+                {
+                    LoadTImelineContextMenu();
+                }
             }
         }
     }
@@ -81,7 +96,7 @@ public class ViRMA_TimelineChild : MonoBehaviour
 
                 if (contextMenuActiveOnChild == false)
                 {
-                    ToggleBorder(false);
+                    //ToggleBorder(false);
                 }          
             }
         }
@@ -119,6 +134,9 @@ public class ViRMA_TimelineChild : MonoBehaviour
     }
     public void LoadTImelineContextMenu()
     {
+        globals.timeline.timelineRb.velocity = Vector3.zero;
+        globals.timeline.timelineRb.angularVelocity = Vector3.zero;
+
         GameObject contextMenu = new GameObject("TimelineContextMenu");
         contextMenu.AddComponent<ViRMA_TimelineContextMenu>();
         contextMenu.GetComponent<ViRMA_TimelineContextMenu>().targetTimelineChild = gameObject;

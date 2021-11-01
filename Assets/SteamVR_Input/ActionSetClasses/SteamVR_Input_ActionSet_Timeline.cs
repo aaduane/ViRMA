@@ -32,5 +32,13 @@ namespace Valve.VR
                 return SteamVR_Actions.timeline_Scroll;
             }
         }
+        
+        public virtual SteamVR_Action_Boolean Back
+        {
+            get
+            {
+                return SteamVR_Actions.timeline_Back;
+            }
+        }
     }
 }

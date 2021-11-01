@@ -12,24 +12,22 @@ public class ViRMA_Timeline : MonoBehaviour
     public float timelinePositionDistance;
     public int resultsRenderSize;
     public int contextTimelineTimespan;
+    private Coroutine metadataFetcher;
 
     private ViRMA_GlobalsAndActions globals;
-    private Rigidbody timelineRb;
+    public Rigidbody timelineRb;
 
     public Cell timelineCellData;
     public AxesLabels activeVizLabels;
 
-
-
     public int currentTimelineSection;
     public int totalTimeLineSections;
-
     public List<KeyValuePair<int, string>> timelineResults;
     public List<KeyValuePair<int, string>> contextTimelineResults;
-
     private int targetContextTimelineChildId;
     public GameObject targetContextTimelineChild;
-
+    public int savedTimelineSection;
+    public int savedTimelineChildId;
 
     public GameObject timelineChildrenWrapper;
     public GameObject timelineChildPrefab;
@@ -65,12 +63,10 @@ public class ViRMA_Timeline : MonoBehaviour
         childRelativeSpacing = 0.25f; // % width of the child to space by
         timelinePositionDistance = 0.6f; // how far away to place the timeline in front of user
         resultsRenderSize = 100; // max results to render at a time
-        contextTimelineTimespan = 30; // number of minutes on each side of target for context timeline
+        contextTimelineTimespan = 60; // number of minutes on each side of target for context timeline
     }
     private void Start()
     {
-        globals.timelineActions.Activate();
-
         timelineChildPrefab = Resources.Load("Prefabs/CellPrefab") as GameObject;
         timelineNavPrefab = Resources.Load("Prefabs/TimelineNavPrefab") as GameObject;
     }
@@ -172,13 +168,21 @@ public class ViRMA_Timeline : MonoBehaviour
         }
     }
 
+
     // general
     public void ClearTimeline(bool hardReset = false)
-    {
-        timelineSectionChildren.Clear();
-
+    {        
         // flad as timeline as unloaded
         timelineLoaded = false;
+
+        // clear list of active children
+        timelineSectionChildren.Clear();
+
+        // if still fetching metadata, stop that
+        if (metadataFetcher != null)
+        {
+            StopCoroutine(metadataFetcher);
+        }     
 
         // destroy wrapper
         if (timelineChildrenWrapper)
@@ -248,7 +252,7 @@ public class ViRMA_Timeline : MonoBehaviour
             }       
         }
 
-        // if the target context menu child is rendered, use it as the focus
+        // if the target context menu child is rendered, or if returning to cell contents timeline, use a child as the focus
         if (targetContextTimelineChild)
         {
             Transform firstChild = timelineChildrenWrapper.transform.GetChild(0);
@@ -256,21 +260,43 @@ public class ViRMA_Timeline : MonoBehaviour
             Vector3 targetChildOffset = transform.right * distBetweenChildAndStart;
             transform.position = maxRight - targetChildOffset;
         }
+        else if (savedTimelineChildId != 0)
+        {
+            for (int i = 0; i < timelineSectionChildren.Count; i++)
+            {
+                ViRMA_TimelineChild targetChild = timelineSectionChildren[i].GetComponent<ViRMA_TimelineChild>();
+                if (targetChild.id == savedTimelineChildId)
+                {
+                    Transform firstChild = timelineChildrenWrapper.transform.GetChild(0);
+                    float distBetweenChildAndStart = Vector3.Distance(firstChild.position, targetChild.transform.position);
+                    Vector3 targetChildOffset = transform.right * distBetweenChildAndStart;
+                    transform.position = maxRight - targetChildOffset;
+                    //targetChild.ToggleBorder(true);
+                    break;
+                }
+            }
+        }
     }
     private IEnumerator GetTimelineSectionMetadata()
     {
         foreach (GameObject timelineSectionChild in timelineSectionChildren)
         {
-            int targetId = timelineSectionChild.GetComponent<ViRMA_TimelineChild>().id;
-            yield return StartCoroutine(ViRMA_APIController.GetTimelineMetadata(targetId, (metadata) => {
+            if (timelineSectionChild != null)
+            {
+                int targetId = timelineSectionChild.GetComponent<ViRMA_TimelineChild>().id;
+                yield return metadataFetcher = StartCoroutine(ViRMA_APIController.GetTimelineMetadata(targetId, (metadata) => {
 
-                //var testing = String.Join(" | ", metadata.ToArray());
-                //Debug.Log(targetId + " : " + testing);
+                    //var testing = String.Join(" | ", metadata.ToArray());
+                    //Debug.Log(targetId + " : " + testing);
 
-                timelineSectionChild.GetComponent<ViRMA_TimelineChild>().tags = metadata;
-
-            }));
+                    if (timelineSectionChild != null)
+                    {
+                        timelineSectionChild.GetComponent<ViRMA_TimelineChild>().tags = metadata;
+                    }
+                }));
+            }          
         }
+        metadataFetcher = null;
     }
     private void ToggleTimelineSectionNavigation(int newPageIndex)
     {
@@ -333,7 +359,7 @@ public class ViRMA_Timeline : MonoBehaviour
         timelineChildrenWrapper = new GameObject("TimelineChildrenWrapper");
         timelineChildrenWrapper.transform.parent = transform;
 
-
+        // choose correct data depending on type of timeline
         List<KeyValuePair<int, string>> loadedTimelineResults;
         if (isContextTimeline)
         {
@@ -343,7 +369,6 @@ public class ViRMA_Timeline : MonoBehaviour
         {
             loadedTimelineResults = timelineResults;
         }
-
 
         // calculate correct start and end indexes to render correct section results
         int startIndex = pageIndex * resultsRenderSize;
@@ -516,6 +541,9 @@ public class ViRMA_Timeline : MonoBehaviour
                 }
             }
 
+            savedTimelineSection = currentTimelineSection;
+            savedTimelineChildId = targetTimelineChild.id;
+
             LoadTimelineSection(targetSection);
             
         }));
@@ -529,16 +557,14 @@ public class ViRMA_Timeline : MonoBehaviour
         {
             if (!hoveredChild.GetComponent<ViRMA_TimelineChild>().isNextBtn && !hoveredChild.GetComponent<ViRMA_TimelineChild>().isPrevBtn)
             {
-                hoveredChild.GetComponent<ViRMA_TimelineChild>().LoadTImelineContextMenu();
+                //hoveredChild.GetComponent<ViRMA_TimelineChild>().LoadTImelineContextMenu();
             }
             else if (hoveredChild.GetComponent<ViRMA_TimelineChild>().isNextBtn)
             {
-                //LoadTimelineSection(timelineCurrentSection + 1);
                 LoadTimelineSection(currentTimelineSection + 1);
             }
             else if (hoveredChild.GetComponent<ViRMA_TimelineChild>().isPrevBtn)
             {
-                //LoadTimelineSection(timelineCurrentSection - 1);
                 LoadTimelineSection(currentTimelineSection - 1);
             }       
         }
@@ -564,7 +590,24 @@ public class ViRMA_Timeline : MonoBehaviour
             }
         }
     }
+    public void BackButton(SteamVR_Action_Boolean action, SteamVR_Input_Sources source)
+    {
+        if (timelineLoaded)
+        {
+            if (isContextTimeline)
+            {
+                isContextTimeline = false;
+                LoadTimelineSection(savedTimelineSection);
 
-
+                savedTimelineSection = 0;
+                savedTimelineChildId = 0;
+            }
+            else
+            {
+                ClearTimeline(true);
+                globals.vizController.HideViz(false);
+            }
+        }
+    }
 
 }

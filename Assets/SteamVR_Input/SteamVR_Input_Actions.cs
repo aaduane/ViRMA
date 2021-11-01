@@ -65,6 +65,8 @@ namespace Valve.VR
         
         private static SteamVR_Action_Boolean p_timeline_Scroll;
         
+        private static SteamVR_Action_Boolean p_timeline_Back;
+        
         public static SteamVR_Action_Boolean default_InteractUI
         {
             get
@@ -257,6 +259,14 @@ namespace Valve.VR
             }
         }
         
+        public static SteamVR_Action_Boolean timeline_Back
+        {
+            get
+            {
+                return SteamVR_Actions.p_timeline_Back.GetCopy<SteamVR_Action_Boolean>();
+            }
+        }
+        
         private static void InitializeActionArrays()
         {
             Valve.VR.SteamVR_Input.actions = new Valve.VR.SteamVR_Action[] {
@@ -283,7 +293,8 @@ namespace Valve.VR
                     SteamVR_Actions.dimExplorer_Select,
                     SteamVR_Actions.dimExplorer_Scroll,
                     SteamVR_Actions.timeline_Select,
-                    SteamVR_Actions.timeline_Scroll};
+                    SteamVR_Actions.timeline_Scroll,
+                    SteamVR_Actions.timeline_Back};
             Valve.VR.SteamVR_Input.actionsIn = new Valve.VR.ISteamVR_Action_In[] {
                     SteamVR_Actions.default_InteractUI,
                     SteamVR_Actions.default_Teleport,
@@ -307,7 +318,8 @@ namespace Valve.VR
                     SteamVR_Actions.dimExplorer_Select,
                     SteamVR_Actions.dimExplorer_Scroll,
                     SteamVR_Actions.timeline_Select,
-                    SteamVR_Actions.timeline_Scroll};
+                    SteamVR_Actions.timeline_Scroll,
+                    SteamVR_Actions.timeline_Back};
             Valve.VR.SteamVR_Input.actionsOut = new Valve.VR.ISteamVR_Action_Out[] {
                     SteamVR_Actions.default_Haptic};
             Valve.VR.SteamVR_Input.actionsVibration = new Valve.VR.SteamVR_Action_Vibration[] {
@@ -331,7 +343,8 @@ namespace Valve.VR
                     SteamVR_Actions.dimExplorer_Select,
                     SteamVR_Actions.dimExplorer_Scroll,
                     SteamVR_Actions.timeline_Select,
-                    SteamVR_Actions.timeline_Scroll};
+                    SteamVR_Actions.timeline_Scroll,
+                    SteamVR_Actions.timeline_Back};
             Valve.VR.SteamVR_Input.actionsSingle = new Valve.VR.SteamVR_Action_Single[] {
                     SteamVR_Actions.default_Squeeze,
                     SteamVR_Actions.vizNavigation_HardGrip};
@@ -361,7 +374,8 @@ namespace Valve.VR
                     SteamVR_Actions.dimExplorer_Select,
                     SteamVR_Actions.dimExplorer_Scroll,
                     SteamVR_Actions.timeline_Select,
-                    SteamVR_Actions.timeline_Scroll};
+                    SteamVR_Actions.timeline_Scroll,
+                    SteamVR_Actions.timeline_Back};
         }
         
         private static void PreInitActions()
@@ -390,6 +404,7 @@ namespace Valve.VR
             SteamVR_Actions.p_dimExplorer_Scroll = ((SteamVR_Action_Boolean)(SteamVR_Action.Create<SteamVR_Action_Boolean>("/actions/DimExplorer/in/Scroll")));
             SteamVR_Actions.p_timeline_Select = ((SteamVR_Action_Boolean)(SteamVR_Action.Create<SteamVR_Action_Boolean>("/actions/Timeline/in/Select")));
             SteamVR_Actions.p_timeline_Scroll = ((SteamVR_Action_Boolean)(SteamVR_Action.Create<SteamVR_Action_Boolean>("/actions/Timeline/in/Scroll")));
+            SteamVR_Actions.p_timeline_Back = ((SteamVR_Action_Boolean)(SteamVR_Action.Create<SteamVR_Action_Boolean>("/actions/Timeline/in/Back")));
         }
     }
 }
