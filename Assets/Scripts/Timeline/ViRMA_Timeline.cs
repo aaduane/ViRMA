@@ -100,7 +100,7 @@ public class ViRMA_Timeline : MonoBehaviour
         {
             Vector3 handVelocity = transform.InverseTransformDirection(activeHand.GetTrackedObjectVelocity());
             handVelocity.y = 0;
-            handVelocity.z = 0;
+            handVelocity.z = 0;       
             timelineRb.velocity = transform.TransformDirection(handVelocity);
         }
 
@@ -370,10 +370,10 @@ public class ViRMA_Timeline : MonoBehaviour
             loadedTimelineResults = timelineResults;
         }
 
-        // calculate correct start and end indexes to render correct section results
+        // calculate correct start and end indexes to render correct section results     
         int startIndex = pageIndex * resultsRenderSize;
-        int resultsToShow = resultsRenderSize;
-        if (startIndex + resultsToShow > loadedTimelineResults.Count)
+        int resultsToShow = resultsRenderSize;     
+        if ((startIndex + resultsToShow) > loadedTimelineResults.Count)
         {
             resultsToShow = loadedTimelineResults.Count - startIndex;
         }
@@ -505,6 +505,12 @@ public class ViRMA_Timeline : MonoBehaviour
     }    
     private void LoadContextTimelineData(ViRMA_TimelineChild targetTimelineChild)
     {
+        if (isContextTimeline == false)
+        {
+            savedTimelineSection = currentTimelineSection;
+            savedTimelineChildId = targetTimelineChild.id;
+        }
+
         isContextTimeline = true;
 
         StartCoroutine(ViRMA_APIController.GetContextTimeline(targetTimelineChild.timestamp, contextTimelineTimespan, (results) => {
@@ -540,9 +546,6 @@ public class ViRMA_Timeline : MonoBehaviour
                     break;       
                 }
             }
-
-            savedTimelineSection = currentTimelineSection;
-            savedTimelineChildId = targetTimelineChild.id;
 
             LoadTimelineSection(targetSection);
             

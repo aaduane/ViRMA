@@ -806,7 +806,7 @@ public class ViRMA_APIController : MonoBehaviour
         
         string url = "cell?filters=[{'type':'daterange','ids':['2'],'ranges':[['" + past.ToString("dd-MM-yyyy") + "','" + future.ToString("dd-MM-yyyy") + "']]},{'type':'timerange','ids':['3'],'ranges':[['" + past.ToString("HH:mm") + "','" + future.ToString("HH:mm") + "']]}]&all=[]";
 
-        Debug.Log(url); // testing
+        //Debug.Log(url); // testing
 
         List<KeyValuePair<int, string>> results = new List<KeyValuePair<int, string>>();
         yield return GetRequest(url, (response) =>
@@ -818,9 +818,18 @@ public class ViRMA_APIController : MonoBehaviour
         {
             int imageId = obj.Value["Id"];
             string imagePath = obj.Value["FileURI"];
-            string imageNameDDS = imagePath.Substring(0, imagePath.Length - 4) + ".dds";
-            KeyValuePair<int, string> imageIdPath = new KeyValuePair<int, string>(imageId, imageNameDDS);
-            results.Add(imageIdPath);
+
+            if (imagePath.Length > 0)
+            {
+                string imageNameDDS = imagePath.Substring(0, imagePath.Length - 4) + ".dds";
+                KeyValuePair<int, string> imageIdPath = new KeyValuePair<int, string>(imageId, imageNameDDS);
+                results.Add(imageIdPath);
+            }
+            else
+            {
+                Debug.LogError("Something wrong with this image ---> " + imagePath);
+            }
+            
         }
 
         onSuccess(results);

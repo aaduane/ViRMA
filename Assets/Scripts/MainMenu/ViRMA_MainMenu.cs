@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
-using Valve.VR;
 using Valve.VR.InteractionSystem;
 
 public class ViRMA_MainMenu : MonoBehaviour
@@ -20,7 +19,7 @@ public class ViRMA_MainMenu : MonoBehaviour
     {
         SetBtnDefaultState();
 
-        StartCoroutine(TestPosition()); // testing
+        //StartCoroutine(TestPosition()); // testing
     }
 
     public void SetBtnDefaultState()

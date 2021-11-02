@@ -604,20 +604,26 @@ public class ViRMA_VizController : MonoBehaviour
     {
         if (toHide)
         {
-            activeVizPosition = transform.position;
-            activeVizRotation = transform.rotation;
+            if (vizFullyLoaded)
+            {
+                activeVizPosition = transform.position;
+                activeVizRotation = transform.rotation;
 
-            transform.position = new Vector3(0, 9999, 0);
-            transform.rotation = Quaternion.identity;
+                transform.position = new Vector3(0, 9999, 0);
+                transform.rotation = Quaternion.identity;
 
-            vizFullyLoaded = false;          
+                vizFullyLoaded = false;
+            }                   
         }
         else
         {
-            transform.position = activeVizPosition;
-            transform.rotation = activeVizRotation;
+            if (vizFullyLoaded == false)
+            {
+                transform.position = activeVizPosition;
+                transform.rotation = activeVizRotation;
 
-            vizFullyLoaded = true;
+                vizFullyLoaded = true;
+            }           
         }      
     }
 

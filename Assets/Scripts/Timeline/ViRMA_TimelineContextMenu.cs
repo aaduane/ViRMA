@@ -13,6 +13,14 @@ public class ViRMA_TimelineContextMenu : MonoBehaviour
         globals = Player.instance.gameObject.GetComponent<ViRMA_GlobalsAndActions>();
     }
 
+    private void Update()
+    {
+        if (globals.timeline.timelineRb.velocity != Vector3.zero)
+        {
+            DestroyContextMenu();
+        }
+    }
+
     private void Start()
     {
         GameObject contextMenuBtnPrefab = Resources.Load("Prefabs/TimelineContextMenuBtn") as GameObject;
@@ -32,10 +40,16 @@ public class ViRMA_TimelineContextMenu : MonoBehaviour
     {
         if (triggeredCol.GetComponent<ViRMA_Drumstick>())
         {
-            targetTimelineChild.GetComponent<ViRMA_TimelineChild>().ToggleBorder(false);
-            targetTimelineChild.GetComponent<ViRMA_TimelineChild>().contextMenuActiveOnChild = false;
-            Destroy(gameObject);
+            DestroyContextMenu();
         }
+    }
+
+    private void DestroyContextMenu()
+    {
+        targetTimelineChild.GetComponent<ViRMA_TimelineChild>().ToggleBorder(false);
+        targetTimelineChild.GetComponent<ViRMA_TimelineChild>().contextMenuActiveOnChild = false;
+        transform.parent = null;
+        Destroy(gameObject);
     }
 
 }
