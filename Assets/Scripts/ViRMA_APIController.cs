@@ -362,7 +362,7 @@ public class ViRMA_APIController : MonoBehaviour
         }
     }
 
-    // viz
+    // viz API
     public static IEnumerator GetCells(Query query, Action<List<Cell>> onSuccess)
     {
         // OLD 1:   https://localhost:44317/api/cell?xAxis={'AxisType': 'Tagset', 'TagsetId': 3}&yAxis={'AxisType': 'Tagset', 'TagsetId': 7}&zAxis={'AxisType': 'Hierarchy', 'HierarchyNodeId': 77}&filters=[{'type': 'Tagset', 'tagId': 7},{'type': 'Hierarchy', 'nodeId': 5}]
@@ -523,7 +523,7 @@ public class ViRMA_APIController : MonoBehaviour
         onSuccess(axisLabels);
     }
 
-    // all tagsets and hierarchies
+    // all tagsets and hierarchies API
     public static IEnumerator GetTagsets(Action<List<Tag>> onSuccess)
     {
         yield return GetRequest("tagset", (response) =>
@@ -572,7 +572,7 @@ public class ViRMA_APIController : MonoBehaviour
         onSuccess(hierarchies);
     }
 
-    // dimension explorer
+    // dimension explorer API
     public static IEnumerator SearchHierachies(string searchParam, Action<List<Tag>> onSuccess)
     {
         //Debug.Log("Submitting... node/name=" + searchParam);
@@ -760,9 +760,11 @@ public class ViRMA_APIController : MonoBehaviour
         });
     }
      
-    // timeline 
+    // timeline API
     public static IEnumerator GetTimeline(List<Query.Filter> cellFiltersForTimeline, Action<List<KeyValuePair<int, string>>> onSuccess)
     {
+        // cell?filters=[{"type":%20"node",%20"ids":%20["691"]}]&all=[]
+
         string url = "cell?filters=[";
         foreach (Query.Filter filter in cellFiltersForTimeline)
         {
@@ -836,6 +838,8 @@ public class ViRMA_APIController : MonoBehaviour
     }
     public static IEnumerator GetTimelineMetadata(int targetId, Action<List<string>> onSuccess)
     {
+        // tag?cubeObjectId=169869
+
         string url = "tag?cubeObjectId=" + targetId;
 
         yield return GetRequest(url, (response) =>

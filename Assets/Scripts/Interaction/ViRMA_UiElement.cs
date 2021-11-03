@@ -151,6 +151,7 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 		SetBtnNormalState();
 	}
 
+	// general
 	private void SetKeyColliderSize()
 	{
 		Button btn = GetComponent<Button>();

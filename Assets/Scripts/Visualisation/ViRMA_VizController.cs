@@ -109,6 +109,9 @@ public class ViRMA_VizController : MonoBehaviour
         // add cells and axes to final parent to set default starting scale and position
         SetupDefaultScaleAndPosition();
 
+        // update main menu data to match new viz
+        globals.mainMenu.UpdateFiltersDisplay();
+
         // set loading flags to true and unfade controllers
         vizFullyLoaded = true;
         globals.queryController.vizQueryLoading = false;
@@ -745,7 +748,7 @@ public class ViRMA_VizController : MonoBehaviour
 
         // calculate bounding box again
         CalculateCellsAndAxesBounds();
-    }
+    } 
     private void CellNavigationLimiter()
     {
         if (Player.instance && !rigidBody.isKinematic)

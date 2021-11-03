@@ -56,6 +56,9 @@ public class ViRMA_QueryController : MonoBehaviour
         // buildingQuery.SetAxis("Y", 691, "node");
         buildingQuery.SetAxis("X", 690, "node");
 
+        buildingQuery.SetAxis("Y", 1770, "node");
+        buildingQuery.SetAxis("Z", 3733, "node");
+
         //buildingQuery.AddFilter(1770, "node");
         //buildingQuery.AddFilter(3733, "node");
 
