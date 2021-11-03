@@ -417,8 +417,8 @@ public class ViRMA_Timeline : MonoBehaviour
             timelineSectionChildren.Add(timelineChild);
         }
 
-        // get associated metadata for each child in section (API does not support concurrent HTTP requests)
-        StartCoroutine(GetTimelineSectionMetadata());
+        // get associated metadata for each child in section 
+        StartCoroutine(GetTimelineSectionMetadata()); // API does not support concurrent HTTP requests (can't happen in ViRMA_TimelineChild.cs)
 
         ToggleTimelineSectionNavigation(pageIndex);
 
@@ -481,24 +481,26 @@ public class ViRMA_Timeline : MonoBehaviour
 
                 timelineResults = results;
 
-                if (timelineResults.Count >= resultsRenderSize)
+                if (timelineResults.Count > 0)
                 {
-                    if (timelineResults.Count % resultsRenderSize == 0)
+                    if (timelineResults.Count >= resultsRenderSize)
                     {
-                        totalTimeLineSections = (timelineResults.Count / resultsRenderSize);
+                        if (timelineResults.Count % resultsRenderSize == 0)
+                        {
+                            totalTimeLineSections = (timelineResults.Count / resultsRenderSize);
+                        }
+                        else
+                        {
+                            totalTimeLineSections = (timelineResults.Count / resultsRenderSize) + 1;
+                        }
                     }
                     else
                     {
-                        totalTimeLineSections = (timelineResults.Count / resultsRenderSize) + 1;
+                        totalTimeLineSections = 1;
                     }
-                }
-                else
-                {
-                    totalTimeLineSections = 1;
-                }
 
-                //LoadTimelineSection(0);
-                LoadTimelineSection(0);
+                    LoadTimelineSection(0);
+                }          
 
             }));
         }
@@ -511,44 +513,45 @@ public class ViRMA_Timeline : MonoBehaviour
             savedTimelineChildId = targetTimelineChild.id;
         }
 
-        isContextTimeline = true;
-
         StartCoroutine(ViRMA_APIController.GetContextTimeline(targetTimelineChild.timestamp, contextTimelineTimespan, (results) => {
 
             contextTimelineResults = results;
 
-            if (contextTimelineResults.Count >= resultsRenderSize)
+            if (contextTimelineResults.Count > 0)
             {
-                if (contextTimelineResults.Count % resultsRenderSize == 0)
+                if (contextTimelineResults.Count >= resultsRenderSize)
                 {
-                    totalTimeLineSections = (contextTimelineResults.Count / resultsRenderSize);
+                    if (contextTimelineResults.Count % resultsRenderSize == 0)
+                    {
+                        totalTimeLineSections = (contextTimelineResults.Count / resultsRenderSize);
+                    }
+                    else
+                    {
+                        totalTimeLineSections = (contextTimelineResults.Count / resultsRenderSize) + 1;
+                    }
                 }
                 else
                 {
-                    totalTimeLineSections = (contextTimelineResults.Count / resultsRenderSize) + 1;
+                    totalTimeLineSections = 1;
                 }
-            }
-            else
-            {
-                totalTimeLineSections = 1;
-            }
 
-            int targetSection = 0;
-            for (int i = 0; i < contextTimelineResults.Count; i++)
-            {
-                if (contextTimelineResults[i].Key == targetTimelineChild.id)
+                int targetSection = 0;
+                for (int i = 0; i < contextTimelineResults.Count; i++)
                 {
-                    targetContextTimelineChildId = contextTimelineResults[i].Key;
-                    targetSection = i / resultsRenderSize;
+                    if (contextTimelineResults[i].Key == targetTimelineChild.id)
+                    {
+                        targetContextTimelineChildId = contextTimelineResults[i].Key;
+                        targetSection = i / resultsRenderSize;
 
-                    //Debug.Log(i + " divided by " + resultsRenderSize + " --> Target Section: " + targetSection);
+                        //Debug.Log(i + " divided by " + resultsRenderSize + " --> Target Section: " + targetSection);
 
-                    break;       
+                        break;
+                    }
                 }
-            }
 
-            LoadTimelineSection(targetSection);
-            
+                isContextTimeline = true;
+                LoadTimelineSection(targetSection);
+            }        
         }));
     }
 

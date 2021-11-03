@@ -327,7 +327,10 @@ public class ViRMA_APIController : MonoBehaviour
         yield return request.SendWebRequest();
         if (request.isNetworkError || request.isHttpError)
         {
-            throw new Exception("Cannot connect to database! Is it running?");
+            if (request.isNetworkError)
+            {
+                throw new Exception("Cannot connect to database! Is it running?");
+            }
         }
         string json = request.downloadHandler.text;
 
@@ -342,10 +345,23 @@ public class ViRMA_APIController : MonoBehaviour
         // parse JSON string off the main thread to prevent frame skips in Unity
         Thread thread = new Thread(() => {
             JSONNode response = JSON.Parse(json);
+
+            // for debugging
             if (debugging)
             {
                 Debug.Log("RESULTS COUNT ~ ~ ~ ~ ~ " + response.Count + " results!");
             }
+
+            // if API returns a status 404, set the response to null
+            if (response["status"] != null)
+            {
+                if (response["status"] == 404)
+                {
+                    Debug.LogWarning("STATUS 404: " + paramsURL);
+                    response = null;
+                }
+            }
+
             onSuccess(response);
         });
         thread.Start();
@@ -414,7 +430,7 @@ public class ViRMA_APIController : MonoBehaviour
             url = url.Replace("\'", "\"");
         }
 
-        Debug.Log("GetCells: " + url); // debugging
+        //Debug.Log("GetCells: " + url); // debugging
 
         yield return GetRequest(url, (response) =>
         {
@@ -426,13 +442,13 @@ public class ViRMA_APIController : MonoBehaviour
         {
             Cell newCell = new Cell();
             newCell.Coordinates = new Vector3(obj.Value["x"], obj.Value["y"], obj.Value["z"]);
-            if (obj.Value["CubeObjects"].Count > 0)
+            if (obj.Value["cubeObjects"].Count > 0)
             {
                 // OLD: 
                 // newCell.ImageName = obj.Value["CubeObjects"][0]["FileName"];
                 // newCell.ImageName = obj.Value["CubeObjects"][0]["FileURI"];
 
-                newCell.ImageName = obj.Value["CubeObjects"][0]["FileURI"];
+                newCell.ImageName = obj.Value["cubeObjects"][0]["fileURI"];
                 string imageNameDDS = newCell.ImageName.Substring(0, newCell.ImageName.Length - 4) + ".dds";
                 newCell.ImageName = imageNameDDS;             
             }
@@ -452,14 +468,14 @@ public class ViRMA_APIController : MonoBehaviour
         {
             string name;
             List<KeyValuePair<string, int>> labels = new List<KeyValuePair<string, int>>();
-            if (response["Tags"] == null)
+            if (response["tags"] == null)
             {
                 // hierarchy
-                name = response["Tag"]["Name"];
-                foreach (JSONObject child in response["Children"])
+                name = response["tag"]["name"];
+                foreach (JSONObject child in response["children"])
                 {
-                    int labelId = child["Id"];
-                    string labelName = child["Tag"]["Name"];
+                    int labelId = child["id"];
+                    string labelName = child["tag"]["name"];
                     int bracketIndex = labelName.IndexOf("(");
                     if (bracketIndex > -1)
                     {
@@ -472,11 +488,11 @@ public class ViRMA_APIController : MonoBehaviour
             else
             {
                 // tagset
-                name = response["Name"];
-                foreach (JSONObject child in response["Tags"])
+                name = response["name"];
+                foreach (JSONObject child in response["tags"])
                 {
-                    int labelId = child["Id"];
-                    string labelName = child["Name"];
+                    int labelId = child["id"];
+                    string labelName = child["name"];
                     int bracketIndex = labelName.IndexOf("(");
                     if (bracketIndex > -1)
                     {
@@ -524,7 +540,7 @@ public class ViRMA_APIController : MonoBehaviour
     }
 
     // all tagsets and hierarchies API
-    public static IEnumerator GetTagsets(Action<List<Tag>> onSuccess)
+    public static IEnumerator GetAllTagsets(Action<List<Tag>> onSuccess)
     {
         yield return GetRequest("tagset", (response) =>
         {
@@ -536,16 +552,16 @@ public class ViRMA_APIController : MonoBehaviour
         {
             Tag newTag = new Tag
             {
-                Id = obj.Value["Id"],
-                Label = obj.Value["Name"]
+                Id = obj.Value["id"],
+                Label = obj.Value["name"]
             };
             tagsets.Add(newTag);
         }
         onSuccess(tagsets);
     }
-    public static IEnumerator GetHierarchies(Action<List<Tag>> onSuccess)
+    public static IEnumerator GetAllHierarchies(Action<List<Tag>> onSuccess)
     {
-        yield return GetRequest("hierarchy/6", (response) =>
+        yield return GetRequest("hierarchy/", (response) =>
         {
             jsonData = response;
         });
@@ -564,8 +580,8 @@ public class ViRMA_APIController : MonoBehaviour
 
             Tag newTag = new Tag
             {
-                Id = obj.Value["Id"],
-                Label = obj.Value["Name"]
+                Id = obj.Value["id"],
+                Label = obj.Value["name"]
             };
             hierarchies.Add(newTag);
         }
@@ -595,10 +611,10 @@ public class ViRMA_APIController : MonoBehaviour
             Tag newTag = new Tag();
 
             // tag id
-            newTag.Id = obj.Value["Id"];
+            newTag.Id = obj.Value["id"];
 
             // tag name
-            string tagName = obj.Value["Name"];
+            string tagName = obj.Value["name"];
             int bracketIndex = tagName.IndexOf("(");
             if (bracketIndex > -1) {
                 tagName = tagName.Substring(0, bracketIndex);
@@ -606,15 +622,15 @@ public class ViRMA_APIController : MonoBehaviour
             newTag.Label = tagName;
 
             // if tag has a parent
-            if (obj.Value["ParentNode"] != null)
+            if (obj.Value["parentNode"] != null)
             {
                 Tag parentNode = new Tag();
 
                 // parent tag id
-                parentNode.Id = obj.Value["ParentNode"]["Id"];
+                parentNode.Id = obj.Value["parentNode"]["id"];
 
                 // parent tag name
-                string parentTagName = obj.Value["ParentNode"]["Name"];
+                string parentTagName = obj.Value["parentNode"]["name"];
                 int parentBracketIndex = parentTagName.IndexOf("(");
                 if (parentBracketIndex > -1)
                 {
@@ -651,10 +667,10 @@ public class ViRMA_APIController : MonoBehaviour
                     Tag newTag = new Tag();
 
                     // tag id
-                    newTag.Id = obj.Value["Id"];
+                    newTag.Id = obj.Value["id"];
 
                     // tag name
-                    string tagName = obj.Value["Name"];
+                    string tagName = obj.Value["name"];
                     int bracketIndex = tagName.IndexOf("(");
                     if (bracketIndex > -1)
                     {
@@ -680,10 +696,10 @@ public class ViRMA_APIController : MonoBehaviour
                         Tag newTag = new Tag();
 
                         // tag id
-                        newTag.Id = obj.Value["Id"];
+                        newTag.Id = obj.Value["id"];
 
                         // tag name
-                        string tagName = obj.Value["Name"];
+                        string tagName = obj.Value["name"];
                         int bracketIndex = tagName.IndexOf("(");
                         if (bracketIndex > -1)
                         {
@@ -715,10 +731,10 @@ public class ViRMA_APIController : MonoBehaviour
                 Tag newTag = new Tag();
 
                 // tag id
-                newTag.Id = obj.Value["Id"];
+                newTag.Id = obj.Value["id"];
 
                 // tag name
-                string tagName = obj.Value["Name"];
+                string tagName = obj.Value["name"];
                 int bracketIndex = tagName.IndexOf("(");
                 if (bracketIndex > -1)
                 {
@@ -745,10 +761,10 @@ public class ViRMA_APIController : MonoBehaviour
                 parentTag = new Tag();
 
                 // tag id
-                parentTag.Id = jsonData["Id"];
+                parentTag.Id = jsonData["id"];
 
                 // tag name
-                string tagName = jsonData["Name"];
+                string tagName = jsonData["name"];
                 int bracketIndex = tagName.IndexOf("(");
                 if (bracketIndex > -1)
                 {
@@ -763,7 +779,7 @@ public class ViRMA_APIController : MonoBehaviour
     // timeline API
     public static IEnumerator GetTimeline(List<Query.Filter> cellFiltersForTimeline, Action<List<KeyValuePair<int, string>>> onSuccess)
     {
-        // cell?filters=[{"type":%20"node",%20"ids":%20["691"]}]&all=[]
+        // cell?filters=[{'type':'node','ids':['699']},{'type':'tag','ids':['17']},{'type':'tag','ids':['147','132']}]&all=[];
 
         string url = "cell?filters=[";
         foreach (Query.Filter filter in cellFiltersForTimeline)
@@ -778,7 +794,6 @@ public class ViRMA_APIController : MonoBehaviour
         url = url.Substring(0, url.Length - 1) + "]&all=[]";
         url = url.Replace("\'", "\"");
 
-        // url = "cell?filters=[{'type':'node','ids':['699']},{'type':'tag','ids':['17']},{'type':'tag','ids':['147','132']}]&all=[]";
         Debug.Log("GetTimeline: " + url); // debugging
 
         List<KeyValuePair<int, string>> results = new List<KeyValuePair<int, string>>();
@@ -789,8 +804,8 @@ public class ViRMA_APIController : MonoBehaviour
 
         foreach (var obj in jsonData)
         {
-            int imageId = obj.Value["Id"];
-            string imagePath = obj.Value["FileURI"];
+            int imageId = obj.Value["id"];
+            string imagePath = obj.Value["fileURI"];
             string imageNameDDS = imagePath.Substring(0, imagePath.Length - 4) + ".dds";
             KeyValuePair<int, string> imageIdPath = new KeyValuePair<int, string>(imageId, imageNameDDS);
             results.Add(imageIdPath);
@@ -818,8 +833,8 @@ public class ViRMA_APIController : MonoBehaviour
 
         foreach (var obj in jsonData)
         {
-            int imageId = obj.Value["Id"];
-            string imagePath = obj.Value["FileURI"];
+            int imageId = obj.Value["id"];
+            string imagePath = obj.Value["fileURI"];
 
             if (imagePath.Length > 0)
             {

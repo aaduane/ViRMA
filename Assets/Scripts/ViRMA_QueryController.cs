@@ -27,22 +27,8 @@ public class ViRMA_QueryController : MonoBehaviour
     }
 
     private void Start()
-    {
-        /*    
-        StartCoroutine(ViRMA_APIController.GetTagsets((tagsets) => {
-            foreach (var tagset in tagsets)
-            {
-                //Debug.Log("Tagset: " + tagset.Id + " | " + tagset.Name); // debugging
-            }
-        }));
-
-        StartCoroutine(ViRMA_APIController.GetHierarchies((hierarchies) => {
-            foreach (var hierarchy in hierarchies)
-            {
-                //Debug.Log("Hierarchy: " + hierarchy.Id + " | " + hierarchy.Name); // debugging
-            }
-        }));       
-
+    {   
+        /*
         StartCoroutine(ViRMA_APIController.SearchHierachies("computer", (nodes) => {
             StartCoroutine(globals.dimExplorer.LoadDimExplorer(nodes));
         }));
@@ -52,23 +38,14 @@ public class ViRMA_QueryController : MonoBehaviour
         //buildingQuery.SetAxis("Y", 3733, "node");
         //buildingQuery.SetAxis("Z", 5, "tagset");
 
-        // buildingQuery.SetAxis("X", 13, "tagset");
-        // buildingQuery.SetAxis("Y", 691, "node");
+        //buildingQuery.SetAxis("X", 13, "tagset");
+
         buildingQuery.SetAxis("X", 690, "node");
+        //buildingQuery.SetAxis("Y", 691, "node");
 
-        buildingQuery.SetAxis("Y", 1770, "node");
-        buildingQuery.SetAxis("Z", 3733, "node");
+        //buildingQuery.AddFilter(147, "tag", 100);
+        //buildingQuery.AddFilter(132, "tag", 100);
 
-        //buildingQuery.AddFilter(1770, "node");
-        //buildingQuery.AddFilter(3733, "node");
-
-        // buildingQuery.AddFilter(147, "tag", 100);
-        // buildingQuery.AddFilter(132, "tag", 100);
-
-        //buildingQuery.AddFilter(45, "tag", 99);
-        //buildingQuery.RemoveFilter(147, "tag", 100);
-        //buildingQuery.RemoveFilter(132, "tag", 100);
-        //buildingQuery.RemoveFilter(1770, "node");
         //StartCoroutine(LateStart());
     }
 

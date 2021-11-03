@@ -110,7 +110,7 @@ public class ViRMA_TimelineChild : MonoBehaviour
 
         GetTimelineChildTexture();
 
-        //GetTimelineChildMetadata(); // API does not support concurrent HTTP requests (must happen in ViRMA_Timeline.cs)
+        // GetTimelineChildMetadata(); // API does not support concurrent HTTP requests (must happen in ViRMA_Timeline.cs)
     }
     public void GetTimelineChildTexture()
     {

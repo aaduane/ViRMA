@@ -25,9 +25,14 @@ public class ViRMA_MainMenu : MonoBehaviour
 
         SetAllBtnDefaultStates();
 
+
         // debugging
-        StartCoroutine(ToggleMainMenu(true));
-        DisableSections(); 
+        transform.parent = null;
+        transform.localPosition = new Vector3(0, 9999, 0);
+        transform.localRotation = Quaternion.identity;
+        transform.localScale = Vector3.one;
+        //StartCoroutine(ToggleMainMenu(true));
+        //DisableSections(); 
     }
 
     public void SetAllBtnDefaultStates()
