@@ -13,6 +13,11 @@ public class ViRMA_MainMenu : MonoBehaviour
 
     private Button[] allBtns;
 
+    private List<Tag> xParentChain;
+    private List<Tag> yParentChain;
+    private List<Tag> zParentChain;
+
+
     private void Awake()
     {
         // define ViRMA globals script
@@ -32,8 +37,7 @@ public class ViRMA_MainMenu : MonoBehaviour
         transform.localRotation = Quaternion.identity;
         transform.localScale = Vector3.one;
 
-        //StartCoroutine(ToggleMainMenu(true));
-        //DisableSections(); 
+        StartCoroutine(ToggleMainMenu(true));
     }
 
     public void SetAllBtnDefaultStates()
@@ -67,7 +71,6 @@ public class ViRMA_MainMenu : MonoBehaviour
             transform.localScale = Vector3.one * 0.3f;
             */
 
-
             // place in front of player
             Vector3 flattenedVector = Player.instance.bodyDirectionGuess;
             flattenedVector.y = 0;
@@ -86,7 +89,18 @@ public class ViRMA_MainMenu : MonoBehaviour
         
     }
 
-    public void UpdateFiltersDisplay()
+    public void UpdateMainMenuFilterDisplay()
+    {
+        GetProjectedFilterInfo();
+
+        /////////////////////////////////////////////////// yield here or come up with something more elegant?
+
+        Debug.Log("X |" + xParentChain.Count);
+        Debug.Log("Y |" + yParentChain.Count);
+        Debug.Log("Z |" + zParentChain.Count);
+    }
+
+    private void GetProjectedFilterInfo()
     {
         AxesLabels axesLabels = globals.vizController.activeAxesLabels;
 
@@ -94,11 +108,14 @@ public class ViRMA_MainMenu : MonoBehaviour
         {
             if (axesLabels.X.Type == "node")
             {
-                //StartCoroutine(GetAllParents(axesLabels.X.Id, "X"));
+                StartCoroutine(GetHierarchyParentChain(axesLabels.X.Id, "X"));
             }
             else if (axesLabels.X.Type == "tagset")
             {
-                
+                Tag tagsetParent = new Tag();
+                tagsetParent.Id = axesLabels.X.Id;
+                tagsetParent.Label = axesLabels.X.Label;
+                xParentChain = new List<Tag>() { tagsetParent };
             }
         }
 
@@ -106,11 +123,14 @@ public class ViRMA_MainMenu : MonoBehaviour
         {
             if (axesLabels.Y.Type == "node")
             {
-                //StartCoroutine(GetAllParents(axesLabels.Y.Id, "Y"));
+                StartCoroutine(GetHierarchyParentChain(axesLabels.Y.Id, "Y"));
             }
             else if (axesLabels.Y.Type == "tagset")
             {
-                
+                Tag tagsetParent = new Tag();
+                tagsetParent.Id = axesLabels.Y.Id;
+                tagsetParent.Label = axesLabels.Y.Label;
+                yParentChain = new List<Tag>() { tagsetParent };
             }
         }
 
@@ -118,16 +138,18 @@ public class ViRMA_MainMenu : MonoBehaviour
         {
             if (axesLabels.Z.Type == "node")
             {
-                //StartCoroutine(GetAllParents(axesLabels.Z.Id, "Z"));
+                StartCoroutine(GetHierarchyParentChain(axesLabels.Z.Id, "Z"));
             }
             else if (axesLabels.Z.Type == "tagset")
             {
-                
+                Tag tagsetParent = new Tag();
+                tagsetParent.Id = axesLabels.Z.Id;
+                tagsetParent.Label = axesLabels.Z.Label;
+                zParentChain = new List<Tag>() { tagsetParent };
             }
         }
     }
-
-    private IEnumerator GetAllParents(int targetId, string test)
+    private IEnumerator GetHierarchyParentChain(int targetId, string axis)
     {
         List<Tag> allParents = new List<Tag>();
 
@@ -148,10 +170,18 @@ public class ViRMA_MainMenu : MonoBehaviour
             }));
         }
 
-        foreach (var parent in allParents)
+        if (axis == "X")
         {
-            Debug.Log(test + " : " + parent.Label);
-        }   
+            xParentChain = allParents;
+        }
+        if (axis == "Y")
+        {
+            yParentChain = allParents;
+        }
+        if (axis == "Z")
+        {
+            zParentChain = allParents;
+        }
     }
 
     // testing
@@ -175,7 +205,7 @@ public class ViRMA_MainMenu : MonoBehaviour
     }
     private void DisableSections()
     {
-        //ui_projectedDimensions.SetActive(false);
+        ui_projectedDimensions.SetActive(false);
     }
 
 }
