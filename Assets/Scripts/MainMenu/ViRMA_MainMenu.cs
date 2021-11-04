@@ -31,6 +31,7 @@ public class ViRMA_MainMenu : MonoBehaviour
         transform.localPosition = new Vector3(0, 9999, 0);
         transform.localRotation = Quaternion.identity;
         transform.localScale = Vector3.one;
+
         //StartCoroutine(ToggleMainMenu(true));
         //DisableSections(); 
     }
@@ -93,7 +94,11 @@ public class ViRMA_MainMenu : MonoBehaviour
         {
             if (axesLabels.X.Type == "node")
             {
-                StartCoroutine(GetAllParents(axesLabels.X.Id, "X"));
+                //StartCoroutine(GetAllParents(axesLabels.X.Id, "X"));
+            }
+            else if (axesLabels.X.Type == "tagset")
+            {
+                
             }
         }
 
@@ -101,7 +106,11 @@ public class ViRMA_MainMenu : MonoBehaviour
         {
             if (axesLabels.Y.Type == "node")
             {
-                StartCoroutine(GetAllParents(axesLabels.X.Id, "Y"));
+                //StartCoroutine(GetAllParents(axesLabels.Y.Id, "Y"));
+            }
+            else if (axesLabels.Y.Type == "tagset")
+            {
+                
             }
         }
 
@@ -109,7 +118,11 @@ public class ViRMA_MainMenu : MonoBehaviour
         {
             if (axesLabels.Z.Type == "node")
             {
-                StartCoroutine(GetAllParents(axesLabels.X.Id, "Z"));
+                //StartCoroutine(GetAllParents(axesLabels.Z.Id, "Z"));
+            }
+            else if (axesLabels.Z.Type == "tagset")
+            {
+                
             }
         }
     }

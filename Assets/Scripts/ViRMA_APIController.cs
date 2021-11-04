@@ -343,32 +343,39 @@ public class ViRMA_APIController : MonoBehaviour
         }
 
         // parse JSON string off the main thread to prevent frame skips in Unity
+        JSONNode response = JSON.Parse("");
         Thread thread = new Thread(() => {
-            JSONNode response = JSON.Parse(json);
-
-            // for debugging
-            if (debugging)
-            {
-                Debug.Log("RESULTS COUNT ~ ~ ~ ~ ~ " + response.Count + " results!");
-            }
-
-            // if API returns a status 404, set the response to null
-            if (response["status"] != null)
-            {
-                if (response["status"] == 404)
-                {
-                    Debug.LogWarning("STATUS 404: " + paramsURL);
-                    response = null;
-                }
-            }
-
-            onSuccess(response);
+            response = JSON.Parse(json);
         });
         thread.Start();
         while (thread.IsAlive)
         {
             yield return null;
         }
+
+        // for debugging
+        if (debugging)
+        {
+            Debug.Log("RESULTS COUNT ~ ~ ~ ~ ~ " + response.Count + " results!");
+        }
+
+        // if API returns a status 404, set the response to null
+        if (response == "")
+        {
+            Debug.LogWarning("JSON PARSE FAILED: " + paramsURL);
+            response = null;
+        }
+        else if (response["status"] != null)
+        {
+            if (response["status"] == 404)
+            {
+                Debug.LogWarning("STATUS 404: " + paramsURL);
+                response = null;
+            }
+        }
+
+        // return the parsed JSON response
+        onSuccess(response);
 
         // for debugging
         if (debugging)
@@ -794,7 +801,7 @@ public class ViRMA_APIController : MonoBehaviour
         url = url.Substring(0, url.Length - 1) + "]&all=[]";
         url = url.Replace("\'", "\"");
 
-        Debug.Log("GetTimeline: " + url); // debugging
+        //Debug.Log("GetTimeline: " + url); // debugging
 
         List<KeyValuePair<int, string>> results = new List<KeyValuePair<int, string>>();
         yield return GetRequest(url, (response) =>

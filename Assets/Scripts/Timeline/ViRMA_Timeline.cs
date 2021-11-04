@@ -417,8 +417,8 @@ public class ViRMA_Timeline : MonoBehaviour
             timelineSectionChildren.Add(timelineChild);
         }
 
-        // get associated metadata for each child in section 
-        StartCoroutine(GetTimelineSectionMetadata()); // API does not support concurrent HTTP requests (can't happen in ViRMA_TimelineChild.cs)
+        // get associated metadata for each child in section (for non-concurrent fetch)
+        //StartCoroutine(GetTimelineSectionMetadata()); 
 
         ToggleTimelineSectionNavigation(pageIndex);
 

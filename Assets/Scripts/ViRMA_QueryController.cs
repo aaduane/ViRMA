@@ -27,24 +27,24 @@ public class ViRMA_QueryController : MonoBehaviour
     }
 
     private void Start()
-    {   
+    {
         /*
         StartCoroutine(ViRMA_APIController.SearchHierachies("computer", (nodes) => {
             StartCoroutine(globals.dimExplorer.LoadDimExplorer(nodes));
         }));
         */
 
-        //buildingQuery.SetAxis("X", 1770, "node");
-        //buildingQuery.SetAxis("Y", 3733, "node");
-        //buildingQuery.SetAxis("Z", 5, "tagset");
+        buildingQuery.SetAxis("X", 1770, "node"); // computer
+        buildingQuery.SetAxis("Y", 3733, "node"); // desk
 
-        //buildingQuery.SetAxis("X", 13, "tagset");
+        //buildingQuery.SetAxis("X", 690, "node"); // domestic animal
+        //buildingQuery.SetAxis("Y", 691, "node"); // dog
 
-        buildingQuery.SetAxis("X", 690, "node");
-        //buildingQuery.SetAxis("Y", 691, "node");
+        //buildingQuery.SetAxis("Z", 5, "tagset"); // day of the week (string)
+        buildingQuery.SetAxis("Z", 13, "tagset"); // timezone
 
-        //buildingQuery.AddFilter(147, "tag", 100);
-        //buildingQuery.AddFilter(132, "tag", 100);
+        //buildingQuery.AddFilter(147, "tag", 100); // 6 (Saturday)
+        //buildingQuery.AddFilter(132, "tag", 100); // 7 (Sunday
 
         //StartCoroutine(LateStart());
     }
