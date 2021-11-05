@@ -177,7 +177,7 @@ public class ViRMA_TimelineChild : MonoBehaviour
                     border.transform.localRotation = transform.localRotation;
                     float borderThickness = transform.localScale.x * 0.1f;
                     border.transform.localScale = new Vector3(transform.localScale.x + borderThickness, transform.localScale.y + borderThickness, transform.localScale.z * 0.5f);
-                    border.GetComponent<Renderer>().material.color = ViRMA_Colors.axisTextBlue;
+                    border.GetComponent<Renderer>().material.color = ViRMA_Colors.axisDarkBlue;
                     hasBorder = true;
                 }
             }              

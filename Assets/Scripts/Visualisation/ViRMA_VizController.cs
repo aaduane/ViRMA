@@ -110,7 +110,7 @@ public class ViRMA_VizController : MonoBehaviour
         SetupDefaultScaleAndPosition();
 
         // update main menu data to match new viz
-        globals.mainMenu.UpdateMainMenuFilterDisplay();
+        globals.mainMenu.FetchProjectedFilterMetadata();
 
         // set loading flags to true and unfade controllers
         vizFullyLoaded = true;

@@ -319,7 +319,7 @@ public class ViRMA_Timeline : MonoBehaviour
             nextBtn = Instantiate(timelineNavPrefab);
             nextBtn.AddComponent<ViRMA_TimelineChild>().isNextBtn = true;
             nextBtn.GetComponentInChildren<TextMesh>().text = "Next\n(" + (newPageIndex + 2) + "/" + totalTimeLineSections + ")";
-            nextBtn.GetComponent<Renderer>().material.SetColor("_Color", ViRMA_Colors.axisTextBlue);
+            nextBtn.GetComponent<Renderer>().material.SetColor("_Color", ViRMA_Colors.axisDarkBlue);
             nextBtn.name = "NextBtn";
             nextBtn.transform.parent = timelineChildrenWrapper.transform;
             nextBtn.transform.SetAsLastSibling();
@@ -333,7 +333,7 @@ public class ViRMA_Timeline : MonoBehaviour
             prevBtn = Instantiate(timelineNavPrefab);
             prevBtn.AddComponent<ViRMA_TimelineChild>().isPrevBtn = true;
             prevBtn.GetComponentInChildren<TextMesh>().text = "Previous\n(" + newPageIndex + "/" + totalTimeLineSections + ")";
-            prevBtn.GetComponent<Renderer>().material.SetColor("_Color", ViRMA_Colors.axisTextBlue);
+            prevBtn.GetComponent<Renderer>().material.SetColor("_Color", ViRMA_Colors.axisDarkBlue);
             prevBtn.name = "PrevBtn";
             prevBtn.transform.parent = timelineChildrenWrapper.transform;
             prevBtn.transform.SetAsFirstSibling();

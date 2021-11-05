@@ -48,7 +48,7 @@ public class ViRMA_RollUpPoint : MonoBehaviour
 
         if (x)
         {
-            axisLabelText.color = ViRMA_Colors.axisTextRed;
+            axisLabelText.color = ViRMA_Colors.axisDarkRed;
             axisLabelObj.name = axisLabel + "_" + axisId;
             Vector3 xPos = axisLabelObj.transform.localPosition;
             xPos.z -= 1;
@@ -57,7 +57,7 @@ public class ViRMA_RollUpPoint : MonoBehaviour
         }
         if (y)
         {
-            axisLabelText.color = ViRMA_Colors.axisTextGreen;
+            axisLabelText.color = ViRMA_Colors.axisDarkGreen;
             axisLabelObj.name = axisLabel + "_" + axisId;
             Vector3 yPos = axisLabelObj.transform.localPosition;
             yPos.x -= 1;
@@ -66,7 +66,7 @@ public class ViRMA_RollUpPoint : MonoBehaviour
         }
         if (z)
         {
-            axisLabelText.color = ViRMA_Colors.axisTextBlue;
+            axisLabelText.color = ViRMA_Colors.axisDarkBlue;
             axisLabelObj.name = axisLabel + "_" + axisId;
             Vector3 zPos = axisLabelObj.transform.localPosition;
             zPos.x -= 1;

@@ -33,7 +33,7 @@ public class ViRMA_TimeLineContextMenuBtn : MonoBehaviour
             innerBgRend.GetPropertyBlock(innerBgPropBlock);
             innerBgPropBlock.SetColor("_Color", Color.white);
             innerBgRend.SetPropertyBlock(innerBgPropBlock);
-            textMesh.color = ViRMA_Colors.axisTextBlue;
+            textMesh.color = ViRMA_Colors.axisDarkBlue;
         }
     }
     private void OnTriggerExit(Collider triggeredCol)
@@ -46,7 +46,7 @@ public class ViRMA_TimeLineContextMenuBtn : MonoBehaviour
             }
 
             innerBgRend.GetPropertyBlock(innerBgPropBlock);
-            innerBgPropBlock.SetColor("_Color", ViRMA_Colors.axisTextBlue);
+            innerBgPropBlock.SetColor("_Color", ViRMA_Colors.axisDarkBlue);
             innerBgRend.SetPropertyBlock(innerBgPropBlock);
             textMesh.color = Color.white;
         }
@@ -60,11 +60,11 @@ public class ViRMA_TimeLineContextMenuBtn : MonoBehaviour
         textMesh.color = Color.white;
 
         outerBgRend.GetPropertyBlock(outerBgPropBlock);
-        outerBgPropBlock.SetColor("_Color", ViRMA_Colors.axisTextBlue);
+        outerBgPropBlock.SetColor("_Color", ViRMA_Colors.axisDarkBlue);
         outerBgRend.SetPropertyBlock(outerBgPropBlock);
 
         innerBgRend.GetPropertyBlock(innerBgPropBlock);
-        innerBgPropBlock.SetColor("_Color", ViRMA_Colors.axisTextBlue);
+        innerBgPropBlock.SetColor("_Color", ViRMA_Colors.axisDarkBlue);
         innerBgRend.SetPropertyBlock(innerBgPropBlock);
     }
 

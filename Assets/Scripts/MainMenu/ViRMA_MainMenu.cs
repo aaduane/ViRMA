@@ -8,6 +8,10 @@ public class ViRMA_MainMenu : MonoBehaviour
 {
     private ViRMA_GlobalsAndActions globals;
 
+    private bool xParentChainFetched;
+    private bool yParentChainFetched;
+    private bool zParentChainFetched;
+
     // main menu sections (set in editor)
     public GameObject ui_projectedDimensions;
 
@@ -17,6 +21,9 @@ public class ViRMA_MainMenu : MonoBehaviour
     private List<Tag> yParentChain;
     private List<Tag> zParentChain;
 
+    private Transform xBtnWrapper;
+    private Transform yBtnWrapper;
+    private Transform zBtnWrapper;
 
     private void Awake()
     {
@@ -26,11 +33,6 @@ public class ViRMA_MainMenu : MonoBehaviour
 
     private void Start()
     {
-        GenerateTestScrollBtns();
-
-        SetAllBtnDefaultStates();
-
-
         // debugging
         transform.parent = null;
         transform.localPosition = new Vector3(0, 9999, 0);
@@ -40,6 +42,243 @@ public class ViRMA_MainMenu : MonoBehaviour
         StartCoroutine(ToggleMainMenu(true));
     }
 
+    private void Update()
+    {
+        if (xParentChainFetched && yParentChainFetched && zParentChainFetched)
+        {
+            UpdateProjFilerBtns();
+
+            xParentChainFetched = false;
+            yParentChainFetched = false;
+            zParentChainFetched = false;          
+        }
+    }
+
+    // projected filters
+    public void FetchProjectedFilterMetadata()
+    {
+        xParentChain = new List<Tag>();
+        yParentChain = new List<Tag>();
+        zParentChain = new List<Tag>();
+
+        xParentChainFetched = false;
+        yParentChainFetched = false;
+        zParentChainFetched = false;
+
+        AxesLabels axesLabels = globals.vizController.activeAxesLabels;
+
+        if (axesLabels.X != null)
+        {
+            if (axesLabels.X.Type == "node")
+            {
+                StartCoroutine(GetHierarchyParentChain(axesLabels.X.Id, "X"));
+            }
+            else if (axesLabels.X.Type == "tagset")
+            {
+                Tag tagsetParent = new Tag();
+                tagsetParent.Id = axesLabels.X.Id;
+                tagsetParent.Label = axesLabels.X.Label;
+                xParentChain = new List<Tag>() { tagsetParent };
+                xParentChainFetched = true;
+            }
+        }
+        else
+        {
+            xParentChainFetched = true;
+        }
+
+        if (axesLabels.Y != null)
+        {
+            if (axesLabels.Y.Type == "node")
+            {
+                StartCoroutine(GetHierarchyParentChain(axesLabels.Y.Id, "Y"));
+            }
+            else if (axesLabels.Y.Type == "tagset")
+            {
+                Tag tagsetParent = new Tag();
+                tagsetParent.Id = axesLabels.Y.Id;
+                tagsetParent.Label = axesLabels.Y.Label;
+                yParentChain = new List<Tag>() { tagsetParent };
+                yParentChainFetched = true;
+            }
+        }
+        else
+        {
+            yParentChainFetched = true;
+        }
+
+        if (axesLabels.Z != null)
+        {
+            if (axesLabels.Z.Type == "node")
+            {
+                StartCoroutine(GetHierarchyParentChain(axesLabels.Z.Id, "Z"));
+            }
+            else if (axesLabels.Z.Type == "tagset")
+            {
+                Tag tagsetParent = new Tag();
+                tagsetParent.Id = axesLabels.Z.Id;
+                tagsetParent.Label = axesLabels.Z.Label;
+                zParentChain = new List<Tag>() { tagsetParent };
+                zParentChainFetched = true;
+            }
+        }
+        else
+        {
+            zParentChainFetched = true;
+        }
+    }
+    private IEnumerator GetHierarchyParentChain(int targetId, string axis)
+    {
+        List<Tag> allParents = new List<Tag>();
+
+        bool traveseringHierarchy = true;
+        int idChecker = targetId;
+        while (traveseringHierarchy)
+        {
+            yield return StartCoroutine(ViRMA_APIController.GetHierarchyParent(idChecker, (newParent) => {
+                if (newParent != null)
+                {
+                    allParents.Add(newParent);
+                    idChecker = newParent.Id;
+                }
+                else
+                {
+                    traveseringHierarchy = false;
+                }
+            }));
+        }
+
+        if (axis == "X")
+        {
+            xParentChain = allParents;
+            xParentChainFetched = true;
+        }
+        if (axis == "Y")
+        {
+            yParentChain = allParents;
+            yParentChainFetched = true;
+        }
+        if (axis == "Z")
+        {
+            zParentChain = allParents;
+            zParentChainFetched = true;
+        }
+    }
+    private void UpdateProjFilerBtns()
+    {
+        ViRMA_UIScrollable[] scrollableUis = ui_projectedDimensions.GetComponentsInChildren<ViRMA_UIScrollable>();
+
+        xBtnWrapper = scrollableUis[0].transform.GetChild(0).transform;
+        yBtnWrapper = scrollableUis[1].transform.GetChild(0).transform;
+        zBtnWrapper = scrollableUis[2].transform.GetChild(0).transform;
+
+        GameObject xTemplateBtn = xBtnWrapper.transform.GetChild(0).gameObject;
+        GameObject yTemplateBtn = yBtnWrapper.transform.GetChild(0).gameObject;
+        GameObject zTemplateBtn = zBtnWrapper.transform.GetChild(0).gameObject;
+
+        xParentChain.Reverse();
+        for (int i = 0; i < xParentChain.Count; i++)
+        {
+            GameObject newBtn = Instantiate(xTemplateBtn, xBtnWrapper);
+            newBtn.GetComponentInChildren<Text>().text = xParentChain[i].Label;
+            newBtn.name = xParentChain[i].Label + "_" + xParentChain[i].Id;
+            if (i == xParentChain.Count - 1)
+            {
+                Destroy(xTemplateBtn);
+            }
+        }
+        xBtnWrapper.parent.GetComponent<ScrollRect>().verticalNormalizedPosition = 0;
+
+        yParentChain.Reverse();
+        for (int i = 0; i < yParentChain.Count; i++)
+        {
+            GameObject newBtn = Instantiate(yTemplateBtn, yBtnWrapper);
+            newBtn.GetComponentInChildren<Text>().text = yParentChain[i].Label;
+            newBtn.name = yParentChain[i].Label + "_" + yParentChain[i].Id;
+            if (i == yParentChain.Count - 1)
+            {
+                Destroy(yTemplateBtn);
+            }
+        }
+
+        zParentChain.Reverse();
+        for (int i = 0; i < zParentChain.Count; i++)
+        {
+            GameObject newBtn = Instantiate(zTemplateBtn, zBtnWrapper);
+            newBtn.GetComponentInChildren<Text>().text = zParentChain[i].Label;
+            newBtn.name = zParentChain[i].Label + "_" + zParentChain[i].Id;
+            if (i == zParentChain.Count - 1)
+            {
+                Destroy(zTemplateBtn);
+            }
+        }
+
+        SetProjFilterBtnStates();
+
+        StartCoroutine(ScrollBtnWrappersToBottom());
+    }
+    private IEnumerator ScrollBtnWrappersToBottom()
+    {
+        yield return new WaitForEndOfFrame();
+
+        xBtnWrapper.parent.GetComponent<ScrollRect>().verticalNormalizedPosition = 0;
+        yBtnWrapper.parent.GetComponent<ScrollRect>().verticalNormalizedPosition = 0;
+        zBtnWrapper.parent.GetComponent<ScrollRect>().verticalNormalizedPosition = 0;
+    }
+    private void SetProjFilterBtnStates()
+    {
+        ViRMA_UIScrollable[] scrollableUis = ui_projectedDimensions.GetComponentsInChildren<ViRMA_UIScrollable>();
+        for (int i = 0; i < scrollableUis.Length; i++)
+        {
+            Button[] buttons = scrollableUis[i].GetComponentsInChildren<Button>();
+            for (int j = 0; j < buttons.Length; j++)
+            {
+                GameObject buttonObj = buttons[j].gameObject;
+                Text btnText = buttonObj.GetComponentInChildren<Text>();
+                Image btnBackground = buttonObj.GetComponent<Image>();
+
+                if (i == 0)
+                {
+                    // x
+                    btnBackground.color = ViRMA_Colors.axisLightRed;
+                    btnText.color = Color.white;
+                    if (j == buttons.Length - 1)
+                    {
+                        btnBackground.color = ViRMA_Colors.axisRed;
+                    }
+                }
+                else if (i == 1)
+                {
+                    // y 
+                    btnBackground.color = ViRMA_Colors.axisLightGreen;
+                    btnText.color = Color.white;
+                    if (j == buttons.Length - 1)
+                    {
+                        btnBackground.color = ViRMA_Colors.axisGreen;
+                    }
+                }
+                else if (i == 2)
+                {
+                    // z
+                    btnBackground.color = ViRMA_Colors.axisLightBlue;
+                    btnText.color = Color.white;
+                    if (j == buttons.Length - 1)
+                    {
+                        btnBackground.color = ViRMA_Colors.axisBlue;
+                    }
+                }
+
+                if (btnText.text == "Loading")
+                {
+                    buttonObj.name = "placeholder";
+                    btnText.text = "None";
+                    btnBackground.color = Color.grey;
+                }
+            }
+        }
+    }
+
+    // general
     public void SetAllBtnDefaultStates()
     {
         allBtns = GetComponentsInChildren<Button>();
@@ -55,7 +294,6 @@ public class ViRMA_MainMenu : MonoBehaviour
             }
         }
     }
-
     private IEnumerator ToggleMainMenu(bool toShow)
     {
         yield return new WaitForSeconds(1);
@@ -88,102 +326,8 @@ public class ViRMA_MainMenu : MonoBehaviour
         }      
         
     }
-
-    public void UpdateMainMenuFilterDisplay()
-    {
-        GetProjectedFilterInfo();
-
-        /////////////////////////////////////////////////// yield here or come up with something more elegant?
-
-        Debug.Log("X |" + xParentChain.Count);
-        Debug.Log("Y |" + yParentChain.Count);
-        Debug.Log("Z |" + zParentChain.Count);
-    }
-
-    private void GetProjectedFilterInfo()
-    {
-        AxesLabels axesLabels = globals.vizController.activeAxesLabels;
-
-        if (axesLabels.X != null)
-        {
-            if (axesLabels.X.Type == "node")
-            {
-                StartCoroutine(GetHierarchyParentChain(axesLabels.X.Id, "X"));
-            }
-            else if (axesLabels.X.Type == "tagset")
-            {
-                Tag tagsetParent = new Tag();
-                tagsetParent.Id = axesLabels.X.Id;
-                tagsetParent.Label = axesLabels.X.Label;
-                xParentChain = new List<Tag>() { tagsetParent };
-            }
-        }
-
-        if (axesLabels.Y != null)
-        {
-            if (axesLabels.Y.Type == "node")
-            {
-                StartCoroutine(GetHierarchyParentChain(axesLabels.Y.Id, "Y"));
-            }
-            else if (axesLabels.Y.Type == "tagset")
-            {
-                Tag tagsetParent = new Tag();
-                tagsetParent.Id = axesLabels.Y.Id;
-                tagsetParent.Label = axesLabels.Y.Label;
-                yParentChain = new List<Tag>() { tagsetParent };
-            }
-        }
-
-        if (axesLabels.Z != null)
-        {
-            if (axesLabels.Z.Type == "node")
-            {
-                StartCoroutine(GetHierarchyParentChain(axesLabels.Z.Id, "Z"));
-            }
-            else if (axesLabels.Z.Type == "tagset")
-            {
-                Tag tagsetParent = new Tag();
-                tagsetParent.Id = axesLabels.Z.Id;
-                tagsetParent.Label = axesLabels.Z.Label;
-                zParentChain = new List<Tag>() { tagsetParent };
-            }
-        }
-    }
-    private IEnumerator GetHierarchyParentChain(int targetId, string axis)
-    {
-        List<Tag> allParents = new List<Tag>();
-
-        bool traveseringHierarchy = true;
-        int idChecker = targetId;
-        while (traveseringHierarchy)
-        {
-            yield return StartCoroutine(ViRMA_APIController.GetHierarchyParent(idChecker, (newParent) => {
-                if (newParent != null)
-                {
-                    allParents.Add(newParent);
-                    idChecker = newParent.Id;
-                }
-                else
-                {
-                    traveseringHierarchy = false;
-                }
-            }));
-        }
-
-        if (axis == "X")
-        {
-            xParentChain = allParents;
-        }
-        if (axis == "Y")
-        {
-            yParentChain = allParents;
-        }
-        if (axis == "Z")
-        {
-            zParentChain = allParents;
-        }
-    }
-
+    
+    
     // testing
     private void GenerateTestScrollBtns()
     {
@@ -207,5 +351,7 @@ public class ViRMA_MainMenu : MonoBehaviour
     {
         ui_projectedDimensions.SetActive(false);
     }
+
+    
 
 }

@@ -41,7 +41,7 @@ public class ViRMA_QueryController : MonoBehaviour
         //buildingQuery.SetAxis("Y", 691, "node"); // dog
 
         //buildingQuery.SetAxis("Z", 5, "tagset"); // day of the week (string)
-        buildingQuery.SetAxis("Z", 13, "tagset"); // timezone
+        //buildingQuery.SetAxis("Z", 13, "tagset"); // timezone
 
         //buildingQuery.AddFilter(147, "tag", 100); // 6 (Saturday)
         //buildingQuery.AddFilter(132, "tag", 100); // 7 (Sunday
