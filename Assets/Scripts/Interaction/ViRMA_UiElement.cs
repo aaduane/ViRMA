@@ -9,6 +9,7 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 	// SteamVR: used for UI interaction with controller
 	private ViRMA_GlobalsAndActions globals;
 	private ViRMA_Keyboard keyboard;
+	private ViRMA_MainMenu mainMenu;
 
 	public CustomEvents.UnityEventHand onHandClick;
 	protected Hand currentHand;
@@ -47,17 +48,31 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 			button.transition = Selectable.Transition.None;
 		}
 
-		// find out if UI element is part of a Virma Keyboard
-		Transform t = transform;
-		while (t.parent != null)
+		// find out if UI element is part of a ViRMA Keyboard
+		Transform checkKeyboard = transform;
+		while (checkKeyboard.parent != null)
         {
-			if (t.parent.GetComponent<ViRMA_Keyboard>())
+			if (checkKeyboard.parent.GetComponent<ViRMA_Keyboard>())
             {
-				keyboard = t.parent.GetComponent<ViRMA_Keyboard>();
+				keyboard = checkKeyboard.parent.GetComponent<ViRMA_Keyboard>();
 				break;
 			}
-			t = t.parent.transform;
+			checkKeyboard = checkKeyboard.parent.transform;
         }
+
+		// find out if UI element is part of a main menu
+		/*
+		Transform checkMainMenu = transform;
+		while (checkMainMenu.parent != null)
+		{
+			if (checkMainMenu.parent.GetComponent<ViRMA_MainMenu>())
+			{
+				mainMenu = checkMainMenu.parent.GetComponent<ViRMA_MainMenu>();
+				break;
+			}
+			checkMainMenu = checkMainMenu.parent.transform;
+		}
+		*/
 	}
 
     private void Start()

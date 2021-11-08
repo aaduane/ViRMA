@@ -265,7 +265,7 @@ public class AxesLabels {
         public AxisLabel(int id, string type, string label, List<KeyValuePair<string, int>> labels)
         {
             Id = id;
-            Label = label;
+            Label = Sanitise(label);
             Type = type;
             Labels = labels;
         }
@@ -290,6 +290,16 @@ public class AxesLabels {
         }
     }
 
+    private static string Sanitise(string unsanitisedLabel)
+    {
+        string sanitisedLabel = unsanitisedLabel;
+        int bracketIndex = unsanitisedLabel.IndexOf("(");
+        if (bracketIndex > -1)
+        {
+            sanitisedLabel = unsanitisedLabel.Substring(0, bracketIndex);
+        }
+        return sanitisedLabel;
+    }
 }
 
 public class ViRMA_APIController : MonoBehaviour

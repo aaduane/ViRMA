@@ -14,10 +14,6 @@ public class ViRMA_Colors : MonoBehaviour
     public static Color32 axisDarkGreen = new Color32(22, 145, 73, 255);
     public static Color32 axisDarkBlue = new Color32(21, 82, 122, 255);
 
-    public static Color32 axisLightRed = new Color32(237, 135, 123, 255); // working on... 
-    public static Color32 axisLightGreen = new Color32(39, 174, 96, 255); // not done
-    public static Color32 axisLightBlue = new Color32(35, 99, 142, 255); // not done
-
     public static Color32 lightBlack = new Color32(52, 73, 94, 255);
     public static Color32 lightBlue = new Color32(52, 152, 219, 255);
     public static Color32 BrightenColor(Color32 colorToBrighten)

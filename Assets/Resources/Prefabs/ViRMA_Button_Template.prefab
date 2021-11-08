@@ -94,7 +94,7 @@ GameObject:
   - component: {fileID: 1629216637748789602}
   - component: {fileID: 1629216637748789603}
   m_Layer: 9
-  m_Name: Button 1
+  m_Name: ViRMA_Button_Template
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -280,3 +280,6 @@ MonoBehaviour:
   onHandClick:
     m_PersistentCalls:
       m_Calls: []
+  normalBackgroundColor: {r: 0, g: 0, b: 0, a: 0}
+  normalTextColor: {r: 0, g: 0, b: 0, a: 0}
+  buttonFaded: 0

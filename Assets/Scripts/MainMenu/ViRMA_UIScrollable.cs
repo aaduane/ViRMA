@@ -48,8 +48,11 @@ public class ViRMA_UIScrollable : MonoBehaviour
             float joyStickDirection = globals.menuInteraction_Scroll.GetAxis(SteamVR_Input_Sources.Any).y;
             if (joyStickDirection != 0)
             {
-                float multiplier = joyStickDirection * 10f;
-                scrollRect.verticalNormalizedPosition = (scrollRect.verticalNormalizedPosition + multiplier * Time.deltaTime);
+                //float multiplier = joyStickDirection * 5f;
+                //scrollRect.verticalNormalizedPosition = (scrollRect.verticalNormalizedPosition + multiplier * Time.deltaTime);
+
+                float multiplier = joyStickDirection * 0.05f;
+                scrollRect.verticalNormalizedPosition = scrollRect.verticalNormalizedPosition + multiplier;
             }
         }
     }
