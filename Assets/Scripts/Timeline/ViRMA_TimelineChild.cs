@@ -207,7 +207,7 @@ public class ViRMA_TimelineChild : MonoBehaviour
             StartCoroutine(ViRMA_APIController.GetTimelineMetadata(id, (metadata) => {
                 tags = metadata;
                 var testing = String.Join(" | ", tags.ToArray());
-                Debug.Log(id + " : " + testing);
+                //Debug.Log(id + " : " + testing);
             }));
         }
     }

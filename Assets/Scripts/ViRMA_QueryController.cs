@@ -36,7 +36,7 @@ public class ViRMA_QueryController : MonoBehaviour
 
         buildingQuery.SetAxis("X", 1770, "node"); // computer
         buildingQuery.SetAxis("Y", 3733, "node"); // desk
-        buildingQuery.SetAxis("Z", 690, "node"); // desk
+        //buildingQuery.SetAxis("Z", 690, "node"); // desk
 
         //buildingQuery.SetAxis("X", 690, "node"); // domestic animal
         //buildingQuery.SetAxis("Y", 691, "node"); // dog
@@ -44,8 +44,10 @@ public class ViRMA_QueryController : MonoBehaviour
         //buildingQuery.SetAxis("Z", 5, "tagset"); // day of the week (string)
         //buildingQuery.SetAxis("Z", 13, "tagset"); // timezone
 
-        //buildingQuery.AddFilter(147, "tag", 100); // 6 (Saturday)
-        //buildingQuery.AddFilter(132, "tag", 100); // 7 (Sunday
+        buildingQuery.AddFilter(147, "tag", 100); // 6 (Saturday)
+        buildingQuery.AddFilter(132, "tag", 100); // 7 (Sunday
+        buildingQuery.AddFilter(147, "tag", 100); // 6 (Saturday)
+        buildingQuery.AddFilter(132, "tag", 100); // 7 (Sunday
 
         //StartCoroutine(LateStart());
     }

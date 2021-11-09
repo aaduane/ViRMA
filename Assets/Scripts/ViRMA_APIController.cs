@@ -811,7 +811,7 @@ public class ViRMA_APIController : MonoBehaviour
         url = url.Substring(0, url.Length - 1) + "]&all=[]";
         url = url.Replace("\'", "\"");
 
-        //Debug.Log("GetTimeline: " + url); // debugging
+        // Debug.Log("GetTimeline: " + url); // debugging
 
         List<KeyValuePair<int, string>> results = new List<KeyValuePair<int, string>>();
         yield return GetRequest(url, (response) =>

@@ -177,7 +177,7 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 	}
 
 	// button states
-	public void SetBtnNormalState()
+	private void SetBtnNormalState()
     {
 		btnBackground.color = normalBackgroundColor;
 		btnText.color = normalTextColor;
@@ -210,14 +210,22 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 			alpha = 1.0f;
 		}
 
-		if (btnBackground.color.a != alpha)
-		{
-			btnBackground.color = new Color(btnBackground.color.r, btnBackground.color.g, btnBackground.color.b, alpha);
+		if (btnBackground)
+        {
+			if (btnBackground.color.a != alpha)
+			{
+				btnBackground.color = new Color(btnBackground.color.r, btnBackground.color.g, btnBackground.color.b, alpha);
+			}
 		}
-		if (btnText.color.a != alpha)
-		{
-			btnText.color = new Color(btnText.color.r, btnText.color.g, btnText.color.b, alpha);
+		
+		if (btnText)
+        {
+			if (btnText.color.a != alpha)
+			{
+				btnText.color = new Color(btnText.color.r, btnText.color.g, btnText.color.b, alpha);
+			}
 		}
+		
 		if (btnIcon)
         {
 			if (btnIcon.color.a != alpha)

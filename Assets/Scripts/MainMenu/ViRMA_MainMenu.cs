@@ -7,13 +7,16 @@ using Valve.VR.InteractionSystem;
 public class ViRMA_MainMenu : MonoBehaviour
 {
     private ViRMA_GlobalsAndActions globals;
+    public GameObject hoveredDirectFilter;
+    private ViRMA_UiElement[] filterOptions;
 
     private bool xParentChainFetched;
     private bool yParentChainFetched;
     private bool zParentChainFetched;
 
     // main menu sections (set in editor)
-    public GameObject ui_projectedDimensions;
+    public GameObject ui_projectedFilters;
+    public GameObject ui_directFilers;
 
     private Button[] allBtns;
 
@@ -29,6 +32,7 @@ public class ViRMA_MainMenu : MonoBehaviour
     {
         // define ViRMA globals script
         globals = Player.instance.gameObject.GetComponent<ViRMA_GlobalsAndActions>();
+        filterOptions = ui_directFilers.GetComponentsInChildren<ViRMA_UiElement>();
     }
 
     private void Start()
@@ -52,6 +56,8 @@ public class ViRMA_MainMenu : MonoBehaviour
             yParentChainFetched = false;
             zParentChainFetched = false;          
         }
+
+        CheckActiveDirectFilterOptions();
     }
 
     // projected filters
@@ -182,7 +188,7 @@ public class ViRMA_MainMenu : MonoBehaviour
     private void UpdateProjFilerBtns()
     {
         GameObject templateBtn = Resources.Load("Prefabs/ProjectedFilterBtn") as GameObject;
-        ViRMA_UIScrollable[] scrollableUis = ui_projectedDimensions.GetComponentsInChildren<ViRMA_UIScrollable>();
+        ViRMA_UIScrollable[] scrollableUis = ui_projectedFilters.GetComponentsInChildren<ViRMA_UIScrollable>();
 
         xBtnWrapper = scrollableUis[0].transform.GetChild(0).transform;
         yBtnWrapper = scrollableUis[1].transform.GetChild(0).transform;
@@ -242,7 +248,7 @@ public class ViRMA_MainMenu : MonoBehaviour
     }
     private void SetProjFilterBtnStates()
     {
-        ViRMA_UIScrollable[] scrollableUis = ui_projectedDimensions.GetComponentsInChildren<ViRMA_UIScrollable>();
+        ViRMA_UIScrollable[] scrollableUis = ui_projectedFilters.GetComponentsInChildren<ViRMA_UIScrollable>();
         for (int i = 0; i < scrollableUis.Length; i++)
         {
             Button[] buttons = scrollableUis[i].GetComponentsInChildren<Button>();
@@ -317,6 +323,44 @@ public class ViRMA_MainMenu : MonoBehaviour
         globals.queryController.buildingQuery.SetAxis(axisType, idString, "node");
     }
 
+    // direct filters
+    private void CheckActiveDirectFilterOptions()
+    {
+        if (hoveredDirectFilter)
+        {
+            foreach (ViRMA_UiElement filterOption in filterOptions)
+            {
+                if (filterOption.transform.parent.gameObject == hoveredDirectFilter)
+                {
+                    if (!filterOption.gameObject.activeSelf)
+                    {
+                        filterOption.gameObject.SetActive(true);
+                    }
+                }
+                else
+                {
+                    if (filterOption.gameObject.activeSelf)
+                    {
+                        if (filterOption.gameObject.activeSelf)
+                        {
+                            filterOption.gameObject.SetActive(false);
+                        }
+                    }
+                }
+            }
+        }
+        else
+        {
+            foreach (ViRMA_UiElement filterOption in filterOptions)
+            {
+                if (filterOption.gameObject.activeSelf)
+                {
+                    filterOption.gameObject.SetActive(false);
+                }             
+            }
+        }
+    }
+
     // general
     public void SetAllBtnDefaultStates()
     {
@@ -368,7 +412,7 @@ public class ViRMA_MainMenu : MonoBehaviour
     public void ToggleLoadingIndicator()
     {
         GameObject templateBtn = Resources.Load("Prefabs/ProjectedFilterBtn") as GameObject;
-        ViRMA_UIScrollable[] scrollableUis = ui_projectedDimensions.GetComponentsInChildren<ViRMA_UIScrollable>();
+        ViRMA_UIScrollable[] scrollableUis = ui_projectedFilters.GetComponentsInChildren<ViRMA_UIScrollable>();
 
         // x
         xBtnWrapper = scrollableUis[0].transform.GetChild(0).transform;
@@ -418,7 +462,7 @@ public class ViRMA_MainMenu : MonoBehaviour
     // testing
     private void GenerateTestScrollBtns()
     {
-        ViRMA_UIScrollable[] scrollableUis = ui_projectedDimensions.GetComponentsInChildren<ViRMA_UIScrollable>();
+        ViRMA_UIScrollable[] scrollableUis = ui_projectedFilters.GetComponentsInChildren<ViRMA_UIScrollable>();
         foreach (ViRMA_UIScrollable scrollableUi in scrollableUis)
         {
             GameObject btnParent = scrollableUi.transform.GetChild(0).gameObject;
@@ -436,7 +480,7 @@ public class ViRMA_MainMenu : MonoBehaviour
     }
     private void DisableSections()
     {
-        ui_projectedDimensions.SetActive(false);
+        ui_projectedFilters.SetActive(false);
     }
 
     

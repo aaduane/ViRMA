@@ -6,13 +6,15 @@ using Valve.VR.InteractionSystem;
 public class ViRMA_UIScrollable : MonoBehaviour
 {
     private ViRMA_GlobalsAndActions globals;
-    private ScrollRect scrollRect;
+    private ScrollRect scrollRect;  
+    private Transform scrollContent;
     private bool allowScrolling;
 
     private void Awake()
     {
         globals = Player.instance.gameObject.GetComponent<ViRMA_GlobalsAndActions>();
-        scrollRect = GetComponent<ScrollRect>();       
+        scrollRect = GetComponent<ScrollRect>();
+        scrollContent = scrollRect.content.transform;
     }
 
     private void Start()
@@ -48,11 +50,8 @@ public class ViRMA_UIScrollable : MonoBehaviour
             float joyStickDirection = globals.menuInteraction_Scroll.GetAxis(SteamVR_Input_Sources.Any).y;
             if (joyStickDirection != 0)
             {
-                //float multiplier = joyStickDirection * 5f;
-                //scrollRect.verticalNormalizedPosition = (scrollRect.verticalNormalizedPosition + multiplier * Time.deltaTime);
-
-                float multiplier = joyStickDirection * 0.05f;
-                scrollRect.verticalNormalizedPosition = scrollRect.verticalNormalizedPosition + multiplier;
+                float multiplier = joyStickDirection * 0.45f;
+                scrollContent.position -= multiplier * Time.deltaTime * Vector3.up;
             }
         }
     }

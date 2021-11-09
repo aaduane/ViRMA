@@ -103,24 +103,6 @@
          "sources" : [
             {
                "inputs" : {
-                  "scroll" : {
-                     "output" : "/actions/menuinteraction/in/scroll"
-                  }
-               },
-               "mode" : "scroll",
-               "path" : "/user/hand/left/input/thumbstick"
-            },
-            {
-               "inputs" : {
-                  "scroll" : {
-                     "output" : "/actions/menuinteraction/in/scroll"
-                  }
-               },
-               "mode" : "scroll",
-               "path" : "/user/hand/right/input/thumbstick"
-            },
-            {
-               "inputs" : {
                   "click" : {
                      "output" : "/actions/menuinteraction/in/select"
                   }
@@ -136,6 +118,24 @@
                },
                "mode" : "button",
                "path" : "/user/hand/right/input/a"
+            },
+            {
+               "inputs" : {
+                  "position" : {
+                     "output" : "/actions/menuinteraction/in/scroll"
+                  }
+               },
+               "mode" : "joystick",
+               "path" : "/user/hand/left/input/thumbstick"
+            },
+            {
+               "inputs" : {
+                  "position" : {
+                     "output" : "/actions/menuinteraction/in/scroll"
+                  }
+               },
+               "mode" : "joystick",
+               "path" : "/user/hand/right/input/thumbstick"
             }
          ]
       },

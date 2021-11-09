@@ -25,7 +25,7 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
     public Material rightControllerNormalMaterial;
 
     // default actions
-    public SteamVR_ActionSet defaultActions;  
+    public SteamVR_ActionSet defaultActions;
 
     // test actions
     public SteamVR_ActionSet menuInteractionActions;
