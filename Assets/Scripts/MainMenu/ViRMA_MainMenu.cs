@@ -8,7 +8,7 @@ public class ViRMA_MainMenu : MonoBehaviour
 {
     private ViRMA_GlobalsAndActions globals;
     public GameObject hoveredDirectFilter;
-    private ViRMA_UiElement[] filterOptions;
+    private ViRMA_UiElement[] directFilterOptions;
 
     private bool xParentChainFetched;
     private bool yParentChainFetched;
@@ -32,7 +32,7 @@ public class ViRMA_MainMenu : MonoBehaviour
     {
         // define ViRMA globals script
         globals = Player.instance.gameObject.GetComponent<ViRMA_GlobalsAndActions>();
-        filterOptions = ui_directFilers.GetComponentsInChildren<ViRMA_UiElement>();
+        directFilterOptions = ui_directFilers.GetComponentsInChildren<ViRMA_UiElement>();
     }
 
     private void Start()
@@ -190,15 +190,14 @@ public class ViRMA_MainMenu : MonoBehaviour
         GameObject templateBtn = Resources.Load("Prefabs/ProjectedFilterBtn") as GameObject;
         ViRMA_UIScrollable[] scrollableUis = ui_projectedFilters.GetComponentsInChildren<ViRMA_UIScrollable>();
 
+        //////////////////////////////////////////////////////////////////// x 
         xBtnWrapper = scrollableUis[0].transform.GetChild(0).transform;
-        yBtnWrapper = scrollableUis[1].transform.GetChild(0).transform;
-        zBtnWrapper = scrollableUis[2].transform.GetChild(0).transform;
-
         foreach (Transform child in xBtnWrapper)
         {
-            child.parent = null;
             Destroy(child.gameObject);
         }
+        xBtnWrapper.DetachChildren();
+
         xParentChain.Reverse();
         for (int i = 0; i < xParentChain.Count; i++)
         {
@@ -208,11 +207,14 @@ public class ViRMA_MainMenu : MonoBehaviour
         }
         xBtnWrapper.parent.GetComponent<ScrollRect>().verticalNormalizedPosition = 0;
 
+        //////////////////////////////////////////////////////////////////// y
+        yBtnWrapper = scrollableUis[1].transform.GetChild(0).transform;
         foreach (Transform child in yBtnWrapper)
         {
-            child.parent = null;
             Destroy(child.gameObject);
         }
+        yBtnWrapper.DetachChildren();
+
         yParentChain.Reverse();
         for (int i = 0; i < yParentChain.Count; i++)
         {
@@ -221,11 +223,14 @@ public class ViRMA_MainMenu : MonoBehaviour
             newBtn.name = yParentChain[i].Label + "_" + yParentChain[i].Id;
         }
 
+        //////////////////////////////////////////////////////////////////// z
+        zBtnWrapper = scrollableUis[2].transform.GetChild(0).transform;
         foreach (Transform child in zBtnWrapper)
         {
-            child.parent = null;
             Destroy(child.gameObject);
         }
+        zBtnWrapper.DetachChildren();
+
         zParentChain.Reverse();
         for (int i = 0; i < zParentChain.Count; i++)
         {
@@ -234,8 +239,10 @@ public class ViRMA_MainMenu : MonoBehaviour
             newBtn.name = zParentChain[i].Label + "_" + zParentChain[i].Id;
         }
 
+        // set appearance and state of buttons
         SetProjFilterBtnStates();
 
+        // scroll to the bottom of the container by default
         StartCoroutine(ScrollBtnWrappersToBottom());
     }
     private IEnumerator ScrollBtnWrappersToBottom()
@@ -255,57 +262,53 @@ public class ViRMA_MainMenu : MonoBehaviour
             for (int j = 0; j < buttons.Length; j++)
             {
                 GameObject buttonObj = buttons[j].gameObject;
+
+                buttonObj.transform.localScale = Vector3.one * 0.9f;
+                buttonObj.GetComponent<Button>().onClick.AddListener(() => RollUpAxis(buttonObj));
+
                 Text btnText = buttonObj.GetComponentInChildren<Text>();
                 Image btnBackground = buttonObj.GetComponent<Image>();
-                buttonObj.transform.localScale = Vector3.one * 0.9f;
-
-                buttonObj.GetComponent<Button>().onClick.AddListener(() => RollUpAxis(buttonObj));
+                ViRMA_UiElement vrUiElement = buttonObj.GetComponent<ViRMA_UiElement>();               
 
                 if (i == 0)
                 {
-                    // x        
-                    btnBackground.color = ViRMA_Colors.BrightenColor(ViRMA_Colors.axisRed);
-                    btnText.color = Color.white;
+                    // x
+                    vrUiElement.GenerateBtnDefaults(ViRMA_Colors.BrightenColor(ViRMA_Colors.axisRed), Color.white);
+
                     if (j == buttons.Length - 1)
-                    {
-                        Destroy(buttonObj.GetComponent<ViRMA_UiElement>());
-                        buttonObj.transform.localScale = Vector3.one;
-                        btnBackground.color = ViRMA_Colors.axisRed;
+                    {   
+                        btnBackground.color = ViRMA_Colors.axisRed;               
+                        buttonObj.transform.localScale = Vector3.one;                     
                         buttonObj.GetComponent<Button>().onClick.RemoveAllListeners();
+
+                        Destroy(buttonObj.GetComponent<ViRMA_UiElement>());
                     }
                 }
                 else if (i == 1)
                 {
-                    // y                
-                    btnBackground.color = ViRMA_Colors.BrightenColor(ViRMA_Colors.axisGreen);
-                    btnText.color = Color.white;
+                    // y
+                    vrUiElement.GenerateBtnDefaults(ViRMA_Colors.BrightenColor(ViRMA_Colors.axisGreen), Color.white);
+
                     if (j == buttons.Length - 1)
                     {
-                        Destroy(buttonObj.GetComponent<ViRMA_UiElement>());
-                        buttonObj.transform.localScale = Vector3.one;
                         btnBackground.color = ViRMA_Colors.axisGreen;
+                        buttonObj.transform.localScale = Vector3.one;      
                         buttonObj.GetComponent<Button>().onClick.RemoveAllListeners();
+                        Destroy(buttonObj.GetComponent<ViRMA_UiElement>());
                     }
                 }
                 else if (i == 2)
                 {
                     // z
-                    btnBackground.color = ViRMA_Colors.BrightenColor(ViRMA_Colors.axisBlue);
-                    btnText.color = Color.white;
+                    vrUiElement.GenerateBtnDefaults(ViRMA_Colors.BrightenColor(ViRMA_Colors.axisBlue), Color.white);
+
                     if (j == buttons.Length - 1)
                     {
-                        Destroy(buttonObj.GetComponent<ViRMA_UiElement>());
-                        buttonObj.transform.localScale = Vector3.one;
                         btnBackground.color = ViRMA_Colors.axisBlue;
+                        buttonObj.transform.localScale = Vector3.one;
                         buttonObj.GetComponent<Button>().onClick.RemoveAllListeners();
+                        Destroy(buttonObj.GetComponent<ViRMA_UiElement>());
                     }
-                }
-
-                if (btnText.text == "Loading")
-                {
-                    buttonObj.name = "placeholder";
-                    btnText.text = "None";
-                    btnBackground.color = Color.grey;
                 }
             }
         }
@@ -324,39 +327,51 @@ public class ViRMA_MainMenu : MonoBehaviour
     }
 
     // direct filters
+    public void FetchDirectFilterMetadata()
+    {
+        GameObject directFilterPrefab = Resources.Load("Prefabs/DirectFilterOptn") as GameObject;
+        Transform directFilterParent = ui_directFilers.GetComponentInChildren<ViRMA_UIScrollable>().transform.GetChild(0);
+
+        foreach (Transform child in directFilterParent)
+        {
+            Destroy(child.gameObject);
+        }
+        directFilterParent.DetachChildren();
+
+        foreach (Query.Filter activeFilter in globals.queryController.activeFilters)
+        {
+            if (activeFilter.Type == "node")
+            {
+                int targetId = activeFilter.Ids[0];
+                StartCoroutine(ViRMA_APIController.GetHierarchyTag(targetId, (tagData) => {
+                    GameObject directFilterObj = Instantiate(directFilterPrefab, directFilterParent);
+                    directFilterObj.GetComponent<ViRMA_DirectFilterOption>().directFilterData = tagData;
+                    directFilterObj.GetComponent<ViRMA_DirectFilterOption>().labelText.text = tagData.Label;
+                })); 
+            }
+        }
+    }
     private void CheckActiveDirectFilterOptions()
     {
         if (hoveredDirectFilter)
         {
-            foreach (ViRMA_UiElement filterOption in filterOptions)
+            foreach (ViRMA_UiElement filterOption in directFilterOptions)
             {
                 if (filterOption.transform.parent.gameObject == hoveredDirectFilter)
                 {
-                    if (!filterOption.gameObject.activeSelf)
-                    {
-                        filterOption.gameObject.SetActive(true);
-                    }
+                    filterOption.Hide(false);
                 }
                 else
                 {
-                    if (filterOption.gameObject.activeSelf)
-                    {
-                        if (filterOption.gameObject.activeSelf)
-                        {
-                            filterOption.gameObject.SetActive(false);
-                        }
-                    }
+                    filterOption.Hide(true);
                 }
             }
         }
         else
         {
-            foreach (ViRMA_UiElement filterOption in filterOptions)
+            foreach (ViRMA_UiElement filterOption in directFilterOptions)
             {
-                if (filterOption.gameObject.activeSelf)
-                {
-                    filterOption.gameObject.SetActive(false);
-                }             
+                filterOption.Hide(true);
             }
         }
     }
@@ -372,7 +387,7 @@ public class ViRMA_MainMenu : MonoBehaviour
 
             if (btnText && btnBackground)
             {
-                btnBackground.color = ViRMA_Colors.lightBlack;
+                btnBackground.color = ViRMA_Colors.darkBlue;
                 btnText.color = Color.white;
             }
         }

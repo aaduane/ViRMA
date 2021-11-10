@@ -27,7 +27,7 @@ public class ViRMA_Keyboard : MonoBehaviour
     {
         globals = Player.instance.gameObject.GetComponent<ViRMA_GlobalsAndActions>();
 
-        keys = GetComponentsInChildren<Button>();
+        keys = GetComponentsInChildren<Button>();   
     }
 
     private void Start()
@@ -52,7 +52,7 @@ public class ViRMA_Keyboard : MonoBehaviour
 
         // delayed things
 
-        ToggleDimExKeyboard(true); // for testing
+        //ToggleDimExKeyboard(true); // for testing
     }
 
     private void OnTriggerEnter(Collider triggeredCol)
@@ -78,39 +78,45 @@ public class ViRMA_Keyboard : MonoBehaviour
 
             Text keyText = key.GetComponentInChildren<Text>();
             Image keyBackground = key.GetComponent<Image>();
+            ViRMA_UiElement virmaBtn = key.GetComponent<ViRMA_UiElement>();
 
             if (keyText && keyBackground)
             {
+                Color32 bgCol;
+                Color32 textCol;
+
                 if (keyText.gameObject.transform.parent.name == "CLEAR")
                 {
-                    keyBackground.color = new Color32(211, 84, 0, 255);
-                    keyText.color = ViRMA_Colors.BrightenColor(new Color32(211, 84, 0, 255));
+                    bgCol = new Color32(211, 84, 0, 255);
+                    textCol = Color.white;
                 }
                 else if (keyText.gameObject.transform.parent.name == "CLOSE")
                 {
-                    keyBackground.color = new Color32(192, 57, 43, 255);
-                    keyText.color = Color.white;
+                    bgCol = new Color32(192, 57, 43, 255);
+                    textCol = Color.white;
                 }
                 else if (keyText.gameObject.transform.parent.name == "BACKSPACE")
                 {
-                    keyBackground.color = ViRMA_Colors.lightBlack;
-                    keyText.color = ViRMA_Colors.BrightenColor(ViRMA_Colors.lightBlack);
+                    bgCol = ViRMA_Colors.darkBlue;
+                    textCol = Color.white;
                 }
                 else if (keyText.gameObject.transform.parent.name == "MOVE")
                 {
-                    keyBackground.color = new Color32(99, 110, 114, 255);
-                    keyText.color = ViRMA_Colors.BrightenColor(new Color32(99, 110, 114, 255));
+                    bgCol = new Color32(99, 110, 114, 255);
+                    textCol = Color.white;
                 }
                 else if (keyText.gameObject.transform.parent.name == "SUBMIT")
                 {
-                    keyBackground.color = new Color32(39, 174, 96, 255);
-                    keyText.color = ViRMA_Colors.BrightenColor(new Color32(39, 174, 96, 255));
+                    bgCol = new Color32(39, 174, 96, 255);
+                    textCol = Color.white;
                 }
                 else
                 {
-                    keyBackground.color = ViRMA_Colors.lightBlack;
-                    keyText.color = Color.white;
+                    bgCol = ViRMA_Colors.darkBlue;
+                    textCol = Color.white;
                 }
+
+                virmaBtn.GenerateBtnDefaults(bgCol, textCol);
             }
         }
     }
@@ -279,9 +285,13 @@ public class ViRMA_Keyboard : MonoBehaviour
         }
         else if (buttonName == "SPACE")
         {
-            if (typedWordString.Substring(typedWordString.Length - 1) != " ") {
-                typedWordString += " ";
-            }       
+            if (typedWordString.Length > 0)
+            {
+                if (typedWordString.Substring(typedWordString.Length - 1) != " ")
+                {
+                    typedWordString += " ";
+                }
+            }             
         }
         else
         {

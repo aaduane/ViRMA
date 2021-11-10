@@ -22,7 +22,8 @@ public class ViRMA_Drumstick : MonoBehaviour
                 GameObject steamVRHoverPoint = hand.gameObject.transform.Find("HoverPoint").gameObject;
                 steamVRHoverPoint.transform.position = transform.position;
             }
-        }      
+        }
+        //GetComponent<Renderer>().material.renderQueue = 3001;
     }
 
     private void OnTriggerEnter(Collider triggeredCol)

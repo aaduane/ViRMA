@@ -305,7 +305,7 @@ public class AxesLabels {
 public class ViRMA_APIController : MonoBehaviour
 {
     // public
-    public static bool debugging = false;
+    public static bool debugging = true;
     public static string serverAddress = "https://localhost:44317/api/";
 
     //public static string imagesDirectory = System.IO.Directory.GetCurrentDirectory().ToString() + "/LaugavegurDataDDS/"; 
@@ -447,7 +447,7 @@ public class ViRMA_APIController : MonoBehaviour
             url = url.Replace("\'", "\"");
         }
 
-        //Debug.Log("GetCells: " + url); // debugging
+        Debug.Log("GetCells: " + url); // debugging
 
         yield return GetRequest(url, (response) =>
         {
@@ -737,60 +737,93 @@ public class ViRMA_APIController : MonoBehaviour
         List<Tag> orderedNodes = nodes.OrderBy(s => s.Id).ToList();
         onSuccess(orderedNodes);
     }
-    public static IEnumerator GetHierarchyChildren(int targetId, Action<List<Tag>> onSuccess)
+    public static IEnumerator GetHierarchyTag(int targetId, Action<Tag> onSuccess)
     {
-        yield return GetRequest("node/" + targetId.ToString() + "/children", (response) =>
+        yield return GetRequest("node/" + targetId.ToString(), (response) =>
         {
             jsonData = response;
-            List<Tag> children = new List<Tag>();
-            foreach (var obj in jsonData)
+        });
+
+        Tag nodeTag = null;
+
+        if (jsonData != null)
+        {
+            nodeTag = new Tag();
+
+            // tag id
+            nodeTag.Id = targetId;
+
+            if (jsonData["tag"] != null)
             {
-                Tag newTag = new Tag();
-
-                // tag id
-                newTag.Id = obj.Value["id"];
-
                 // tag name
-                string tagName = obj.Value["name"];
+                string tagName = jsonData["tag"]["name"];
                 int bracketIndex = tagName.IndexOf("(");
                 if (bracketIndex > -1)
                 {
                     tagName = tagName.Substring(0, bracketIndex);
                 }
-                newTag.Label = tagName;
-                children.Add(newTag);
-            }
+                nodeTag.Label = tagName;
+            }      
+        }
 
-            List<Tag> orderedList = children.OrderBy(s => s.Label).ToList();
-            onSuccess(orderedList);
+        onSuccess(nodeTag);
+    }
+    public static IEnumerator GetHierarchyChildren(int targetId, Action<List<Tag>> onSuccess)
+    {
+        yield return GetRequest("node/" + targetId.ToString() + "/children", (response) =>
+        {
+            jsonData = response;
         });
+
+        List<Tag> children = new List<Tag>();
+        foreach (var obj in jsonData)
+        {
+            Tag newTag = new Tag();
+
+            // tag id
+            newTag.Id = obj.Value["id"];
+
+            // tag name
+            string tagName = obj.Value["name"];
+            int bracketIndex = tagName.IndexOf("(");
+            if (bracketIndex > -1)
+            {
+                tagName = tagName.Substring(0, bracketIndex);
+            }
+            newTag.Label = tagName;
+            children.Add(newTag);
+        }
+
+        List<Tag> orderedList = children.OrderBy(s => s.Label).ToList();
+        onSuccess(orderedList);
     }
     public static IEnumerator GetHierarchyParent(int targetId, Action<Tag> onSuccess)
     {
         yield return GetRequest("node/" + targetId.ToString() + "/parent", (response) =>
         {
             jsonData = response;
-
-            Tag parentTag = null;
-
-            if (jsonData != null)
-            {
-                parentTag = new Tag();
-
-                // tag id
-                parentTag.Id = jsonData["id"];
-
-                // tag name
-                string tagName = jsonData["name"];
-                int bracketIndex = tagName.IndexOf("(");
-                if (bracketIndex > -1)
-                {
-                    tagName = tagName.Substring(0, bracketIndex);
-                }
-                parentTag.Label = tagName;
-            }
-            onSuccess(parentTag);
         });
+
+        Tag parentTag = null;
+
+        if (jsonData != null)
+        {
+            parentTag = new Tag();
+
+            // tag id
+            parentTag.Id = jsonData["id"];
+
+            // tag name
+            string tagName = jsonData["name"];
+            int bracketIndex = tagName.IndexOf("(");
+            if (bracketIndex > -1)
+            {
+                tagName = tagName.Substring(0, bracketIndex);
+            }
+            parentTag.Label = tagName;
+        }
+
+        onSuccess(parentTag);
     }
      
     // timeline API

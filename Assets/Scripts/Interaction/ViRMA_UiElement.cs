@@ -9,7 +9,6 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 	// SteamVR: used for UI interaction with controller
 	private ViRMA_GlobalsAndActions globals;
 	private ViRMA_Keyboard keyboard;
-	private ViRMA_MainMenu mainMenu;
 
 	public CustomEvents.UnityEventHand onHandClick;
 	protected Hand currentHand;
@@ -18,9 +17,16 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 	private Image btnBackground;
 	private Text btnText;
 	private RawImage btnIcon;
+	public Button btn;
 
-	public Color normalBackgroundColor;
-	public Color normalTextColor;
+	public Color defaultBackgroundColor;
+	public Color defaultTextColor;
+
+	public Color hoverBackgroundColor;
+	public Color hoverTextColor;
+
+	public Color clickedBackgroundColor;
+	public Color clickedTextColor;
 
 	public bool buttonFaded;
 
@@ -29,50 +35,22 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 		globals = Player.instance.gameObject.GetComponent<ViRMA_GlobalsAndActions>();
 		btnBackground = GetComponent<Image>();
 		btnText = GetComponentInChildren<Text>();
-		if (GetComponentInChildren<RawImage>())
-        {
-			btnIcon = GetComponentInChildren<RawImage>();
-
-		}
-
-		// SteamVR: assign function to button when it is clicked by hand script
-		Button button = GetComponent<Button>();
-		if (button)
+		btnIcon = GetComponentInChildren<RawImage>();
+		btn = GetComponent<Button>();
+		if (btn)
 		{
-			button.onClick.AddListener(OnButtonClick);
+			// SteamVR: assign function to button when it is clicked by hand script
+			btn.onClick.AddListener(OnButtonClick);
 
+			// disable default btn nav states
 			Navigation disableNav = new Navigation();
 			disableNav.mode = Navigation.Mode.None;
-			button.navigation = disableNav;
-
-			button.transition = Selectable.Transition.None;
+			btn.navigation = disableNav;
+			btn.transition = Selectable.Transition.None;
 		}
 
-		// find out if UI element is part of a ViRMA Keyboard
-		Transform checkKeyboard = transform;
-		while (checkKeyboard.parent != null)
-        {
-			if (checkKeyboard.parent.GetComponent<ViRMA_Keyboard>())
-            {
-				keyboard = checkKeyboard.parent.GetComponent<ViRMA_Keyboard>();
-				break;
-			}
-			checkKeyboard = checkKeyboard.parent.transform;
-        }
-
-		// find out if UI element is part of a main menu
-		/*
-		Transform checkMainMenu = transform;
-		while (checkMainMenu.parent != null)
-		{
-			if (checkMainMenu.parent.GetComponent<ViRMA_MainMenu>())
-			{
-				mainMenu = checkMainMenu.parent.GetComponent<ViRMA_MainMenu>();
-				break;
-			}
-			checkMainMenu = checkMainMenu.parent.transform;
-		}
-		*/
+		// find out if this UI element is part of a ViRMA Keyboard
+		CheckIfKeyboard();
 	}
 
     private void Start()
@@ -86,7 +64,6 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 		// override all button stats when button is faded
 		BtnFadeController();
 	}
-
 
     // --- SteamVR: UI interaction with Hand script --- \\
     protected virtual void OnHandHoverBegin(Hand hand)
@@ -169,34 +146,122 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 	// general
 	private void SetKeyColliderSize()
 	{
-		Button btn = GetComponent<Button>();
 		float width = btn.GetComponent<RectTransform>().rect.width;
 		float height = btn.GetComponent<RectTransform>().rect.height;
 		BoxCollider keyCollider = btn.gameObject.GetComponentInChildren<BoxCollider>();
 		keyCollider.size = new Vector3(width, height, 25);
 	}
+	private void CheckIfKeyboard()
+    {
+		Transform checkKeyboard = transform;
+		while (checkKeyboard.parent != null)
+		{
+			if (checkKeyboard.parent.GetComponent<ViRMA_Keyboard>())
+			{
+				keyboard = checkKeyboard.parent.GetComponent<ViRMA_Keyboard>();
+				break;
+			}
+			checkKeyboard = checkKeyboard.parent.transform;
+		}
+
+		// find out if UI element is part of a main menu
+		/*
+		Transform checkMainMenu = transform;
+		while (checkMainMenu.parent != null)
+		{
+			if (checkMainMenu.parent.GetComponent<ViRMA_MainMenu>())
+			{
+				ViRMA_MainMenu mainMenu = checkMainMenu.parent.GetComponent<ViRMA_MainMenu>();
+				break;
+			}
+			checkMainMenu = checkMainMenu.parent.transform;
+		}
+		*/
+	}
+	public void Hide(bool toHide)
+    {
+		if (toHide)
+        {
+			if (btn && btn.interactable)
+			{
+				btn.interactable = false;
+			}
+			if (btnBackground && btnBackground.enabled)
+            {
+				btnBackground.enabled = false;
+			}
+			if (btnText && btnText.enabled)
+            {
+				btnText.enabled = false;
+			}
+			if (btnIcon && btnIcon.enabled)
+            {
+				btnIcon.enabled = false;
+			}
+		}
+		else
+        {
+			if (btn && !btn.interactable)
+			{
+				btn.interactable = true;
+			}
+			if (btnBackground && !btnBackground.enabled)
+			{
+				btnBackground.enabled = true;
+			}
+			if (btnText && !btnText.enabled)
+			{
+				btnText.enabled = true;
+			}
+			if (btnIcon && !btnIcon.enabled)
+			{
+				btnIcon.enabled = true;
+			}
+		}	
+    }
 
 	// button states
+	public void GenerateBtnDefaults(Color bgColor, Color textColor)
+	{
+		defaultBackgroundColor = bgColor;
+		defaultTextColor = textColor;
+
+		hoverBackgroundColor = ViRMA_Colors.BrightenColor(bgColor);
+		hoverTextColor = ViRMA_Colors.BrightenColor(textColor);
+
+		clickedBackgroundColor = textColor;
+		clickedTextColor = bgColor;
+
+		SetBtnNormalState();
+	}
 	private void SetBtnNormalState()
     {
-		btnBackground.color = normalBackgroundColor;
-		btnText.color = normalTextColor;
+		btnBackground.color = defaultBackgroundColor;
+		btnText.color = defaultTextColor;
+
+		if (btnIcon)
+		{
+			btnIcon.color = btnText.color;
+		}
 	}
 	private void SetBtnHighlightState()
     {
-		normalBackgroundColor = btnBackground.color;
-		normalTextColor = btnText.color;
+		btnBackground.color = hoverBackgroundColor;
+		btnText.color = hoverTextColor;
 
-		btnBackground.color = ViRMA_Colors.BrightenColor(btnBackground.color);
-		btnText.color = ViRMA_Colors.BrightenColor(btnText.color);
+		if (btnIcon)
+		{
+			btnIcon.color = btnText.color;
+		}
 	}	
 	private void SetBtnDownState()
     {
-		Color32 originalBgColor = btnBackground.color;
-		Color32 originalTextColor = btnText.color;
-
-		btnBackground.color = originalTextColor;
-		btnText.color = originalBgColor;
+		btnBackground.color = clickedBackgroundColor;
+		btnText.color = clickedTextColor;
+		if (btnIcon)
+		{
+			btnIcon.color = btnText.color;
+		}
 	}
 	private void BtnFadeController()
     {
@@ -234,5 +299,7 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 			}
 		}	
 	}
+
+	
 
 }

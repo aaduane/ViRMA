@@ -10,13 +10,21 @@ public class ViRMA_QueryController : MonoBehaviour
     public Query buildingQuery;
     [HideInInspector] public bool vizQueryLoading;
 
-    // active query parameters
+    // --- active query parameters --- \\
+
+    // x
     public int activeXAxisId;
     public string activeXAxisType;
+
+    // y
     public int activeYAxisId;
     public string activeYAxisType;
+
+    // z
     public int activeZAxisId;
     public string activeZAxisType;
+
+    // diect filters
     public List<Query.Filter> activeFilters = new List<Query.Filter>();
 
     private void Awake()
@@ -28,15 +36,9 @@ public class ViRMA_QueryController : MonoBehaviour
 
     private void Start()
     {
-        /*
-        StartCoroutine(ViRMA_APIController.SearchHierachies("computer", (nodes) => {
-            StartCoroutine(globals.dimExplorer.LoadDimExplorer(nodes));
-        }));
-        */
-
         buildingQuery.SetAxis("X", 1770, "node"); // computer
         buildingQuery.SetAxis("Y", 3733, "node"); // desk
-        //buildingQuery.SetAxis("Z", 690, "node"); // desk
+        //buildingQuery.SetAxis("Z", 690, "node"); // domestic animal
 
         //buildingQuery.SetAxis("X", 690, "node"); // domestic animal
         //buildingQuery.SetAxis("Y", 691, "node"); // dog
@@ -44,12 +46,13 @@ public class ViRMA_QueryController : MonoBehaviour
         //buildingQuery.SetAxis("Z", 5, "tagset"); // day of the week (string)
         //buildingQuery.SetAxis("Z", 13, "tagset"); // timezone
 
-        buildingQuery.AddFilter(147, "tag", 100); // 6 (Saturday)
-        buildingQuery.AddFilter(132, "tag", 100); // 7 (Sunday
-        buildingQuery.AddFilter(147, "tag", 100); // 6 (Saturday)
-        buildingQuery.AddFilter(132, "tag", 100); // 7 (Sunday
+        //buildingQuery.AddFilter(147, "tag", 100); // 6 (Saturday)
+        //buildingQuery.AddFilter(132, "tag", 100); // 7 (Sunday
 
-        //StartCoroutine(LateStart());
+        //buildingQuery.AddFilter(690, "node"); // domestic animal
+        buildingQuery.AddFilter(49, "node"); // domestic animal
+
+        //StartCoroutine(LateStart()); // testing
     }
 
     IEnumerator LateStart()
@@ -72,25 +75,6 @@ public class ViRMA_QueryController : MonoBehaviour
     private void Update()
     {
         QueryReloadController();
-
-        /*
-        if (buildingQuery.X != null)
-        {
-            Debug.Log("X: " + buildingQuery.X.Id);
-        }
-        if (buildingQuery.Y != null)
-        {
-            Debug.Log("Y: " + buildingQuery.Y.Id);
-        }
-        if (buildingQuery.Z != null)
-        {
-            Debug.Log("Z: " + buildingQuery.Z.Id);
-        }
-        if (buildingQuery.Filters.Count > 0)
-        {
-            Debug.Log(buildingQuery.Filters.Count + " direct filters!");
-        }
-        */
     }
 
     private void QueryReloadController()
@@ -106,6 +90,11 @@ public class ViRMA_QueryController : MonoBehaviour
                 activeXAxisType = buildingQuery.X.Type;
             }
         }
+        else
+        {
+            activeXAxisId = -1;
+            activeXAxisType = null;
+        }
 
         if (buildingQuery.Y != null)
         {
@@ -116,6 +105,11 @@ public class ViRMA_QueryController : MonoBehaviour
                 activeYAxisType = buildingQuery.Y.Type;
             }
         }
+        else
+        {
+            activeYAxisId = -1;
+            activeYAxisType = null;
+        }
 
         if (buildingQuery.Z != null)
         {
@@ -125,6 +119,11 @@ public class ViRMA_QueryController : MonoBehaviour
                 activeZAxisId = buildingQuery.Z.Id;
                 activeZAxisType = buildingQuery.Z.Type;
             }
+        }
+        else
+        {
+            activeZAxisId = -1;
+            activeZAxisType = null;
         }
 
         if (buildingQuery.Filters != null)
@@ -187,11 +186,33 @@ public class ViRMA_QueryController : MonoBehaviour
 
             StartCoroutine(globals.vizController.SubmitVizQuery(buildingQuery));
 
+            // ConsoleLogCurrentQuery(); // testing
+
             //Debug.Log("Loading new viz!");
         }
         else
         {
             //Debug.Log("Query aready loading!");
+        }
+    }
+
+    private void ConsoleLogCurrentQuery()
+    {
+        if (buildingQuery.X != null)
+        {
+            Debug.Log("X: " + buildingQuery.X.Id);
+        }
+        if (buildingQuery.Y != null)
+        {
+            Debug.Log("Y: " + buildingQuery.Y.Id);
+        }
+        if (buildingQuery.Z != null)
+        {
+            Debug.Log("Z: " + buildingQuery.Z.Id);
+        }
+        if (buildingQuery.Filters.Count > 0)
+        {
+            Debug.Log(buildingQuery.Filters.Count + " direct filters!");
         }
     }
 

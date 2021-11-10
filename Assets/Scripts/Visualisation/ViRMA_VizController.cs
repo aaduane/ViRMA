@@ -111,6 +111,7 @@ public class ViRMA_VizController : MonoBehaviour
 
         // update main menu data to match new viz
         globals.mainMenu.FetchProjectedFilterMetadata();
+        globals.mainMenu.FetchDirectFilterMetadata();
 
         // set loading flags to true and unfade controllers
         vizFullyLoaded = true;

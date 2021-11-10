@@ -141,20 +141,20 @@ public class ViRMA_DimExplorerBtn : MonoBehaviour
     }
     public void SetDefaultState()
     {
-        matPropBlock.SetColor("_Color", ViRMA_Colors.lightBlack);
+        matPropBlock.SetColor("_Color", ViRMA_Colors.darkBlue);
         textMesh.color = Color.white;
     }
     public void SetHighlightState()
     {
-        matPropBlock.SetColor("_Color", ViRMA_Colors.BrightenColor(ViRMA_Colors.lightBlack));
+        matPropBlock.SetColor("_Color", ViRMA_Colors.BrightenColor(ViRMA_Colors.darkBlue));
         textMesh.color = Color.white;
     }
     public void SetFocusedState()
     {
         if (innerBackground == null)
         {
-            matPropBlock.SetColor("_Color", ViRMA_Colors.lightBlack);
-            textMesh.color = ViRMA_Colors.DarkenColor(ViRMA_Colors.lightBlack);
+            matPropBlock.SetColor("_Color", ViRMA_Colors.darkBlue);
+            textMesh.color = ViRMA_Colors.DarkenColor(ViRMA_Colors.darkBlue);
 
             innerBackground = Instantiate(background, background.transform.parent);
 
