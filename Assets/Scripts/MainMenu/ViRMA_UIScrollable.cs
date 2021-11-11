@@ -24,6 +24,7 @@ public class ViRMA_UIScrollable : MonoBehaviour
 
     private void Update()
     {
+
         EnableJoystickTouchScrolling();
     }
 
@@ -63,5 +64,6 @@ public class ViRMA_UIScrollable : MonoBehaviour
         BoxCollider menuCol = GetComponent<BoxCollider>();
         menuCol.size = new Vector3(width, height, 25);
     }
+
   
 }

@@ -47,8 +47,7 @@ public class Query
         public string Type { get; set; }
         public List<int> Ids { get; set; }
         public string FilterId { get; set; }
-        public string Label { get; set; }
-        public Filter(string type, List<int> ids, int parentId = -1, string label = null)
+        public Filter(string type, List<int> ids, int parentId = -1)
         {
             Type = type;
             Ids = ids;
@@ -82,13 +81,52 @@ public class Query
             Debug.LogError("Invalid axis selected.");
         }
     }
-    public void AddFilter(int id, string type, int parentId = -1, string label = null)
+    public void ClearAxis(string axis, bool hardCLear = false)
+    {
+        if (axis.ToUpper() == "X")
+        {
+            if (X != null)
+            {
+                if (hardCLear == false)
+                {
+                    AddFilter(X.Id, X.Type);
+                }
+                X.Id = -1;
+                X.Type = null;
+            }
+        }
+        if (axis.ToUpper() == "Y")
+        {
+            if (Y != null)
+            {
+                if (hardCLear == false)
+                {
+                    AddFilter(Y.Id, Y.Type);
+                }
+                Y.Id = -1;
+                Y.Type = null;
+            }
+        }
+        if (axis.ToUpper() == "Z")
+        {
+            if (Z != null)
+            {
+                if (hardCLear == false)
+                {
+                    AddFilter(Z.Id, Z.Type);
+                }
+                Z.Id = -1;
+                Z.Type = null;
+            }
+        }
+    }
+    public void AddFilter(int id, string type, int parentId = -1)
     {
         if (Filters.Count == 0)
         {
             // if no filters exist yet, just add the first filter
             List<int> newIdList = new List<int>() { id };
-            Filter newFilter = new Filter(type, newIdList, parentId, label);
+            Filter newFilter = new Filter(type, newIdList, parentId);
             Filters.Add(newFilter);
         }
         else
@@ -452,7 +490,7 @@ public class ViRMA_APIController : MonoBehaviour
             url = url.Replace("\'", "\"");
         }
 
-        Debug.Log("GetCells: " + url); // debugging
+        //Debug.Log("GetCells: " + url); // debugging
 
         yield return GetRequest(url, (response) =>
         {

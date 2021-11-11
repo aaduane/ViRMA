@@ -15,6 +15,7 @@ public class ViRMA_QueryController : MonoBehaviour
     // x
     public int activeXAxisId;
     public string activeXAxisType;
+    public bool xAxisSet;
 
     // y
     public int activeYAxisId;
@@ -32,16 +33,25 @@ public class ViRMA_QueryController : MonoBehaviour
         // define ViRMA globals script
         globals = Player.instance.gameObject.GetComponent<ViRMA_GlobalsAndActions>();
         buildingQuery = new Query();
+
+        activeXAxisId = -1;
+        activeXAxisType = null;
+
+        activeYAxisId = -1;
+        activeYAxisType = null;
+
+        activeZAxisId = -1;
+        activeZAxisType = null;
     }
 
     private void Start()
     {
         //buildingQuery.SetAxis("X", 1770, "node"); // computer
-        //buildingQuery.SetAxis("Y", 3733, "node"); // desk
-        //buildingQuery.SetAxis("Z", 690, "node"); // domestic animal
+        buildingQuery.SetAxis("Y", 3733, "node"); // desk
+        buildingQuery.SetAxis("Z", 690, "node"); // domestic animal
 
         buildingQuery.SetAxis("X", 690, "node"); // domestic animal
-        buildingQuery.SetAxis("Y", 691, "node"); // dog
+        //buildingQuery.SetAxis("Y", 691, "node"); // dog
 
         //buildingQuery.SetAxis("Z", 5, "tagset"); // day of the week (string)
         //buildingQuery.SetAxis("Z", 13, "tagset"); // timezone
@@ -50,7 +60,7 @@ public class ViRMA_QueryController : MonoBehaviour
         //buildingQuery.AddFilter(132, "tag", 100); // 7 (Sunday
 
         //buildingQuery.AddFilter(690, "node"); // domestic animal
-        buildingQuery.AddFilter(49, "node"); // person
+        //buildingQuery.AddFilter(49, "node"); // person
 
         //StartCoroutine(LateStart()); // testing
     }
@@ -59,22 +69,24 @@ public class ViRMA_QueryController : MonoBehaviour
     {
         yield return new WaitForSeconds(2);
 
-        buildingQuery.RemoveFilter(1770, "node");
+        //buildingQuery.RemoveFilter(1770, "node");
 
         yield return new WaitForSeconds(2);
 
-        buildingQuery.AddFilter(1770, "node");
-        buildingQuery.AddFilter(3733, "node");
-        buildingQuery.AddFilter(1771, "node");
+        //buildingQuery.AddFilter(1770, "node");
+        //buildingQuery.AddFilter(3733, "node");
+        //buildingQuery.AddFilter(1771, "node");
 
         yield return new WaitForSeconds(2);
 
-        buildingQuery.RemoveFilter(147, "tag", 100);
+        //buildingQuery.RemoveFilter(147, "tag", 100);
     }
 
     private void Update()
     {
         QueryReloadController();
+
+        ConsoleLogCurrentQuery(); // debugging
     }
 
     private void QueryReloadController()
@@ -90,11 +102,6 @@ public class ViRMA_QueryController : MonoBehaviour
                 activeXAxisType = buildingQuery.X.Type;
             }
         }
-        else
-        {
-            activeXAxisId = -1;
-            activeXAxisType = null;
-        }
 
         if (buildingQuery.Y != null)
         {
@@ -105,11 +112,6 @@ public class ViRMA_QueryController : MonoBehaviour
                 activeYAxisType = buildingQuery.Y.Type;
             }
         }
-        else
-        {
-            activeYAxisId = -1;
-            activeYAxisType = null;
-        }
 
         if (buildingQuery.Z != null)
         {
@@ -119,11 +121,6 @@ public class ViRMA_QueryController : MonoBehaviour
                 activeZAxisId = buildingQuery.Z.Id;
                 activeZAxisType = buildingQuery.Z.Type;
             }
-        }
-        else
-        {
-            activeZAxisId = -1;
-            activeZAxisType = null;
         }
 
         if (buildingQuery.Filters != null)
@@ -173,6 +170,19 @@ public class ViRMA_QueryController : MonoBehaviour
 
         if (counter > 0)
         {
+            if (activeXAxisId == -1)
+            {
+                buildingQuery.X = null;
+            }
+            if (activeYAxisId == -1)
+            {
+                buildingQuery.Y = null;
+            }
+            if (activeZAxisId == -1)
+            {
+                buildingQuery.Z = null;
+            }
+
             ReloadViz();
         }
     }
@@ -186,8 +196,6 @@ public class ViRMA_QueryController : MonoBehaviour
 
             StartCoroutine(globals.vizController.SubmitVizQuery(buildingQuery));
 
-            // ConsoleLogCurrentQuery(); // testing
-
             //Debug.Log("Loading new viz!");
         }
         else
@@ -198,6 +206,7 @@ public class ViRMA_QueryController : MonoBehaviour
 
     private void ConsoleLogCurrentQuery()
     {
+        /*
         if (buildingQuery.X != null)
         {
             Debug.Log("X: " + buildingQuery.X.Id);
@@ -213,6 +222,17 @@ public class ViRMA_QueryController : MonoBehaviour
         if (buildingQuery.Filters.Count > 0)
         {
             Debug.Log(buildingQuery.Filters.Count + " direct filters!");
+        }
+        */
+
+        Debug.Log("----------PROJECTED FILTERS-----------");
+        Debug.Log("X: " + activeXAxisId + " / " + activeXAxisType);
+        Debug.Log("Y: " + activeYAxisId + " / " + activeYAxisType);
+        Debug.Log("Z: " + activeZAxisId + " / " + activeZAxisType);
+        Debug.Log("------------DIRECT FILTERS------------");
+        foreach (var activeFilter in activeFilters)
+        {
+            Debug.Log(activeFilter.Ids[0] + " / " + activeFilter.Type);
         }
     }
 

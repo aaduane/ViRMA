@@ -89,32 +89,42 @@ public class ViRMA_DirectFilterOption : MonoBehaviour
         {
             if (optionType == "X_btn")
             {
-                // Debug.Log("Project " + directFilterData.Label + " to X axis!");
+
                 if (globals.queryController.activeXAxisId != -1)
                 {
+                    // if there is something already projected to X, set it as a direct filter
                     globals.queryController.buildingQuery.AddFilter(globals.queryController.activeXAxisId, globals.queryController.activeXAxisType);
-                }               
+                }
+
+                // project target filter to X axis
                 globals.queryController.buildingQuery.SetAxis("X", directFilterData.Id, "node");
             }
             else if (optionType == "Y_btn")
             {
-                // Debug.Log("Project " + directFilterData.Label + " to Y axis!");
+
                 if (globals.queryController.activeYAxisId != -1)
                 {
+                    // if there is something already projected to Y, set it as a direct filter
                     globals.queryController.buildingQuery.AddFilter(globals.queryController.activeYAxisId, globals.queryController.activeYAxisType);
-                }       
+                }
+
+                // project target filter to Y axis
                 globals.queryController.buildingQuery.SetAxis("Y", directFilterData.Id, "node");
             }
             else if (optionType == "Z_btn")
             {
-                // Debug.Log("Project " + directFilterData.Label + " to Z axis!");
+
                 if (globals.queryController.activeZAxisId != -1)
                 {
+                    // if there is something already projected to Z, set it as a direct filter
                     globals.queryController.buildingQuery.AddFilter(globals.queryController.activeZAxisId, globals.queryController.activeZAxisType);
-                }         
+                }
+
+                // project target filter to Z axis
                 globals.queryController.buildingQuery.SetAxis("Z", directFilterData.Id, "node");
             }
 
+            // remove target filter from the filter list
             globals.queryController.buildingQuery.RemoveFilter(directFilterData.Id, "node");
         }    
     }

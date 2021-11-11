@@ -15,8 +15,9 @@ public class ViRMA_MainMenu : MonoBehaviour
     private bool zParentChainFetched;
 
     // main menu sections (set in editor)
+    public GameObject ui_browseFilters;
     public GameObject ui_projectedFilters;
-    public GameObject ui_directFilers;
+    public GameObject ui_directFilers;   
 
     private Button[] allBtns;
 
@@ -37,12 +38,13 @@ public class ViRMA_MainMenu : MonoBehaviour
 
     private void Start()
     {
+        SetupBrowseFiltersOptions();
+
         // debugging
         transform.parent = null;
         transform.localPosition = new Vector3(0, 9999, 0);
         transform.localRotation = Quaternion.identity;
         transform.localScale = Vector3.one;
-
         StartCoroutine(ToggleMainMenu(true));
     }
 
@@ -58,6 +60,21 @@ public class ViRMA_MainMenu : MonoBehaviour
         }
 
         CheckActiveDirectFilterOptions();
+    }
+
+    // browse filters
+    private void SetupBrowseFiltersOptions()
+    {
+        ViRMA_UiElement[] browseFilterOptions = ui_browseFilters.GetComponentsInChildren<ViRMA_UiElement>();
+        foreach (ViRMA_UiElement browseFilterOption in browseFilterOptions)
+        {
+            browseFilterOption.GenerateBtnDefaults(ViRMA_Colors.darkBlue, Color.white);
+
+            if (browseFilterOption.name == "TagsBtn")
+            {
+                browseFilterOption.GetComponent<Button>().onClick.AddListener(() => globals.dimExplorer.dimExKeyboard.ToggleDimExKeyboard(true));
+            }
+        }
     }
 
     // projected filters
@@ -270,45 +287,53 @@ public class ViRMA_MainMenu : MonoBehaviour
                 if (i == 0)
                 {
                     // x
-                    vrUiElement.GenerateBtnDefaults(ViRMA_Colors.BrightenColor(ViRMA_Colors.axisRed), Color.white);
-                    buttonObj.GetComponent<Button>().onClick.AddListener(() => RollUpAxis(buttonObj));
-
                     if (j == buttons.Length - 1)
                     {
                         buttonObj.transform.localScale = Vector3.one;
                         vrUiElement.GenerateBtnDefaults(ViRMA_Colors.axisRed, Color.white);
                         buttonObj.GetComponent<Button>().onClick.AddListener(() => RemoveAxis(buttonObj));
                     }
+                    else
+                    {
+                        vrUiElement.GenerateBtnDefaults(ViRMA_Colors.BrightenColor(ViRMA_Colors.axisRed), Color.white);
+                        buttonObj.GetComponent<Button>().onClick.AddListener(() => RollUpAxis(buttonObj));
+                    }
                 }
                 else if (i == 1)
                 {
                     // y
-                    vrUiElement.GenerateBtnDefaults(ViRMA_Colors.BrightenColor(ViRMA_Colors.axisGreen), Color.white);
-                    buttonObj.GetComponent<Button>().onClick.AddListener(() => RollUpAxis(buttonObj));
-
                     if (j == buttons.Length - 1)
                     {
                         buttonObj.transform.localScale = Vector3.one;
                         vrUiElement.GenerateBtnDefaults(ViRMA_Colors.axisGreen, Color.white);
                         buttonObj.GetComponent<Button>().onClick.AddListener(() => RemoveAxis(buttonObj));
                     }
+                    else
+                    {
+                        vrUiElement.GenerateBtnDefaults(ViRMA_Colors.BrightenColor(ViRMA_Colors.axisGreen), Color.white);
+                        buttonObj.GetComponent<Button>().onClick.AddListener(() => RollUpAxis(buttonObj));
+                    }
                 }
                 else if (i == 2)
                 {
                     // z
-                    vrUiElement.GenerateBtnDefaults(ViRMA_Colors.BrightenColor(ViRMA_Colors.axisBlue), Color.white);
-                    buttonObj.GetComponent<Button>().onClick.AddListener(() => RollUpAxis(buttonObj));
-
                     if (j == buttons.Length - 1)
                     {
                         buttonObj.transform.localScale = Vector3.one;
                         vrUiElement.GenerateBtnDefaults(ViRMA_Colors.axisBlue, Color.white);
                         buttonObj.GetComponent<Button>().onClick.AddListener(() => RemoveAxis(buttonObj));
                     }
+                    else
+                    {
+                        vrUiElement.GenerateBtnDefaults(ViRMA_Colors.BrightenColor(ViRMA_Colors.axisBlue), Color.white);
+                        buttonObj.GetComponent<Button>().onClick.AddListener(() => RollUpAxis(buttonObj));
+                    }
                 }
             }
         }
     }
+
+    // onClick options
     private void RollUpAxis(GameObject buttonObj)
     {
         int idIndex = buttonObj.name.IndexOf("_");
@@ -327,20 +352,7 @@ public class ViRMA_MainMenu : MonoBehaviour
 
         ToggleLoadingIndicator();
 
-        if (axisType == "X")
-        {
-            globals.queryController.buildingQuery.X = null;
-        }
-        else if (axisType == "Y")
-        {
-            globals.queryController.buildingQuery.Y = null;
-        }
-        else if (axisType == "Z")
-        {
-            globals.queryController.buildingQuery.Z = null;
-        }
-
-        globals.queryController.buildingQuery.AddFilter(targetId, "node");
+        globals.queryController.buildingQuery.ClearAxis(axisType);
     }
 
     // direct filters
@@ -394,21 +406,6 @@ public class ViRMA_MainMenu : MonoBehaviour
     }
 
     // general
-    public void SetAllBtnDefaultStates()
-    {
-        allBtns = GetComponentsInChildren<Button>();
-        foreach (Button btn in allBtns)
-        {
-            Text btnText = btn.GetComponentInChildren<Text>();
-            Image btnBackground = btn.GetComponent<Image>();
-
-            if (btnText && btnBackground)
-            {
-                btnBackground.color = ViRMA_Colors.darkBlue;
-                btnText.color = Color.white;
-            }
-        }
-    }
     private IEnumerator ToggleMainMenu(bool toShow)
     {
         yield return new WaitForSeconds(1);

@@ -13,6 +13,8 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 	public CustomEvents.UnityEventHand onHandClick;
 	protected Hand currentHand;
 
+	BoxCollider col;
+
 	// used for custom UI interaction button states
 	private Image btnBackground;
 	private Text btnText;
@@ -61,6 +63,34 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     private void Update()
     {
+		if (true)
+        {
+			if (transform.parent.parent.gameObject.GetComponent<ViRMA_UIScrollable>())
+            {
+				Transform container = transform.parent.parent.gameObject.GetComponent<ViRMA_UIScrollable>().transform;
+				Transform button = gameObject.transform;
+
+				////////////////////// need to multiply by canvas scale and button scale to get accurate distance
+
+				float halfContainerHeight = (container.GetComponent<RectTransform>().rect.height * 0.001f) / 2;
+				float halfButtonHeight = (button.GetComponent<RectTransform>().rect.height * 0.001f * 0.9f) / 2;
+				float maxDist = (halfContainerHeight + halfButtonHeight) * 0.80f;
+
+				float distance = Vector3.Distance(container.position, button.position);
+				if (distance > maxDist)
+				{
+					//Debug.Log(gameObject.name + " is NOT visible!");
+					col.enabled = false;
+
+				}
+				else
+				{
+					//Debug.Log(gameObject.name + " IS visible!");
+					col.enabled = true;
+				}
+			}
+		}
+
 		// override all button stats when button is faded
 		BtnFadeController();
 	}
@@ -148,8 +178,8 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 	{
 		float width = btn.GetComponent<RectTransform>().rect.width;
 		float height = btn.GetComponent<RectTransform>().rect.height;
-		BoxCollider keyCollider = btn.gameObject.GetComponentInChildren<BoxCollider>();
-		keyCollider.size = new Vector3(width, height, 25);
+		col = btn.gameObject.GetComponentInChildren<BoxCollider>();
+		col.size = new Vector3(width, height, 25);
 	}
 	private void CheckIfKeyboard()
     {
