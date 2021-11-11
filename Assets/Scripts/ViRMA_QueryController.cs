@@ -36,12 +36,12 @@ public class ViRMA_QueryController : MonoBehaviour
 
     private void Start()
     {
-        buildingQuery.SetAxis("X", 1770, "node"); // computer
-        buildingQuery.SetAxis("Y", 3733, "node"); // desk
+        //buildingQuery.SetAxis("X", 1770, "node"); // computer
+        //buildingQuery.SetAxis("Y", 3733, "node"); // desk
         //buildingQuery.SetAxis("Z", 690, "node"); // domestic animal
 
-        //buildingQuery.SetAxis("X", 690, "node"); // domestic animal
-        //buildingQuery.SetAxis("Y", 691, "node"); // dog
+        buildingQuery.SetAxis("X", 690, "node"); // domestic animal
+        buildingQuery.SetAxis("Y", 691, "node"); // dog
 
         //buildingQuery.SetAxis("Z", 5, "tagset"); // day of the week (string)
         //buildingQuery.SetAxis("Z", 13, "tagset"); // timezone
@@ -50,7 +50,7 @@ public class ViRMA_QueryController : MonoBehaviour
         //buildingQuery.AddFilter(132, "tag", 100); // 7 (Sunday
 
         //buildingQuery.AddFilter(690, "node"); // domestic animal
-        buildingQuery.AddFilter(49, "node"); // domestic animal
+        buildingQuery.AddFilter(49, "node"); // person
 
         //StartCoroutine(LateStart()); // testing
     }

@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using UnityEngine.UI;
 using Valve.VR.InteractionSystem;
 using TMPro;
 

@@ -47,7 +47,8 @@ public class Query
         public string Type { get; set; }
         public List<int> Ids { get; set; }
         public string FilterId { get; set; }
-        public Filter(string type, List<int> ids, int parentId = -1)
+        public string Label { get; set; }
+        public Filter(string type, List<int> ids, int parentId = -1, string label = null)
         {
             Type = type;
             Ids = ids;
@@ -81,13 +82,13 @@ public class Query
             Debug.LogError("Invalid axis selected.");
         }
     }
-    public void AddFilter(int id, string type, int parentId = -1)
+    public void AddFilter(int id, string type, int parentId = -1, string label = null)
     {
         if (Filters.Count == 0)
         {
             // if no filters exist yet, just add the first filter
             List<int> newIdList = new List<int>() { id };
-            Filter newFilter = new Filter(type, newIdList, parentId);
+            Filter newFilter = new Filter(type, newIdList, parentId, label);
             Filters.Add(newFilter);
         }
         else
@@ -305,7 +306,7 @@ public class AxesLabels {
 public class ViRMA_APIController : MonoBehaviour
 {
     // public
-    public static bool debugging = true;
+    public static bool debugging = false;
     public static string serverAddress = "https://localhost:44317/api/";
 
     //public static string imagesDirectory = System.IO.Directory.GetCurrentDirectory().ToString() + "/LaugavegurDataDDS/"; 
@@ -430,7 +431,11 @@ public class ViRMA_APIController : MonoBehaviour
 
             url += "zAxis={'type': '" + query.Z.Type + "', 'id': " + query.Z.Id + "}&";
         }
-        url = url.Substring(0, url.Length - 1);
+
+        if (query.X != null || query.Y != null || query.Y != null)
+        {
+            url = url.Substring(0, url.Length - 1);
+        }      
 
         if (query.Filters.Count > 0)
         {

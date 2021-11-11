@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Valve.VR;
 using Valve.VR.InteractionSystem;
+using TMPro;
 
 public class ViRMA_Timeline : MonoBehaviour
 {
@@ -49,6 +50,8 @@ public class ViRMA_Timeline : MonoBehaviour
 
     public bool timelineLoaded;
     public bool isContextTimeline;
+
+    private GameObject feedback;
 
     private void Awake()
     {
@@ -554,6 +557,34 @@ public class ViRMA_Timeline : MonoBehaviour
             }        
         }));
     }
+    private IEnumerator SubmissionFeedback(GameObject target, bool correct)
+    {
+        if (feedback == null)
+        {
+            GameObject feedbackPrefab = Resources.Load("Prefabs/CompetitionFeedback") as GameObject;
+
+            feedback = Instantiate(feedbackPrefab, target.transform);
+            feedback.transform.localPosition = new Vector3(0, 0.5f, -3f);
+            feedback.transform.localScale = new Vector3(1 / target.transform.localScale.x, 1 / target.transform.localScale.y, 1) * 3f;
+
+            Renderer feedbackBg = feedback.transform.GetChild(0).GetComponent<Renderer>();
+            TMP_Text feedbackText = feedback.transform.GetChild(1).GetComponent<TMP_Text>();
+            if (correct)
+            {
+                feedbackBg.material.color = ViRMA_Colors.axisDarkGreen;
+                feedbackText.text = "Correct!";
+            }
+            else
+            {
+                feedbackBg.material.color = ViRMA_Colors.axisDarkRed;
+                feedbackText.text = "Incorrect!";
+            }
+
+            yield return new WaitForSeconds(3);
+            Destroy(feedback);
+            feedback = null;
+        }       
+    }
 
     
     // steamVR actions
@@ -589,10 +620,10 @@ public class ViRMA_Timeline : MonoBehaviour
 
             if (btnOption.btnType.ToLower() == "submit")
             {
-                string fileName = btnOption.targetTimelineChild.GetComponent<ViRMA_TimelineChild>().fileName;
-                string submission = fileName.Substring(0, fileName.Length - 4);
-
-                Debug.Log("Submit " + submission + " to LSC!");
+                string submissionId = btnOption.targetTimelineChild.GetComponent<ViRMA_TimelineChild>().fileName;
+                StartCoroutine(ViRMA_CompetitionController.SubmitToLSC(submissionId, (result) => {
+                    StartCoroutine(SubmissionFeedback(btnOption.targetTimelineChild, result));
+                }));
             }
         }
     }
