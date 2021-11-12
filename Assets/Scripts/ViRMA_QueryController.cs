@@ -47,11 +47,11 @@ public class ViRMA_QueryController : MonoBehaviour
     private void Start()
     {
         //buildingQuery.SetAxis("X", 1770, "node"); // computer
-        buildingQuery.SetAxis("Y", 3733, "node"); // desk
-        buildingQuery.SetAxis("Z", 690, "node"); // domestic animal
+        //buildingQuery.SetAxis("Y", 3733, "node"); // desk
+        //buildingQuery.SetAxis("Z", 690, "node"); // domestic animal
 
         buildingQuery.SetAxis("X", 690, "node"); // domestic animal
-        //buildingQuery.SetAxis("Y", 691, "node"); // dog
+        buildingQuery.SetAxis("Y", 691, "node"); // dog
 
         //buildingQuery.SetAxis("Z", 5, "tagset"); // day of the week (string)
         //buildingQuery.SetAxis("Z", 13, "tagset"); // timezone
@@ -59,8 +59,12 @@ public class ViRMA_QueryController : MonoBehaviour
         //buildingQuery.AddFilter(147, "tag", 100); // 6 (Saturday)
         //buildingQuery.AddFilter(132, "tag", 100); // 7 (Sunday
 
-        //buildingQuery.AddFilter(690, "node"); // domestic animal
-        //buildingQuery.AddFilter(49, "node"); // person
+        buildingQuery.AddFilter(690, "node"); // domestic animal
+        buildingQuery.AddFilter(691, "node"); // person
+        buildingQuery.AddFilter(1770, "node"); // computer
+        buildingQuery.AddFilter(3733, "node"); // desk
+        buildingQuery.AddFilter(692, "node"); // ?
+        buildingQuery.AddFilter(693, "node"); // ?
 
         //StartCoroutine(LateStart()); // testing
     }
@@ -86,7 +90,7 @@ public class ViRMA_QueryController : MonoBehaviour
     {
         QueryReloadController();
 
-        ConsoleLogCurrentQuery(); // debugging
+        //ConsoleLogCurrentQuery(); // debugging
     }
 
     private void QueryReloadController()
@@ -191,6 +195,8 @@ public class ViRMA_QueryController : MonoBehaviour
         if (vizQueryLoading == false)
         {
             //StartCoroutine(globals.dimExplorer.ClearDimExplorer());
+
+            globals.mainMenu.ToggleLoadingIndicator();
 
             globals.vizController.GetComponent<ViRMA_VizController>().ClearViz();
 

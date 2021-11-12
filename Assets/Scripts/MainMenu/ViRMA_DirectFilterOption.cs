@@ -6,9 +6,11 @@ public class ViRMA_DirectFilterOption : MonoBehaviour
 {
     private ViRMA_GlobalsAndActions globals;
     private BoxCollider col;
-    private Rigidbody rigidBody;
-    public TextMeshProUGUI labelText;
+    private Rigidbody rigidBody;  
+    private ViRMA_UiElement[] directFilterOptions;
+    private BoxCollider[] optionCols;
 
+    public TextMeshProUGUI labelText;
     public Tag directFilterData;
 
     private void Awake()
@@ -18,6 +20,8 @@ public class ViRMA_DirectFilterOption : MonoBehaviour
         rigidBody.isKinematic = true;
         col = gameObject.AddComponent<BoxCollider>();
         labelText = transform.GetChild(0).GetComponentInChildren<TextMeshProUGUI>();
+        directFilterOptions = GetComponentsInChildren<ViRMA_UiElement>();
+        optionCols = GetComponentsInChildren<BoxCollider>();
     }
 
     private void Start()
@@ -25,6 +29,18 @@ public class ViRMA_DirectFilterOption : MonoBehaviour
         SetColliderSize();
 
         SetupDirectFilterOptions();
+    }
+
+    private void Update()
+    {
+        // ensure collider is only enabled when parent collider is
+        foreach (BoxCollider optionCol in optionCols)
+        {
+            if (optionCol.transform != transform)
+            {
+                optionCol.enabled = col.enabled;
+            }
+        }
     }
 
     private void OnTriggerEnter(Collider triggeredCol)
@@ -60,7 +76,6 @@ public class ViRMA_DirectFilterOption : MonoBehaviour
     }
     private void SetupDirectFilterOptions()
     {
-        ViRMA_UiElement[] directFilterOptions = GetComponentsInChildren<ViRMA_UiElement>();
         foreach (ViRMA_UiElement child in directFilterOptions)
         {
             child.btn.onClick.AddListener(() => SubmitDirectFilterOption(child.name));
@@ -81,6 +96,8 @@ public class ViRMA_DirectFilterOption : MonoBehaviour
             {
                 child.GenerateBtnDefaults(ViRMA_Colors.darkGrey, Color.white);
             }
+
+            child.Hide(true);
         }
     }
     private void SubmitDirectFilterOption(string optionType)
@@ -89,7 +106,6 @@ public class ViRMA_DirectFilterOption : MonoBehaviour
         {
             if (optionType == "X_btn")
             {
-
                 if (globals.queryController.activeXAxisId != -1)
                 {
                     // if there is something already projected to X, set it as a direct filter

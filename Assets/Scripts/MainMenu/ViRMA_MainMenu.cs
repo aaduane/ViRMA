@@ -3,23 +3,26 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using Valve.VR.InteractionSystem;
+using TMPro;
 
 public class ViRMA_MainMenu : MonoBehaviour
 {
     private ViRMA_GlobalsAndActions globals;
+    private List<GameObject> menuSections;
+
+    // dimension browser
+    public GameObject section_dimensionBrowser;
+
+    public GameObject ui_browseFilters;
+    public GameObject ui_projectedFilters;
+    public GameObject ui_directFilers;
+
     public GameObject hoveredDirectFilter;
     private ViRMA_UiElement[] directFilterOptions;
 
     private bool xParentChainFetched;
     private bool yParentChainFetched;
     private bool zParentChainFetched;
-
-    // main menu sections (set in editor)
-    public GameObject ui_browseFilters;
-    public GameObject ui_projectedFilters;
-    public GameObject ui_directFilers;   
-
-    private Button[] allBtns;
 
     private List<Tag> xParentChain;
     private List<Tag> yParentChain;
@@ -29,18 +32,41 @@ public class ViRMA_MainMenu : MonoBehaviour
     private Transform yBtnWrapper;
     private Transform zBtnWrapper;
 
+    // time picker
+    public GameObject section_timePicker;
+
+    public GameObject ui_weekday;
+    public GameObject ui_hour;
+    public GameObject ui_month;
+    public GameObject ui_dates;
+
+    // location picker
+    public GameObject section_locationPicker;
+
+
     private void Awake()
     {
         // define ViRMA globals script
         globals = Player.instance.gameObject.GetComponent<ViRMA_GlobalsAndActions>();
-        directFilterOptions = ui_directFilers.GetComponentsInChildren<ViRMA_UiElement>();
+
+        menuSections = new List<GameObject>();
+        menuSections.Add(section_dimensionBrowser);
+        menuSections.Add(section_timePicker);
+        menuSections.Add(section_locationPicker);
     }
 
     private void Start()
     {
         SetupBrowseFiltersOptions();
 
-        // debugging
+        SetupTimePicker();
+
+        ToggleMenuSection(section_dimensionBrowser);
+
+
+
+
+        // testing
         transform.parent = null;
         transform.localPosition = new Vector3(0, 9999, 0);
         transform.localRotation = Quaternion.identity;
@@ -73,6 +99,31 @@ public class ViRMA_MainMenu : MonoBehaviour
             if (browseFilterOption.name == "TagsBtn")
             {
                 browseFilterOption.GetComponent<Button>().onClick.AddListener(() => globals.dimExplorer.dimExKeyboard.ToggleDimExKeyboard(true));
+            }
+
+            if (browseFilterOption.name == "TimeBtn")
+            {
+                browseFilterOption.GetComponent<Button>().onClick.AddListener(() => ToggleMenuSection(section_timePicker));
+            }
+
+            if (browseFilterOption.name == "LocationsBtn")
+            {
+                browseFilterOption.GetComponent<Button>().onClick.AddListener(() => ToggleMenuSection(section_locationPicker));
+            }
+        }
+    }
+    public void ToggleMenuSection(GameObject targetMenuSection)
+    {
+        foreach (GameObject menuSection in menuSections)
+        {
+            menuSection.SetActive(true);
+            if (menuSection == targetMenuSection)
+            {
+                menuSection.transform.localPosition = new Vector3(0, 0, 0);
+            }
+            else
+            {
+                menuSection.transform.localPosition = new Vector3(0, 9999, 0);
             }
         }
     }
@@ -340,17 +391,11 @@ public class ViRMA_MainMenu : MonoBehaviour
         int targetId = int.Parse(buttonObj.name.Substring(idIndex + 1));
         string axisType = buttonObj.transform.parent.parent.name.Substring(0, 1);
 
-        ToggleLoadingIndicator();
-
         globals.queryController.buildingQuery.SetAxis(axisType, targetId, "node");
     }
     private void RemoveAxis(GameObject buttonObj)
     {
-        int idIndex = buttonObj.name.IndexOf("_");
-        int targetId = int.Parse(buttonObj.name.Substring(idIndex + 1));
         string axisType = buttonObj.transform.parent.parent.name.Substring(0, 1);
-
-        ToggleLoadingIndicator();
 
         globals.queryController.buildingQuery.ClearAxis(axisType);
     }
@@ -382,6 +427,8 @@ public class ViRMA_MainMenu : MonoBehaviour
     }
     private void CheckActiveDirectFilterOptions()
     {
+        directFilterOptions = ui_directFilers.GetComponentsInChildren<ViRMA_UiElement>();
+
         if (hoveredDirectFilter)
         {
             foreach (ViRMA_UiElement filterOption in directFilterOptions)
@@ -403,6 +450,12 @@ public class ViRMA_MainMenu : MonoBehaviour
                 filterOption.Hide(true);
             }
         }
+    }
+
+    // time picker
+    private void SetupTimePicker()
+    {
+        Debug.Log("Setting up time picker...");
     }
 
     // general
@@ -435,8 +488,8 @@ public class ViRMA_MainMenu : MonoBehaviour
             transform.localPosition = new Vector3(0, 9999, 0);
             transform.localRotation = Quaternion.identity;
             transform.localScale = Vector3.one;
-        }      
-        
+        }
+
     }
     public void ToggleLoadingIndicator()
     {
@@ -449,6 +502,8 @@ public class ViRMA_MainMenu : MonoBehaviour
         {
             Destroy(child.gameObject);
         }
+        xBtnWrapper.DetachChildren();
+
         GameObject xBtn = Instantiate(templateBtn, xBtnWrapper);
         xBtn.GetComponentInChildren<Image>().color = Color.grey;
         xBtn.GetComponentInChildren<Text>().color = Color.white;
@@ -463,6 +518,8 @@ public class ViRMA_MainMenu : MonoBehaviour
         {
             Destroy(child.gameObject);
         }
+        yBtnWrapper.DetachChildren();
+
         GameObject yBtn = Instantiate(templateBtn, yBtnWrapper);
         yBtn.GetComponentInChildren<Image>().color = Color.grey;
         yBtn.GetComponentInChildren<Text>().color = Color.white;
@@ -477,25 +534,32 @@ public class ViRMA_MainMenu : MonoBehaviour
         {
             Destroy(child.gameObject);
         }
+        zBtnWrapper.DetachChildren();
+
         GameObject zBtn = Instantiate(templateBtn, zBtnWrapper);
         zBtn.GetComponentInChildren<Image>().color = Color.grey;
-        zBtn.GetComponentInChildren<Text>().color = Color.white;    
+        zBtn.GetComponentInChildren<Text>().color = Color.white;
         zBtn.GetComponentInChildren<Text>().text = "loading";
         zBtn.name = "loadingBtn";
         Destroy(zBtn.GetComponentInChildren<ViRMA_UiElement>());
         Destroy(zBtn.GetComponentInChildren<Outline>());
 
         // filter queries
-        /*
+        GameObject directFilterPrefab = Resources.Load("Prefabs/DirectFilterOptn") as GameObject;
         Transform directFilterParent = ui_directFilers.GetComponentInChildren<ViRMA_UIScrollable>().transform.GetChild(0);
         foreach (Transform child in directFilterParent)
         {
             Destroy(child.gameObject);
         }
         directFilterParent.DetachChildren();
-        */
+
+        GameObject directFilterObj = Instantiate(directFilterPrefab, directFilterParent);
+        directFilterObj.GetComponent<ViRMA_DirectFilterOption>().labelText.text = "loading";
+        directFilterObj.GetComponentInChildren<Image>().color = Color.grey;
+        directFilterObj.GetComponentInChildren<TextMeshProUGUI>().color = Color.white;
+        Destroy(directFilterObj.GetComponentInChildren<ViRMA_UiElement>());
     }
-    
+
     // testing
     private void GenerateTestScrollBtns()
     {

@@ -50,9 +50,9 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 			btn.navigation = disableNav;
 			btn.transition = Selectable.Transition.None;
 		}
+		keyboard = GetComponentInParent<ViRMA_Keyboard>();
 
-		// find out if this UI element is part of a ViRMA Keyboard
-		CheckIfKeyboard();
+		GenerateBtnDefaults(ViRMA_Colors.darkBlue, Color.white);
 	}
 
     private void Start()
@@ -63,34 +63,6 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     private void Update()
     {
-		if (true)
-        {
-			if (transform.parent.parent.gameObject.GetComponent<ViRMA_UIScrollable>())
-            {
-				Transform container = transform.parent.parent.gameObject.GetComponent<ViRMA_UIScrollable>().transform;
-				Transform button = gameObject.transform;
-
-				////////////////////// need to multiply by canvas scale and button scale to get accurate distance
-
-				float halfContainerHeight = (container.GetComponent<RectTransform>().rect.height * 0.001f) / 2;
-				float halfButtonHeight = (button.GetComponent<RectTransform>().rect.height * 0.001f * 0.9f) / 2;
-				float maxDist = (halfContainerHeight + halfButtonHeight) * 0.80f;
-
-				float distance = Vector3.Distance(container.position, button.position);
-				if (distance > maxDist)
-				{
-					//Debug.Log(gameObject.name + " is NOT visible!");
-					col.enabled = false;
-
-				}
-				else
-				{
-					//Debug.Log(gameObject.name + " IS visible!");
-					col.enabled = true;
-				}
-			}
-		}
-
 		// override all button stats when button is faded
 		BtnFadeController();
 	}
@@ -180,33 +152,6 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 		float height = btn.GetComponent<RectTransform>().rect.height;
 		col = btn.gameObject.GetComponentInChildren<BoxCollider>();
 		col.size = new Vector3(width, height, 25);
-	}
-	private void CheckIfKeyboard()
-    {
-		Transform checkKeyboard = transform;
-		while (checkKeyboard.parent != null)
-		{
-			if (checkKeyboard.parent.GetComponent<ViRMA_Keyboard>())
-			{
-				keyboard = checkKeyboard.parent.GetComponent<ViRMA_Keyboard>();
-				break;
-			}
-			checkKeyboard = checkKeyboard.parent.transform;
-		}
-
-		// find out if UI element is part of a main menu
-		/*
-		Transform checkMainMenu = transform;
-		while (checkMainMenu.parent != null)
-		{
-			if (checkMainMenu.parent.GetComponent<ViRMA_MainMenu>())
-			{
-				ViRMA_MainMenu mainMenu = checkMainMenu.parent.GetComponent<ViRMA_MainMenu>();
-				break;
-			}
-			checkMainMenu = checkMainMenu.parent.transform;
-		}
-		*/
 	}
 	public void Hide(bool toHide)
     {
