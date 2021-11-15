@@ -9,6 +9,7 @@ public class ViRMA_MainMenu : MonoBehaviour
 {
     private ViRMA_GlobalsAndActions globals;
     private List<GameObject> menuSections;
+    private int frameSkipper;
 
     // dimension browser
     public GameObject section_dimensionBrowser;
@@ -35,10 +36,18 @@ public class ViRMA_MainMenu : MonoBehaviour
     // time picker
     public GameObject section_timePicker;
 
-    public GameObject ui_weekday;
-    public GameObject ui_hour;
-    public GameObject ui_month;
+    private List<ViRMA_UiElement> toggledTimeUiElements;
+    private ViRMA_UiElement[] allTimeOptions;
+
+    public GameObject ui_weekdays;
+    public GameObject ui_hours;
+    public GameObject ui_months;
     public GameObject ui_dates;
+
+    private ViRMA_UiElement[] weekdayOptions;
+    private ViRMA_UiElement[] hourOptions;
+    private ViRMA_UiElement[] monthOptions;
+    private ViRMA_UiElement[] dateOptions;
 
     // location picker
     public GameObject section_locationPicker;
@@ -53,39 +62,38 @@ public class ViRMA_MainMenu : MonoBehaviour
         menuSections.Add(section_dimensionBrowser);
         menuSections.Add(section_timePicker);
         menuSections.Add(section_locationPicker);
-    }
 
-    private void Start()
-    {
-        SetupBrowseFiltersOptions();
+        // ensure all UI sections are enabled
+        foreach (GameObject menuSection in menuSections)
+        {
+            menuSection.SetActive(true);
+        }
 
-        SetupTimePicker();
-
-        ToggleMenuSection(section_dimensionBrowser);
-
-
-
+        transform.localScale = Vector3.one * 0.75f;
 
         // testing
         transform.parent = null;
         transform.localPosition = new Vector3(0, 9999, 0);
         transform.localRotation = Quaternion.identity;
-        transform.localScale = Vector3.one;
+    }
+
+    private void Start()
+    {
+        SetupBrowseFiltersOptions();
+        SetupTimePicker();
+
+
         StartCoroutine(ToggleMainMenu(true));
+        ToggleMenuSection(section_timePicker);
     }
 
     private void Update()
     {
-        if (xParentChainFetched && yParentChainFetched && zParentChainFetched)
-        {
-            UpdateProjFilerBtns();
-
-            xParentChainFetched = false;
-            yParentChainFetched = false;
-            zParentChainFetched = false;          
-        }
+        ProjFilterStateController();
 
         CheckActiveDirectFilterOptions();
+
+        TimePickerToggleController();
     }
 
     // browse filters
@@ -253,65 +261,72 @@ public class ViRMA_MainMenu : MonoBehaviour
             zParentChainFetched = true;
         }
     }
-    private void UpdateProjFilerBtns()
+    private void ProjFilterStateController()
     {
-        GameObject templateBtn = Resources.Load("Prefabs/ProjectedFilterBtn") as GameObject;
-        ViRMA_UIScrollable[] scrollableUis = ui_projectedFilters.GetComponentsInChildren<ViRMA_UIScrollable>();
-
-        //////////////////////////////////////////////////////////////////// x 
-        xBtnWrapper = scrollableUis[0].transform.GetChild(0).transform;
-        foreach (Transform child in xBtnWrapper)
+        if (xParentChainFetched && yParentChainFetched && zParentChainFetched)
         {
-            Destroy(child.gameObject);
-        }
-        xBtnWrapper.DetachChildren();
+            GameObject templateBtn = Resources.Load("Prefabs/ProjectedFilterBtn") as GameObject;
+            ViRMA_UIScrollable[] scrollableUis = ui_projectedFilters.GetComponentsInChildren<ViRMA_UIScrollable>();
 
-        xParentChain.Reverse();
-        for (int i = 0; i < xParentChain.Count; i++)
-        {
-            GameObject newBtn = Instantiate(templateBtn, xBtnWrapper);
-            newBtn.GetComponentInChildren<Text>().text = xParentChain[i].Label;
-            newBtn.name = xParentChain[i].Label + "_" + xParentChain[i].Id;
-        }
-        xBtnWrapper.parent.GetComponent<ScrollRect>().verticalNormalizedPosition = 0;
+            //////////////////////////////////////////////////////////////////// x 
+            xBtnWrapper = scrollableUis[0].transform.GetChild(0).transform;
+            foreach (Transform child in xBtnWrapper)
+            {
+                Destroy(child.gameObject);
+            }
+            xBtnWrapper.DetachChildren();
 
-        //////////////////////////////////////////////////////////////////// y
-        yBtnWrapper = scrollableUis[1].transform.GetChild(0).transform;
-        foreach (Transform child in yBtnWrapper)
-        {
-            Destroy(child.gameObject);
-        }
-        yBtnWrapper.DetachChildren();
+            xParentChain.Reverse();
+            for (int i = 0; i < xParentChain.Count; i++)
+            {
+                GameObject newBtn = Instantiate(templateBtn, xBtnWrapper);
+                newBtn.GetComponentInChildren<Text>().text = xParentChain[i].Label;
+                newBtn.name = xParentChain[i].Label + "_" + xParentChain[i].Id;
+            }
+            xBtnWrapper.parent.GetComponent<ScrollRect>().verticalNormalizedPosition = 0;
 
-        yParentChain.Reverse();
-        for (int i = 0; i < yParentChain.Count; i++)
-        {
-            GameObject newBtn = Instantiate(templateBtn, yBtnWrapper);
-            newBtn.GetComponentInChildren<Text>().text = yParentChain[i].Label;
-            newBtn.name = yParentChain[i].Label + "_" + yParentChain[i].Id;
-        }
+            //////////////////////////////////////////////////////////////////// y
+            yBtnWrapper = scrollableUis[1].transform.GetChild(0).transform;
+            foreach (Transform child in yBtnWrapper)
+            {
+                Destroy(child.gameObject);
+            }
+            yBtnWrapper.DetachChildren();
 
-        //////////////////////////////////////////////////////////////////// z
-        zBtnWrapper = scrollableUis[2].transform.GetChild(0).transform;
-        foreach (Transform child in zBtnWrapper)
-        {
-            Destroy(child.gameObject);
-        }
-        zBtnWrapper.DetachChildren();
+            yParentChain.Reverse();
+            for (int i = 0; i < yParentChain.Count; i++)
+            {
+                GameObject newBtn = Instantiate(templateBtn, yBtnWrapper);
+                newBtn.GetComponentInChildren<Text>().text = yParentChain[i].Label;
+                newBtn.name = yParentChain[i].Label + "_" + yParentChain[i].Id;
+            }
 
-        zParentChain.Reverse();
-        for (int i = 0; i < zParentChain.Count; i++)
-        {
-            GameObject newBtn = Instantiate(templateBtn, zBtnWrapper);
-            newBtn.GetComponentInChildren<Text>().text = zParentChain[i].Label;
-            newBtn.name = zParentChain[i].Label + "_" + zParentChain[i].Id;
-        }
+            //////////////////////////////////////////////////////////////////// z
+            zBtnWrapper = scrollableUis[2].transform.GetChild(0).transform;
+            foreach (Transform child in zBtnWrapper)
+            {
+                Destroy(child.gameObject);
+            }
+            zBtnWrapper.DetachChildren();
 
-        // set appearance and state of buttons
-        SetProjFilterBtnStates();
+            zParentChain.Reverse();
+            for (int i = 0; i < zParentChain.Count; i++)
+            {
+                GameObject newBtn = Instantiate(templateBtn, zBtnWrapper);
+                newBtn.GetComponentInChildren<Text>().text = zParentChain[i].Label;
+                newBtn.name = zParentChain[i].Label + "_" + zParentChain[i].Id;
+            }
 
-        // scroll to the bottom of the container by default
-        StartCoroutine(ScrollBtnWrappersToBottom());
+            // set appearance and state of buttons
+            SetProjFilterBtnStates();
+
+            // scroll to the bottom of the container by default
+            StartCoroutine(ScrollBtnWrappersToBottom());
+
+            xParentChainFetched = false;
+            yParentChainFetched = false;
+            zParentChainFetched = false;
+        }   
     }
     private IEnumerator ScrollBtnWrappersToBottom()
     {
@@ -455,7 +470,81 @@ public class ViRMA_MainMenu : MonoBehaviour
     // time picker
     private void SetupTimePicker()
     {
-        Debug.Log("Setting up time picker...");
+        toggledTimeUiElements = new List<ViRMA_UiElement>();
+
+        allTimeOptions = section_timePicker.GetComponentsInChildren<ViRMA_UiElement>();
+
+        // fetch weekday tagset id's
+        string weekdayTagsetId = "4";
+        StartCoroutine(ViRMA_APIController.GetTagset(weekdayTagsetId, (tagsetData) => {
+            foreach (Tag weekdayData in tagsetData)
+            {
+                int index = int.Parse(weekdayData.Label) - 1;
+                ViRMA_UiElement uiElement = ui_weekdays.transform.GetChild(index).GetComponent<ViRMA_UiElement>();
+                uiElement.buttonData = new KeyValuePair<int, int>(int.Parse(weekdayTagsetId), weekdayData.Id);
+                uiElement.GetComponent<Button>().onClick.AddListener(() => ToggleTimeOption(uiElement));
+            }
+        }));
+
+        // fetch hour tagset id's
+        string hoursTagsetId = "11";
+        StartCoroutine(ViRMA_APIController.GetTagset(hoursTagsetId, (tagsetData) => {
+            foreach (Tag hourData in tagsetData)
+            {
+                int index = int.Parse(hourData.Label);
+                ViRMA_UiElement uiElement = ui_hours.transform.GetChild(index).GetComponent<ViRMA_UiElement>();
+                uiElement.buttonData = new KeyValuePair<int, int>(int.Parse(hoursTagsetId), hourData.Id);
+                uiElement.GetComponent<Button>().onClick.AddListener(() => ToggleTimeOption(uiElement));
+                uiElement.GetComponentInChildren<Text>().text = index.ToString();
+            }
+        }));
+
+        //ui_months.GetComponentsInChildren<ViRMA_UiElement>();
+        //ui_dates.GetComponentsInChildren<ViRMA_UiElement>();
+    }
+    private void TimePickerToggleController()
+    {
+        // do every second frame for performance
+        frameSkipper++;
+        if (frameSkipper < 2)
+        {
+            return;
+        }
+        frameSkipper = 0;
+
+        // check list of toggled buttons and update states and query filters
+        foreach (ViRMA_UiElement uiElement in allTimeOptions)
+        {
+            if (toggledTimeUiElements.Contains(uiElement))
+            {
+                if (uiElement.isToggled == false)
+                {
+                    uiElement.toggle = true;
+                    KeyValuePair<int, int> tagData = (KeyValuePair<int, int>)uiElement.buttonData;
+                    globals.queryController.buildingQuery.AddFilter(tagData.Value, "tag", tagData.Key);
+                }
+            }
+            else
+            {
+                if (uiElement.isToggled == true)
+                {
+                    uiElement.toggle = false;
+                    KeyValuePair<int, int> tagData = (KeyValuePair<int, int>)uiElement.buttonData;
+                    globals.queryController.buildingQuery.RemoveFilter(tagData.Value, "tag", tagData.Key);
+                }
+            }
+        }
+    }
+    public void ToggleTimeOption(ViRMA_UiElement uiElement)
+    {
+        if (toggledTimeUiElements.Contains(uiElement))
+        {
+            toggledTimeUiElements.Remove(uiElement);
+        }
+        else
+        {
+            toggledTimeUiElements.Add(uiElement);
+        }
     }
 
     // general

@@ -59,12 +59,14 @@ public class ViRMA_QueryController : MonoBehaviour
         //buildingQuery.AddFilter(147, "tag", 100); // 6 (Saturday)
         //buildingQuery.AddFilter(132, "tag", 100); // 7 (Sunday
 
-        buildingQuery.AddFilter(690, "node"); // domestic animal
-        buildingQuery.AddFilter(691, "node"); // person
-        buildingQuery.AddFilter(1770, "node"); // computer
-        buildingQuery.AddFilter(3733, "node"); // desk
-        buildingQuery.AddFilter(692, "node"); // ?
-        buildingQuery.AddFilter(693, "node"); // ?
+        //buildingQuery.AddFilter(690, "node"); // domestic animal
+        //buildingQuery.AddFilter(691, "node"); // person
+        //buildingQuery.AddFilter(1770, "node"); // computer
+        //buildingQuery.AddFilter(3733, "node"); // desk
+        //buildingQuery.AddFilter(692, "node"); // ?
+        //buildingQuery.AddFilter(693, "node"); // ?
+
+        //buildingQuery.AddFilter(216, "tag", 13); // shanghai timezone
 
         //StartCoroutine(LateStart()); // testing
     }

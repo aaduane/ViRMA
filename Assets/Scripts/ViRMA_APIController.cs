@@ -490,7 +490,7 @@ public class ViRMA_APIController : MonoBehaviour
             url = url.Replace("\'", "\"");
         }
 
-        // Debug.Log("GetCells: " + url); // debugging
+        Debug.Log("GetCells: " + url); // debugging
 
         yield return GetRequest(url, (response) =>
         {
@@ -599,25 +599,42 @@ public class ViRMA_APIController : MonoBehaviour
         onSuccess(axisLabels);
     }
 
-    // all tagsets and hierarchies API
-    public static IEnumerator GetAllTagsets(Action<List<Tag>> onSuccess)
+    // tagset(s) and hierarchies API
+    public static IEnumerator GetTagset(string targetId, Action<List<Tag>> onSuccess)
     {
-        yield return GetRequest("tagset", (response) =>
+        yield return GetRequest("tagset/" + targetId, (response) =>
         {
             jsonData = response;
         });
 
-        List<Tag> tagsets = new List<Tag>();
-        foreach (var obj in jsonData)
+        List<Tag> tagsetData = new List<Tag>();
+      
+        if (jsonData["tags"] != null)
         {
-            Tag newTag = new Tag
+            foreach (var tag in jsonData["tags"])
             {
-                Id = obj.Value["id"],
-                Label = obj.Value["name"]
-            };
-            tagsets.Add(newTag);
+                Tag newTag = new Tag
+                {
+                    Id = tag.Value["id"],
+                    Label = tag.Value["name"]
+                };
+                tagsetData.Add(newTag);
+            }
         }
-        onSuccess(tagsets);
+        else
+        {
+            foreach (var tagset in jsonData)
+            {
+                Tag newTagset = new Tag
+                {
+                    Id = tagset.Value["id"],
+                    Label = tagset.Value["name"]
+                };
+                tagsetData.Add(newTagset);
+            }
+        }
+
+        onSuccess(tagsetData);
     }
     public static IEnumerator GetAllHierarchies(Action<List<Tag>> onSuccess)
     {
@@ -625,12 +642,6 @@ public class ViRMA_APIController : MonoBehaviour
         {
             jsonData = response;
         });
-
-        /*
-        Debug.Log(jsonData["Id"]);
-        Debug.Log(jsonData["Name"]);
-        Debug.Log(jsonData["Nodes"]);
-        */
 
         List<Tag> hierarchies = new List<Tag>();
         foreach (var obj in jsonData)

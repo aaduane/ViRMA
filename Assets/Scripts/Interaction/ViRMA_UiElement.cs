@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using Valve.VR.InteractionSystem;
@@ -7,13 +8,12 @@ using Valve.VR.InteractionSystem;
 public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler, IPointerUpHandler, IPointerClickHandler
 {
 	// SteamVR: used for UI interaction with controller
-	private ViRMA_GlobalsAndActions globals;
+	//private ViRMA_GlobalsAndActions globals;
 	private ViRMA_Keyboard keyboard;
 
 	public CustomEvents.UnityEventHand onHandClick;
 	protected Hand currentHand;
-
-	BoxCollider col;
+	private BoxCollider col;
 
 	// used for custom UI interaction button states
 	private Image btnBackground;
@@ -30,11 +30,18 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 	public Color clickedBackgroundColor;
 	public Color clickedTextColor;
 
+	public Color toggledBackgroundColor;
+	public Color toggledTextColor;
+
 	public bool buttonFaded;
+	public bool toggle;
+	public bool isToggled;
+
+	public object buttonData; // (to do)
 
 	protected virtual void Awake()
 	{
-		globals = Player.instance.gameObject.GetComponent<ViRMA_GlobalsAndActions>();
+		//globals = Player.instance.gameObject.GetComponent<ViRMA_GlobalsAndActions>();
 		btnBackground = GetComponent<Image>();
 		btnText = GetComponentInChildren<Text>();
 		btnIcon = GetComponentInChildren<RawImage>();
@@ -65,6 +72,9 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
     {
 		// override all button stats when button is faded
 		BtnFadeController();
+
+		// reverse default colours to simulate toggled status
+		BtnToggleController();
 	}
 
     // --- SteamVR: UI interaction with Hand script --- \\
@@ -105,7 +115,7 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 			// ControllerButtonHints.HideButtonHint(hand, globals.menuInteraction_Select); // not highlighting any button
 		}
 
-		// minor hack: force SteamVR UI hand interation states to match custom pointer UI interaction states
+		// hack: force SteamVR UI hand interation states to match custom pointer UI interaction states
 		if (hand.uiInteractAction.active && ViRMA_InputModule.instance.contactUIEnabled)
         {
 			if (hand.uiInteractAction.stateDown)
@@ -194,16 +204,30 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 			}
 		}	
     }
+	public void Toggle(bool toToggle)
+    {
+		toggle = toToggle;
+	}
 
 	// button states
 	public void GenerateBtnDefaults(Color bgColor, Color textColor)
 	{
+		// default
 		defaultBackgroundColor = bgColor;
 		defaultTextColor = textColor;
 
-		hoverBackgroundColor = ViRMA_Colors.BrightenColor(bgColor);
+		// hover
+		if (bgColor == Color.white)
+        {
+			hoverBackgroundColor = ViRMA_Colors.DarkenColor(bgColor);
+		}
+		else
+        {
+			hoverBackgroundColor = ViRMA_Colors.BrightenColor(bgColor);
+		}	
 		hoverTextColor = ViRMA_Colors.BrightenColor(textColor);
 
+		// clicked
 		clickedBackgroundColor = textColor;
 		clickedTextColor = bgColor;
 
@@ -273,6 +297,26 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 				btnIcon.color = new Color(btnIcon.color.r, btnIcon.color.g, btnIcon.color.b, alpha);
 			}
 		}	
+	}
+	private void BtnToggleController()
+    {
+		if (toggle == true)
+		{
+			if (isToggled == false)
+			{
+				GenerateBtnDefaults(clickedBackgroundColor, clickedTextColor);
+				isToggled = true;
+			}
+		}
+
+		if (toggle == false)
+		{
+			if (isToggled == true)
+			{
+				GenerateBtnDefaults(clickedBackgroundColor, clickedTextColor);
+				isToggled = false;
+			}
+		}
 	}
 
 	
