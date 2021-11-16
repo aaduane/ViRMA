@@ -18,6 +18,7 @@ public class ViRMA_Colors : MonoBehaviour
     public static Color32 lightBlue = new Color32(52, 152, 219, 255);
     public static Color32 darkGrey = new Color32(50, 50, 50, 255);
     public static Color32 lightGrey = new Color32(245, 245, 245, 255);
+    public static Color32 flatOrange = new Color32(230, 126, 34, 255);
     public static Color32 BrightenColor(Color32 colorToBrighten)
     {
         float H, S, V;

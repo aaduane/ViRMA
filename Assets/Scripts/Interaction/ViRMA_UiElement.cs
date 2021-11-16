@@ -9,11 +9,12 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 {
 	// SteamVR: used for UI interaction with controller
 	//private ViRMA_GlobalsAndActions globals;
-	private ViRMA_Keyboard keyboard;
 
 	public CustomEvents.UnityEventHand onHandClick;
 	protected Hand currentHand;
 	private BoxCollider col;
+
+	public Hand handINteractingWithUi;
 
 	// used for custom UI interaction button states
 	private Image btnBackground;
@@ -57,7 +58,6 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 			btn.navigation = disableNav;
 			btn.transition = Selectable.Transition.None;
 		}
-		keyboard = GetComponentInParent<ViRMA_Keyboard>();
 
 		GenerateBtnDefaults(ViRMA_Colors.darkBlue, Color.white);
 	}
@@ -70,6 +70,8 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     private void Update()
     {
+		handINteractingWithUi = currentHand;
+
 		// override all button stats when button is faded
 		BtnFadeController();
 
@@ -106,10 +108,6 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 		{
 			// SteamVR: submit button to be invoked
 			ViRMA_InputModule.instance.Submit(gameObject);
-			if (keyboard)
-            {
-				keyboard.handInteractingWithKeyboard = hand;
-            }		
 
 			// SteamVR: hide controller hint
 			// ControllerButtonHints.HideButtonHint(hand, globals.menuInteraction_Select); // not highlighting any button
@@ -212,6 +210,8 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 	// button states
 	public void GenerateBtnDefaults(Color bgColor, Color textColor)
 	{
+		//GetComponent<Image>().material = Resources.Load("Materials/CustomUI") as Material;
+
 		// default
 		defaultBackgroundColor = bgColor;
 		defaultTextColor = textColor;

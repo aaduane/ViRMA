@@ -82,7 +82,7 @@ public class ViRMA_UIScrollable : MonoBehaviour
             if (joyStickDirection != 0)
             {
                 float multiplier = joyStickDirection * 0.45f;
-                scrollContent.position -= multiplier * Time.deltaTime * Vector3.up;
+                scrollContent.position -= multiplier * Time.deltaTime * transform.up;
             }
         }
     }

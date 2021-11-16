@@ -3,7 +3,6 @@ using System.Globalization;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using Valve.VR;
 using Valve.VR.InteractionSystem;
 
 public class ViRMA_Keyboard : MonoBehaviour
@@ -87,7 +86,7 @@ public class ViRMA_Keyboard : MonoBehaviour
 
                 if (keyText.gameObject.transform.parent.name == "CLEAR")
                 {
-                    bgCol = new Color32(211, 84, 0, 255);
+                    bgCol = ViRMA_Colors.flatOrange;
                     textCol = Color.white;
                 }
                 else if (keyText.gameObject.transform.parent.name == "CLOSE")
@@ -236,7 +235,7 @@ public class ViRMA_Keyboard : MonoBehaviour
     private void SubmitKey(Button key)
     {
         string buttonName = key.gameObject.name;
-        string submittedChar = key.GetComponentInChildren<Text>().text;      
+        string submittedChar = key.GetComponentInChildren<Text>().text;
 
         if (buttonName == "SUBMIT")
         {
@@ -281,6 +280,7 @@ public class ViRMA_Keyboard : MonoBehaviour
         }
         else if (buttonName == "MOVE")
         {
+            handInteractingWithKeyboard = key.GetComponent<ViRMA_UiElement>().handINteractingWithUi;
             keyboardMoving = true;
         }
         else if (buttonName == "SPACE")

@@ -4,12 +4,16 @@ using UnityEngine;
 using UnityEngine.UI;
 using Valve.VR.InteractionSystem;
 using TMPro;
+using Valve.VR;
 
 public class ViRMA_MainMenu : MonoBehaviour
 {
     private ViRMA_GlobalsAndActions globals;
     private List<GameObject> menuSections;
     private int frameSkipper;
+    public bool mainMenuLoaded;
+    public bool mainMenuMoving;
+    public Hand handInteractingWithMainMenu;
 
     // dimension browser
     public GameObject section_dimensionBrowser;
@@ -37,21 +41,19 @@ public class ViRMA_MainMenu : MonoBehaviour
     public GameObject section_timePicker;
 
     private List<ViRMA_UiElement> toggledTimeUiElements;
-    private ViRMA_UiElement[] allTimeOptions;
+    private List<ViRMA_UiElement> allTimeOptions;
 
     public GameObject ui_weekdays;
     public GameObject ui_hours;
-    public GameObject ui_months;
     public GameObject ui_dates;
-
-    private ViRMA_UiElement[] weekdayOptions;
-    private ViRMA_UiElement[] hourOptions;
-    private ViRMA_UiElement[] monthOptions;
-    private ViRMA_UiElement[] dateOptions;
+    public GameObject ui_months;
+    public GameObject ui_years;
 
     // location picker
     public GameObject section_locationPicker;
 
+    // back buttons
+    public List<GameObject> customColorButtons;
 
     private void Awake()
     {
@@ -69,26 +71,24 @@ public class ViRMA_MainMenu : MonoBehaviour
             menuSection.SetActive(true);
         }
 
-        transform.localScale = Vector3.one * 0.75f;
+        SetupCustomButtons();
 
-        // testing
-        transform.parent = null;
-        transform.localPosition = new Vector3(0, 9999, 0);
-        transform.localRotation = Quaternion.identity;
+        transform.localScale = Vector3.one * 0.75f;
     }
 
     private void Start()
     {
         SetupBrowseFiltersOptions();
+
         SetupTimePicker();
 
-
-        StartCoroutine(ToggleMainMenu(true));
-        ToggleMenuSection(section_timePicker);
+        ToggleMenuSection(section_dimensionBrowser);
     }
 
     private void Update()
     {
+        MainMenuRepositioning();
+
         ProjFilterStateController();
 
         CheckActiveDirectFilterOptions();
@@ -116,7 +116,7 @@ public class ViRMA_MainMenu : MonoBehaviour
 
             if (browseFilterOption.name == "LocationsBtn")
             {
-                browseFilterOption.GetComponent<Button>().onClick.AddListener(() => ToggleMenuSection(section_locationPicker));
+                //browseFilterOption.GetComponent<Button>().onClick.AddListener(() => ToggleMenuSection(section_locationPicker));
             }
         }
     }
@@ -470,9 +470,8 @@ public class ViRMA_MainMenu : MonoBehaviour
     // time picker
     private void SetupTimePicker()
     {
+        allTimeOptions = new List<ViRMA_UiElement>();
         toggledTimeUiElements = new List<ViRMA_UiElement>();
-
-        allTimeOptions = section_timePicker.GetComponentsInChildren<ViRMA_UiElement>();
 
         // fetch weekday tagset id's
         string weekdayTagsetId = "4";
@@ -483,24 +482,66 @@ public class ViRMA_MainMenu : MonoBehaviour
                 ViRMA_UiElement uiElement = ui_weekdays.transform.GetChild(index).GetComponent<ViRMA_UiElement>();
                 uiElement.buttonData = new KeyValuePair<int, int>(int.Parse(weekdayTagsetId), weekdayData.Id);
                 uiElement.GetComponent<Button>().onClick.AddListener(() => ToggleTimeOption(uiElement));
+                allTimeOptions.Add(uiElement);
             }
         }));
 
         // fetch hour tagset id's
-        string hoursTagsetId = "11";
-        StartCoroutine(ViRMA_APIController.GetTagset(hoursTagsetId, (tagsetData) => {
+        string hourTagsetId = "11";
+        StartCoroutine(ViRMA_APIController.GetTagset(hourTagsetId, (tagsetData) => {
             foreach (Tag hourData in tagsetData)
             {
                 int index = int.Parse(hourData.Label);
                 ViRMA_UiElement uiElement = ui_hours.transform.GetChild(index).GetComponent<ViRMA_UiElement>();
-                uiElement.buttonData = new KeyValuePair<int, int>(int.Parse(hoursTagsetId), hourData.Id);
+                uiElement.buttonData = new KeyValuePair<int, int>(int.Parse(hourTagsetId), hourData.Id);
                 uiElement.GetComponent<Button>().onClick.AddListener(() => ToggleTimeOption(uiElement));
                 uiElement.GetComponentInChildren<Text>().text = index.ToString();
+                allTimeOptions.Add(uiElement);
             }
         }));
 
-        //ui_months.GetComponentsInChildren<ViRMA_UiElement>();
-        //ui_dates.GetComponentsInChildren<ViRMA_UiElement>();
+        // fetch date tagset id's
+        string dateTagsetId = "6";
+        StartCoroutine(ViRMA_APIController.GetTagset(dateTagsetId, (tagsetData) => {
+            foreach (Tag dateData in tagsetData)
+            {
+                int index = int.Parse(dateData.Label) - 1;
+                ViRMA_UiElement uiElement = ui_dates.transform.GetChild(index).GetComponent<ViRMA_UiElement>();
+                uiElement.buttonData = new KeyValuePair<int, int>(int.Parse(dateTagsetId), dateData.Id);
+                uiElement.GetComponent<Button>().onClick.AddListener(() => ToggleTimeOption(uiElement));
+                uiElement.GetComponentInChildren<Text>().text = dateData.Label;
+                allTimeOptions.Add(uiElement);
+            }
+        }));
+
+        // fetch month tagset id's
+        string monthTagsetId = "9";
+        StartCoroutine(ViRMA_APIController.GetTagset(monthTagsetId, (tagsetData) => {
+            foreach (Tag monthData in tagsetData)
+            {
+                foreach (ViRMA_UiElement uiElement in ui_months.GetComponentsInChildren<ViRMA_UiElement>())
+                {
+                    if (uiElement.GetComponentInChildren<Text>().text == monthData.Label.Substring(0, 3))
+                    {
+                        uiElement.buttonData = new KeyValuePair<int, int>(int.Parse(monthTagsetId), monthData.Id);
+                        uiElement.GetComponent<Button>().onClick.AddListener(() => ToggleTimeOption(uiElement));
+                        allTimeOptions.Add(uiElement);
+                    }
+                }
+            }
+        }));
+
+        // fetch year tagset id's
+        string yearTagsetId = "10";
+        StartCoroutine(ViRMA_APIController.GetTagset(yearTagsetId, (tagsetData) => {
+            for (int i = 0; i < tagsetData.Count; i++)
+            {
+                ViRMA_UiElement uiElement = ui_years.transform.GetChild(i).GetComponent<ViRMA_UiElement>();
+                uiElement.buttonData = new KeyValuePair<int, int>(int.Parse(yearTagsetId), tagsetData[i].Id);
+                uiElement.GetComponent<Button>().onClick.AddListener(() => ToggleTimeOption(uiElement));
+                uiElement.GetComponentInChildren<Text>().text = tagsetData[i].Label;
+            }
+        }));
     }
     private void TimePickerToggleController()
     {
@@ -548,10 +589,8 @@ public class ViRMA_MainMenu : MonoBehaviour
     }
 
     // general
-    private IEnumerator ToggleMainMenu(bool toShow)
+    public void ToggleMainMenu(bool toShow)
     {
-        yield return new WaitForSeconds(1);
-
         if (toShow)
         {
             /*
@@ -576,9 +615,9 @@ public class ViRMA_MainMenu : MonoBehaviour
             transform.parent = null;
             transform.localPosition = new Vector3(0, 9999, 0);
             transform.localRotation = Quaternion.identity;
-            transform.localScale = Vector3.one;
         }
 
+        mainMenuLoaded = toShow;
     }
     public void ToggleLoadingIndicator()
     {
@@ -648,6 +687,57 @@ public class ViRMA_MainMenu : MonoBehaviour
         directFilterObj.GetComponentInChildren<TextMeshProUGUI>().color = Color.white;
         Destroy(directFilterObj.GetComponentInChildren<ViRMA_UiElement>());
     }
+    private void SetupCustomButtons()
+    {
+        foreach (GameObject buttonObj in customColorButtons)
+        {
+            buttonObj.GetComponent<Button>().onClick.AddListener(() => SubmitCustomMenuBtn(buttonObj));
+
+            if (buttonObj.name == "RepositionBtn")
+            {
+                buttonObj.GetComponent<ViRMA_UiElement>().GenerateBtnDefaults(new Color32(99, 110, 114, 255), Color.white);
+            }
+            if (buttonObj.name == "TimeBackBtn")
+            {
+                buttonObj.GetComponent<ViRMA_UiElement>().GenerateBtnDefaults(ViRMA_Colors.flatOrange, Color.white);
+            }
+        }
+    }
+    public void SubmitCustomMenuBtn(GameObject customMenuBtn)
+    {
+        if (customMenuBtn.name == "RepositionBtn")
+        {
+            handInteractingWithMainMenu = customMenuBtn.GetComponent<ViRMA_UiElement>().handINteractingWithUi;
+            mainMenuMoving = true;
+        }
+    }
+    private void MainMenuRepositioning()
+    {
+        if (mainMenuMoving)
+        {
+            if (globals.menuInteraction_Select.GetState(handInteractingWithMainMenu.handType))
+            {
+                if (handInteractingWithMainMenu)
+                {
+                    if (transform.parent != handInteractingWithMainMenu)
+                    {
+                        transform.parent = handInteractingWithMainMenu.transform;
+                    }
+                }
+            }
+            else
+            {
+                if (handInteractingWithMainMenu)
+                {
+                    if (transform.parent == handInteractingWithMainMenu.transform)
+                    {
+                        transform.parent = null;
+                        mainMenuMoving = false;
+                    }
+                }
+            }
+        }
+    }
 
     // testing
     private void GenerateTestScrollBtns()
@@ -673,6 +763,12 @@ public class ViRMA_MainMenu : MonoBehaviour
         ui_projectedFilters.SetActive(false);
     }
 
-    
+    public void ToggleMainMenuAlias(SteamVR_Action_Boolean action, SteamVR_Input_Sources source)
+    {
+        mainMenuLoaded = !mainMenuLoaded;
+        ToggleMainMenu(mainMenuLoaded);
+    }
+
+
 
 }

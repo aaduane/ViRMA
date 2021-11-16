@@ -124,6 +124,9 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
     {
         // --- SteamVR custom action assignments --- \\
 
+        // menu interaction
+        menuInteraction_MenuControl[SteamVR_Input_Sources.Any].onStateDown += mainMenu.ToggleMainMenuAlias;
+
         // viz controller
         vizNav_Select[SteamVR_Input_Sources.Any].onStateDown += vizController.SubmitCellForTimeline;
         vizNav_Select[SteamVR_Input_Sources.Any].onStateDown += vizController.DrillDownRollUp;

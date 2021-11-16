@@ -50,8 +50,8 @@ public class ViRMA_QueryController : MonoBehaviour
         //buildingQuery.SetAxis("Y", 3733, "node"); // desk
         //buildingQuery.SetAxis("Z", 690, "node"); // domestic animal
 
-        buildingQuery.SetAxis("X", 690, "node"); // domestic animal
-        buildingQuery.SetAxis("Y", 691, "node"); // dog
+        //buildingQuery.SetAxis("X", 690, "node"); // domestic animal
+        //buildingQuery.SetAxis("Y", 691, "node"); // dog
 
         //buildingQuery.SetAxis("Z", 5, "tagset"); // day of the week (string)
         //buildingQuery.SetAxis("Z", 13, "tagset"); // timezone
@@ -65,8 +65,8 @@ public class ViRMA_QueryController : MonoBehaviour
         //buildingQuery.AddFilter(3733, "node"); // desk
         //buildingQuery.AddFilter(692, "node"); // ?
         //buildingQuery.AddFilter(693, "node"); // ?
-
         //buildingQuery.AddFilter(216, "tag", 13); // shanghai timezone
+        // buildingQuery.AddFilter(6649, "tag", 0); // June (only 4 images)
 
         //StartCoroutine(LateStart()); // testing
     }
