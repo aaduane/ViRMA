@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using Valve.VR.InteractionSystem;
+using TMPro;
 
 [RequireComponent(typeof(Interactable))]
 public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler, IPointerUpHandler, IPointerClickHandler
@@ -19,6 +19,7 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 	// used for custom UI interaction button states
 	private Image btnBackground;
 	private Text btnText;
+	private TMP_Text btnProText;
 	private RawImage btnIcon;
 	public Button btn;
 
@@ -45,6 +46,7 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 		//globals = Player.instance.gameObject.GetComponent<ViRMA_GlobalsAndActions>();
 		btnBackground = GetComponent<Image>();
 		btnText = GetComponentInChildren<Text>();
+		btnProText = GetComponentInChildren<TMP_Text>();
 		btnIcon = GetComponentInChildren<RawImage>();
 		btn = GetComponent<Button>();
 		if (btn)
@@ -208,58 +210,97 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 	}
 
 	// button states
-	public void GenerateBtnDefaults(Color bgColor, Color textColor)
+	public void GenerateBtnDefaults(Color bgColor, Color textColor, bool notInteractable = false)
 	{
 		//GetComponent<Image>().material = Resources.Load("Materials/CustomUI") as Material;
 
-		// default
-		defaultBackgroundColor = bgColor;
-		defaultTextColor = textColor;
+		if (defaultBackgroundColor != bgColor || defaultTextColor != textColor)
+        {
+			// default
+			defaultBackgroundColor = bgColor;
+			defaultTextColor = textColor;
 
-		// hover
-		if (bgColor == Color.white)
-        {
-			hoverBackgroundColor = ViRMA_Colors.DarkenColor(bgColor);
-		}
-		else
-        {
-			hoverBackgroundColor = ViRMA_Colors.BrightenColor(bgColor);
+			// hover
+			if (bgColor == Color.white)
+			{
+				hoverBackgroundColor = ViRMA_Colors.DarkenColor(bgColor);
+			}
+			else
+			{
+				hoverBackgroundColor = ViRMA_Colors.BrightenColor(bgColor);
+			}
+			hoverTextColor = ViRMA_Colors.BrightenColor(textColor);
+
+			// clicked
+			clickedBackgroundColor = textColor;
+			clickedTextColor = bgColor;
+
+			if (notInteractable)
+			{
+				hoverBackgroundColor = bgColor;
+				hoverTextColor = textColor;
+				clickedBackgroundColor = bgColor;
+				clickedTextColor = textColor;
+			}
+
+			SetBtnNormalState();
 		}	
-		hoverTextColor = ViRMA_Colors.BrightenColor(textColor);
-
-		// clicked
-		clickedBackgroundColor = textColor;
-		clickedTextColor = bgColor;
-
-		SetBtnNormalState();
 	}
 	private void SetBtnNormalState()
     {
 		btnBackground.color = defaultBackgroundColor;
-		btnText.color = defaultTextColor;
+		
+		if (btnText)
+        {
+			btnText.color = defaultTextColor;
+		}
+
+		if (btnProText)
+        {
+			btnProText.color = defaultTextColor;
+		}
 
 		if (btnIcon)
 		{
-			btnIcon.color = btnText.color;
+			btnIcon.color = defaultTextColor;
 		}
 	}
 	private void SetBtnHighlightState()
     {
 		btnBackground.color = hoverBackgroundColor;
-		btnText.color = hoverTextColor;
+
+		if (btnText)
+		{
+			btnText.color = hoverTextColor;
+		}
+
+		if (btnProText)
+		{
+			btnProText.color = hoverTextColor;
+		}
 
 		if (btnIcon)
 		{
-			btnIcon.color = btnText.color;
+			btnIcon.color = hoverTextColor;
 		}
 	}	
 	private void SetBtnDownState()
     {
 		btnBackground.color = clickedBackgroundColor;
-		btnText.color = clickedTextColor;
+
+		if (btnText)
+		{
+			btnText.color = clickedTextColor;
+		}
+
+		if (btnProText)
+		{
+			btnProText.color = clickedTextColor;
+		}
+
 		if (btnIcon)
 		{
-			btnIcon.color = btnText.color;
+			btnIcon.color = clickedTextColor;
 		}
 	}
 	private void BtnFadeController()
@@ -289,7 +330,15 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 				btnText.color = new Color(btnText.color.r, btnText.color.g, btnText.color.b, alpha);
 			}
 		}
-		
+
+		if (btnProText)
+		{
+			if (btnProText.color.a != alpha)
+			{
+				btnProText.color = new Color(btnProText.color.r, btnProText.color.g, btnProText.color.b, alpha);
+			}
+		}
+
 		if (btnIcon)
         {
 			if (btnIcon.color.a != alpha)
@@ -318,7 +367,5 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 			}
 		}
 	}
-
-	
 
 }

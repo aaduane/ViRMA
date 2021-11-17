@@ -17,20 +17,21 @@ public class ViRMA_Colors : MonoBehaviour
     public static Color32 darkBlue = new Color32(52, 73, 94, 255);
     public static Color32 lightBlue = new Color32(52, 152, 219, 255);
     public static Color32 darkGrey = new Color32(50, 50, 50, 255);
-    public static Color32 lightGrey = new Color32(245, 245, 245, 255);
+    public static Color32 grey = new Color32(99, 110, 114, 255);
+    public static Color32 lightGrey = new Color32(200, 200, 200, 255);
     public static Color32 flatOrange = new Color32(230, 126, 34, 255);
     public static Color32 BrightenColor(Color32 colorToBrighten)
     {
         float H, S, V;
         Color.RGBToHSV(colorToBrighten, out H, out S, out V);
-        Color32 brighterColor = Color.HSVToRGB(H, S * 0.70f, V / 0.70f);
+        Color32 brighterColor = Color.HSVToRGB(H, S * 0.80f, V / 0.60f);
         return brighterColor;
     }
     public static Color32 DarkenColor(Color32 colorToDarken)
     {
         float H, S, V;
         Color.RGBToHSV(colorToDarken, out H, out S, out V);
-        Color32 darkerColor = Color.HSVToRGB(H, S / 0.70f, V * 0.70f);
+        Color32 darkerColor = Color.HSVToRGB(H, S / 0.80f, V * 0.60f);
         return darkerColor;
     }
 }

@@ -79,44 +79,41 @@ public class ViRMA_Keyboard : MonoBehaviour
             Image keyBackground = key.GetComponent<Image>();
             ViRMA_UiElement virmaBtn = key.GetComponent<ViRMA_UiElement>();
 
-            if (keyText && keyBackground)
+            Color32 bgCol;
+            Color32 textCol;
+
+            if (key.name == "CLEAR")
             {
-                Color32 bgCol;
-                Color32 textCol;
-
-                if (keyText.gameObject.transform.parent.name == "CLEAR")
-                {
-                    bgCol = ViRMA_Colors.flatOrange;
-                    textCol = Color.white;
-                }
-                else if (keyText.gameObject.transform.parent.name == "CLOSE")
-                {
-                    bgCol = new Color32(192, 57, 43, 255);
-                    textCol = Color.white;
-                }
-                else if (keyText.gameObject.transform.parent.name == "BACKSPACE")
-                {
-                    bgCol = ViRMA_Colors.darkBlue;
-                    textCol = Color.white;
-                }
-                else if (keyText.gameObject.transform.parent.name == "MOVE")
-                {
-                    bgCol = new Color32(99, 110, 114, 255);
-                    textCol = Color.white;
-                }
-                else if (keyText.gameObject.transform.parent.name == "SUBMIT")
-                {
-                    bgCol = new Color32(39, 174, 96, 255);
-                    textCol = Color.white;
-                }
-                else
-                {
-                    bgCol = ViRMA_Colors.darkBlue;
-                    textCol = Color.white;
-                }
-
-                virmaBtn.GenerateBtnDefaults(bgCol, textCol);
+                bgCol = ViRMA_Colors.flatOrange;
+                textCol = Color.white;
             }
+            else if (key.name == "CLOSE")
+            {
+                bgCol = new Color32(192, 57, 43, 255);
+                textCol = Color.white;
+            }
+            else if (key.name == "BACKSPACE")
+            {
+                bgCol = ViRMA_Colors.darkBlue;
+                textCol = Color.white;
+            }
+            else if (key.name == "MOVE")
+            {
+                bgCol = ViRMA_Colors.grey;
+                textCol = Color.white;
+            }
+            else if (key.name == "SUBMIT")
+            {
+                bgCol = new Color32(39, 174, 96, 255);
+                textCol = Color.white;
+            }
+            else
+            {
+                bgCol = ViRMA_Colors.darkBlue;
+                textCol = Color.white;
+            }
+
+            virmaBtn.GenerateBtnDefaults(bgCol, textCol);
         }
     }
     public void ToggleDimExKeyboard(bool onOff)
@@ -235,7 +232,12 @@ public class ViRMA_Keyboard : MonoBehaviour
     private void SubmitKey(Button key)
     {
         string buttonName = key.gameObject.name;
-        string submittedChar = key.GetComponentInChildren<Text>().text;
+
+        string submittedChar = "";
+        if (key.GetComponentInChildren<Text>())
+        {
+            submittedChar = key.GetComponentInChildren<Text>().text;
+        } 
 
         if (buttonName == "SUBMIT")
         {

@@ -10,12 +10,15 @@ public class ViRMA_MainMenu : MonoBehaviour
 {
     private ViRMA_GlobalsAndActions globals;
     private List<GameObject> menuSections;
+    private Vector3 mainMenuPosition;
+    private float mainMenuAngle;
     private int frameSkipper;
+    public bool mainMenuPositionSet;
     public bool mainMenuLoaded;
     public bool mainMenuMoving;
-    public Hand handInteractingWithMainMenu;
+    public Hand handInteractingWithMainMenu; 
 
-    // dimension browser
+    ///////////////////////////////////////////////// dimension browser
     public GameObject section_dimensionBrowser;
 
     public GameObject ui_browseFilters;
@@ -37,23 +40,28 @@ public class ViRMA_MainMenu : MonoBehaviour
     private Transform yBtnWrapper;
     private Transform zBtnWrapper;
 
-    // time picker
+    ///////////////////////////////////////////////// time picker
     public GameObject section_timePicker;
 
-    private List<ViRMA_UiElement> toggledTimeUiElements;
     private List<ViRMA_UiElement> allTimeOptions;
-
+    private List<ViRMA_UiElement> toggledTimeUiElements;
+    
     public GameObject ui_weekdays;
     public GameObject ui_hours;
     public GameObject ui_dates;
     public GameObject ui_months;
     public GameObject ui_years;
 
-    // location picker
+    ///////////////////////////////////////////////// location picker
     public GameObject section_locationPicker;
 
-    // back buttons
-    public List<GameObject> customColorButtons;
+    private List<ViRMA_UiElement> allLocationOptions;
+    private List<ViRMA_UiElement> toggledLocationUiElements;
+    
+    ///////////////////////////////////////////////// custom buttons
+    public List<GameObject> customButtons;
+
+    
 
     private void Awake()
     {
@@ -82,6 +90,8 @@ public class ViRMA_MainMenu : MonoBehaviour
 
         SetupTimePicker();
 
+        SetupLocationPicker();
+
         ToggleMenuSection(section_dimensionBrowser);
     }
 
@@ -89,11 +99,13 @@ public class ViRMA_MainMenu : MonoBehaviour
     {
         MainMenuRepositioning();
 
-        ProjFilterStateController();
+        ProjFilterGenerateBtns();
 
         CheckActiveDirectFilterOptions();
 
         TimePickerToggleController();
+
+        ClearFiltersBtnsStateController();
     }
 
     // browse filters
@@ -102,20 +114,21 @@ public class ViRMA_MainMenu : MonoBehaviour
         ViRMA_UiElement[] browseFilterOptions = ui_browseFilters.GetComponentsInChildren<ViRMA_UiElement>();
         foreach (ViRMA_UiElement browseFilterOption in browseFilterOptions)
         {
-            browseFilterOption.GenerateBtnDefaults(ViRMA_Colors.darkBlue, Color.white);
-
             if (browseFilterOption.name == "TagsBtn")
             {
+                browseFilterOption.GenerateBtnDefaults(ViRMA_Colors.darkBlue, Color.white);
                 browseFilterOption.GetComponent<Button>().onClick.AddListener(() => globals.dimExplorer.dimExKeyboard.ToggleDimExKeyboard(true));
             }
 
             if (browseFilterOption.name == "TimeBtn")
             {
+                browseFilterOption.GenerateBtnDefaults(ViRMA_Colors.darkBlue, Color.white);
                 browseFilterOption.GetComponent<Button>().onClick.AddListener(() => ToggleMenuSection(section_timePicker));
             }
 
             if (browseFilterOption.name == "LocationsBtn")
             {
+                //browseFilterOption.GenerateBtnDefaults(ViRMA_Colors.darkBlue, Color.white);
                 //browseFilterOption.GetComponent<Button>().onClick.AddListener(() => ToggleMenuSection(section_locationPicker));
             }
         }
@@ -124,14 +137,13 @@ public class ViRMA_MainMenu : MonoBehaviour
     {
         foreach (GameObject menuSection in menuSections)
         {
-            menuSection.SetActive(true);
             if (menuSection == targetMenuSection)
             {
                 menuSection.transform.localPosition = new Vector3(0, 0, 0);
             }
             else
             {
-                menuSection.transform.localPosition = new Vector3(0, 9999, 0);
+                menuSection.transform.localPosition = new Vector3(0, 0, 999999);
             }
         }
     }
@@ -261,7 +273,7 @@ public class ViRMA_MainMenu : MonoBehaviour
             zParentChainFetched = true;
         }
     }
-    private void ProjFilterStateController()
+    private void ProjFilterGenerateBtns()
     {
         if (xParentChainFetched && yParentChainFetched && zParentChainFetched)
         {
@@ -280,7 +292,7 @@ public class ViRMA_MainMenu : MonoBehaviour
             for (int i = 0; i < xParentChain.Count; i++)
             {
                 GameObject newBtn = Instantiate(templateBtn, xBtnWrapper);
-                newBtn.GetComponentInChildren<Text>().text = xParentChain[i].Label;
+                newBtn.GetComponentInChildren<TMP_Text>().text = xParentChain[i].Label;
                 newBtn.name = xParentChain[i].Label + "_" + xParentChain[i].Id;
             }
             xBtnWrapper.parent.GetComponent<ScrollRect>().verticalNormalizedPosition = 0;
@@ -297,7 +309,7 @@ public class ViRMA_MainMenu : MonoBehaviour
             for (int i = 0; i < yParentChain.Count; i++)
             {
                 GameObject newBtn = Instantiate(templateBtn, yBtnWrapper);
-                newBtn.GetComponentInChildren<Text>().text = yParentChain[i].Label;
+                newBtn.GetComponentInChildren<TMP_Text>().text = yParentChain[i].Label;
                 newBtn.name = yParentChain[i].Label + "_" + yParentChain[i].Id;
             }
 
@@ -313,7 +325,7 @@ public class ViRMA_MainMenu : MonoBehaviour
             for (int i = 0; i < zParentChain.Count; i++)
             {
                 GameObject newBtn = Instantiate(templateBtn, zBtnWrapper);
-                newBtn.GetComponentInChildren<Text>().text = zParentChain[i].Label;
+                newBtn.GetComponentInChildren<TMP_Text>().text = zParentChain[i].Label;
                 newBtn.name = zParentChain[i].Label + "_" + zParentChain[i].Id;
             }
 
@@ -346,8 +358,6 @@ public class ViRMA_MainMenu : MonoBehaviour
             {
                 GameObject buttonObj = buttons[j].gameObject;
                 buttonObj.transform.localScale = Vector3.one * 0.9f;
-                Text btnText = buttonObj.GetComponentInChildren<Text>();
-                Image btnBackground = buttonObj.GetComponent<Image>();
                 ViRMA_UiElement vrUiElement = buttonObj.GetComponent<ViRMA_UiElement>();               
 
                 if (i == 0)
@@ -398,8 +408,6 @@ public class ViRMA_MainMenu : MonoBehaviour
             }
         }
     }
-
-    // onClick options
     private void RollUpAxis(GameObject buttonObj)
     {
         int idIndex = buttonObj.name.IndexOf("_");
@@ -540,6 +548,7 @@ public class ViRMA_MainMenu : MonoBehaviour
                 uiElement.buttonData = new KeyValuePair<int, int>(int.Parse(yearTagsetId), tagsetData[i].Id);
                 uiElement.GetComponent<Button>().onClick.AddListener(() => ToggleTimeOption(uiElement));
                 uiElement.GetComponentInChildren<Text>().text = tagsetData[i].Label;
+                allTimeOptions.Add(uiElement);
             }
         }));
     }
@@ -588,6 +597,13 @@ public class ViRMA_MainMenu : MonoBehaviour
         }
     }
 
+    // location picker
+    private void SetupLocationPicker()
+    {
+        allLocationOptions = new List<ViRMA_UiElement>();
+        toggledLocationUiElements = new List<ViRMA_UiElement>();
+    }
+
     // general
     public void ToggleMainMenu(bool toShow)
     {
@@ -607,17 +623,37 @@ public class ViRMA_MainMenu : MonoBehaviour
             flattenedVector.y = 0;
             flattenedVector.Normalize();
             Vector3 spawnPos = Player.instance.hmdTransform.position + flattenedVector * 0.5f;
-            transform.position = spawnPos;
-            transform.LookAt(2 * transform.position - Player.instance.hmdTransform.position);
+            
+            // save menu position if already moved
+            if (mainMenuPositionSet)
+            {
+                transform.position = new Vector3(spawnPos.x, mainMenuPosition.y, spawnPos.z);    
+                
+                transform.LookAt(2 * transform.position - Player.instance.hmdTransform.position);
+                Vector3 currentRot = transform.rotation.eulerAngles;
+                currentRot.x = mainMenuAngle;
+                Quaternion newRot = Quaternion.Euler(currentRot);
+                transform.rotation = newRot;
+            }
+            else
+            {
+                transform.position = spawnPos;
+                transform.LookAt(2 * transform.position - Player.instance.hmdTransform.position);
+            }
         }
         else
         {
             transform.parent = null;
-            transform.localPosition = new Vector3(0, 9999, 0);
-            transform.localRotation = Quaternion.identity;
+            transform.position = new Vector3(0, 9999, 0);
+            transform.rotation = Quaternion.identity;
         }
 
         mainMenuLoaded = toShow;
+    }
+    public void ToggleMainMenuAlias(SteamVR_Action_Boolean action, SteamVR_Input_Sources source)
+    {
+        mainMenuLoaded = !mainMenuLoaded;
+        ToggleMainMenu(mainMenuLoaded);
     }
     public void ToggleLoadingIndicator()
     {
@@ -634,8 +670,8 @@ public class ViRMA_MainMenu : MonoBehaviour
 
         GameObject xBtn = Instantiate(templateBtn, xBtnWrapper);
         xBtn.GetComponentInChildren<Image>().color = Color.grey;
-        xBtn.GetComponentInChildren<Text>().color = Color.white;
-        xBtn.GetComponentInChildren<Text>().text = "loading";
+        xBtn.GetComponentInChildren<TMP_Text>().color = Color.white;
+        xBtn.GetComponentInChildren<TMP_Text>().text = "loading";
         xBtn.name = "loadingBtn";
         Destroy(xBtn.GetComponentInChildren<ViRMA_UiElement>());
         Destroy(xBtn.GetComponentInChildren<Outline>());
@@ -650,8 +686,8 @@ public class ViRMA_MainMenu : MonoBehaviour
 
         GameObject yBtn = Instantiate(templateBtn, yBtnWrapper);
         yBtn.GetComponentInChildren<Image>().color = Color.grey;
-        yBtn.GetComponentInChildren<Text>().color = Color.white;
-        yBtn.GetComponentInChildren<Text>().text = "loading";
+        yBtn.GetComponentInChildren<TMP_Text>().color = Color.white;
+        yBtn.GetComponentInChildren<TMP_Text>().text = "loading";
         yBtn.name = "loadingBtn";
         Destroy(yBtn.GetComponentInChildren<ViRMA_UiElement>());
         Destroy(yBtn.GetComponentInChildren<Outline>());
@@ -666,8 +702,8 @@ public class ViRMA_MainMenu : MonoBehaviour
 
         GameObject zBtn = Instantiate(templateBtn, zBtnWrapper);
         zBtn.GetComponentInChildren<Image>().color = Color.grey;
-        zBtn.GetComponentInChildren<Text>().color = Color.white;
-        zBtn.GetComponentInChildren<Text>().text = "loading";
+        zBtn.GetComponentInChildren<TMP_Text>().color = Color.white;
+        zBtn.GetComponentInChildren<TMP_Text>().text = "loading";
         zBtn.name = "loadingBtn";
         Destroy(zBtn.GetComponentInChildren<ViRMA_UiElement>());
         Destroy(zBtn.GetComponentInChildren<Outline>());
@@ -689,17 +725,17 @@ public class ViRMA_MainMenu : MonoBehaviour
     }
     private void SetupCustomButtons()
     {
-        foreach (GameObject buttonObj in customColorButtons)
+        foreach (GameObject customMenuBtn in customButtons)
         {
-            buttonObj.GetComponent<Button>().onClick.AddListener(() => SubmitCustomMenuBtn(buttonObj));
+            customMenuBtn.GetComponent<Button>().onClick.AddListener(() => SubmitCustomMenuBtn(customMenuBtn));
 
-            if (buttonObj.name == "RepositionBtn")
+            if (customMenuBtn.name == "RepositionBtn")
             {
-                buttonObj.GetComponent<ViRMA_UiElement>().GenerateBtnDefaults(new Color32(99, 110, 114, 255), Color.white);
+                customMenuBtn.GetComponent<ViRMA_UiElement>().GenerateBtnDefaults(ViRMA_Colors.grey, Color.white);
             }
-            if (buttonObj.name == "TimeBackBtn")
+            if (customMenuBtn.name == "TimeBackBtn")
             {
-                buttonObj.GetComponent<ViRMA_UiElement>().GenerateBtnDefaults(ViRMA_Colors.flatOrange, Color.white);
+                customMenuBtn.GetComponent<ViRMA_UiElement>().GenerateBtnDefaults(ViRMA_Colors.flatOrange, Color.white);
             }
         }
     }
@@ -709,6 +745,25 @@ public class ViRMA_MainMenu : MonoBehaviour
         {
             handInteractingWithMainMenu = customMenuBtn.GetComponent<ViRMA_UiElement>().handINteractingWithUi;
             mainMenuMoving = true;
+        }
+        if (customMenuBtn.name == "TimeBackBtn")
+        {
+            ToggleMenuSection(section_dimensionBrowser);
+        }
+        if (customMenuBtn.name == "ClearTagsBtn")
+        {
+            globals.queryController.buildingQuery.ClearAxis("X", true);
+            globals.queryController.buildingQuery.ClearAxis("Y", true);
+            globals.queryController.buildingQuery.ClearAxis("Z", true);
+            globals.queryController.buildingQuery.ClearFilters();
+        }
+        if (customMenuBtn.name == "ClearTimesBtn")
+        {
+            toggledTimeUiElements.Clear();
+        }
+        if (customMenuBtn.name == "ClearLocationsBtn")
+        {
+            // clear location list
         }
     }
     private void MainMenuRepositioning()
@@ -722,6 +777,10 @@ public class ViRMA_MainMenu : MonoBehaviour
                     if (transform.parent != handInteractingWithMainMenu)
                     {
                         transform.parent = handInteractingWithMainMenu.transform;
+
+                        mainMenuPosition = transform.position;
+                        mainMenuAngle = transform.rotation.eulerAngles.x;
+                        mainMenuPositionSet = true;
                     }
                 }
             }
@@ -737,6 +796,54 @@ public class ViRMA_MainMenu : MonoBehaviour
                 }
             }
         }
+    }
+    private void ClearFiltersBtnsStateController()
+    {
+        foreach (GameObject customMenuBtn in customButtons)
+        {
+            if (customMenuBtn.name == "ClearTagsBtn")
+            {
+                if (globals.queryController.activeXAxisId == -1 && globals.queryController.activeXAxisId == -1 && globals.queryController.activeXAxisId == -1)
+                {
+                    customMenuBtn.GetComponent<ViRMA_UiElement>().GenerateBtnDefaults(ViRMA_Colors.lightGrey, Color.white, true);
+                    foreach (var directFilter in globals.queryController.activeFilters)
+                    {
+                        if (directFilter.Type == "node")
+                        {
+                            customMenuBtn.GetComponent<ViRMA_UiElement>().GenerateBtnDefaults(ViRMA_Colors.flatOrange, Color.white);
+                            break;
+                        }
+                    }            
+                }
+                else
+                {
+                    customMenuBtn.GetComponent<ViRMA_UiElement>().GenerateBtnDefaults(ViRMA_Colors.flatOrange, Color.white);
+                }
+            }
+            if (customMenuBtn.name == "ClearTimesBtn")
+            {
+                if (toggledTimeUiElements.Count < 1)
+                {
+                    customMenuBtn.GetComponent<ViRMA_UiElement>().GenerateBtnDefaults(ViRMA_Colors.lightGrey, Color.white, true);
+                }
+                else
+                {
+                    customMenuBtn.GetComponent<ViRMA_UiElement>().GenerateBtnDefaults(ViRMA_Colors.flatOrange, Color.white);
+                }
+            }
+            if (customMenuBtn.name == "ClearLocationsBtn")
+            {
+                // locations
+                if (toggledLocationUiElements.Count < 1)
+                {
+                    customMenuBtn.GetComponent<ViRMA_UiElement>().GenerateBtnDefaults(ViRMA_Colors.lightGrey, Color.white, true);
+                }
+                else
+                {
+                    customMenuBtn.GetComponent<ViRMA_UiElement>().GenerateBtnDefaults(ViRMA_Colors.flatOrange, Color.white);
+                }
+            }
+        }      
     }
 
     // testing
@@ -762,13 +869,5 @@ public class ViRMA_MainMenu : MonoBehaviour
     {
         ui_projectedFilters.SetActive(false);
     }
-
-    public void ToggleMainMenuAlias(SteamVR_Action_Boolean action, SteamVR_Input_Sources source)
-    {
-        mainMenuLoaded = !mainMenuLoaded;
-        ToggleMainMenu(mainMenuLoaded);
-    }
-
-
 
 }
