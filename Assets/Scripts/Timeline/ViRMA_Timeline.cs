@@ -352,7 +352,8 @@ public class ViRMA_Timeline : MonoBehaviour
     }
     private void LoadTimelineSection(int pageIndex)
     {
-        // hide main viz
+        // hide main menu and viz
+        globals.mainMenu.ToggleMainMenu(false);
         globals.vizController.HideViz(true);
 
         // clear old timeline if one exists
@@ -450,7 +451,7 @@ public class ViRMA_Timeline : MonoBehaviour
             if (activeVizLabels.X != null)
             {
                 int cellXPosition = (int) timelineCellData.Coordinates.x - 1;
-                int cellXAxisId = activeVizLabels.X.Labels[cellXPosition].Value;
+                int cellXAxisId = activeVizLabels.X.Labels[cellXPosition].Id;
                 string cellXAxisType = activeVizLabels.X.Type;
 
                 Query.Filter projFilterX = new Query.Filter(cellXAxisType, new List<int>() { cellXAxisId });
@@ -461,7 +462,7 @@ public class ViRMA_Timeline : MonoBehaviour
             if (activeVizLabels.Y != null)
             {
                 int cellYPosition = (int)timelineCellData.Coordinates.y - 1;
-                int cellYAxisId = activeVizLabels.Y.Labels[cellYPosition].Value;
+                int cellYAxisId = activeVizLabels.Y.Labels[cellYPosition].Id;
                 string cellYAxisType = activeVizLabels.Y.Type;
 
                 Query.Filter projFilterY = new Query.Filter(cellYAxisType, new List<int>() { cellYAxisId });
@@ -472,7 +473,7 @@ public class ViRMA_Timeline : MonoBehaviour
             if (activeVizLabels.Z != null)
             {
                 int cellZPosition = (int)timelineCellData.Coordinates.z - 1;
-                int cellZAxisId = activeVizLabels.Z.Labels[cellZPosition].Value;
+                int cellZAxisId = activeVizLabels.Z.Labels[cellZPosition].Id;
                 string cellZAxisType = activeVizLabels.Z.Type;
 
                 Query.Filter projFilterZ = new Query.Filter(cellZAxisType, new List<int>() { cellZAxisId });

@@ -266,201 +266,231 @@ public class ViRMA_VizController : MonoBehaviour
     }
     private IEnumerator GenerateAxesFromLabels(Query submittedQuery)
     {
+        activeAxesLabels = new AxesLabels();
 
-        // get label data from server
-        yield return StartCoroutine(ViRMA_APIController.GetAxesLabels(submittedQuery, (axesLabels) => {
+        // get X label data from server
+        if (submittedQuery.X != null)
+        {
+            string parentLabel = "";
+            yield return StartCoroutine(ViRMA_APIController.GetHierarchyTag(submittedQuery.X.Id, (Tag parentTag) => {
+                parentLabel = parentTag.Label;
+            }));
+            yield return StartCoroutine(ViRMA_APIController.GetHierarchyChildren(submittedQuery.X.Id, (List<Tag> childTags) => {
+                activeAxesLabels.SetAxisLabsls("X", submittedQuery.X.Id, submittedQuery.X.Type, parentLabel, childTags);
+            }));
+        }
 
-            activeAxesLabels = axesLabels;
+        // get Y label data from server
+        if (submittedQuery.Y != null)
+        {
+            string parentLabel = "";
+            yield return StartCoroutine(ViRMA_APIController.GetHierarchyTag(submittedQuery.Y.Id, (Tag parentTag) => {
+                parentLabel = parentTag.Label;
+            }));
+            yield return StartCoroutine(ViRMA_APIController.GetHierarchyChildren(submittedQuery.Y.Id, (List<Tag> childTags) => {
+                activeAxesLabels.SetAxisLabsls("Y", submittedQuery.Y.Id, submittedQuery.Y.Type, parentLabel, childTags);
+            }));
+        }
 
-            // // global style for propety blocks
-            Material transparentMaterial = Resources.Load("Materials/BasicTransparent") as Material;
-            MaterialPropertyBlock materialProperties = new MaterialPropertyBlock();
-            float axisLineWidth = 0.005f;
+        // get Z label data from server
+        if (submittedQuery.Z != null)
+        {
+            string parentLabel = "";
+            yield return StartCoroutine(ViRMA_APIController.GetHierarchyTag(submittedQuery.Z.Id, (Tag parentTag) => {
+                parentLabel = parentTag.Label;
+            }));
+            yield return StartCoroutine(ViRMA_APIController.GetHierarchyChildren(submittedQuery.Z.Id, (List<Tag> childTags) => {
+                activeAxesLabels.SetAxisLabsls("Z", submittedQuery.Z.Id, submittedQuery.Z.Type, parentLabel, childTags);
+            }));
+        }    
 
-            // origin point
-            GameObject AxisOriginPoint = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            AxisOriginPoint.GetComponent<Renderer>().material = transparentMaterial;
-            materialProperties.SetColor("_Color", new Color32(0, 0, 0, 255));
-            AxisOriginPoint.GetComponent<Renderer>().SetPropertyBlock(materialProperties);
-            AxisOriginPoint.name = "AxisOriginPoint";
-            AxisOriginPoint.transform.position = Vector3.zero;
-            AxisOriginPoint.transform.localScale = Vector3.one * 0.5f;
-            AxisOriginPoint.transform.parent = cellsandAxesWrapper.transform;
+        // // global style for propety blocks
+        Material transparentMaterial = Resources.Load("Materials/BasicTransparent") as Material;
+        MaterialPropertyBlock materialProperties = new MaterialPropertyBlock();
+        float axisLineWidth = 0.005f;
 
-            // add origin block to all axis object lists
-            axisXPointObjs.Add(AxisOriginPoint);
-            axisYPointObjs.Add(AxisOriginPoint);
-            axisZPointObjs.Add(AxisOriginPoint);
+        // origin point
+        GameObject AxisOriginPoint = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        AxisOriginPoint.GetComponent<Renderer>().material = transparentMaterial;
+        materialProperties.SetColor("_Color", new Color32(0, 0, 0, 255));
+        AxisOriginPoint.GetComponent<Renderer>().SetPropertyBlock(materialProperties);
+        AxisOriginPoint.name = "AxisOriginPoint";
+        AxisOriginPoint.transform.position = Vector3.zero;
+        AxisOriginPoint.transform.localScale = Vector3.one * 0.5f;
+        AxisOriginPoint.transform.parent = cellsandAxesWrapper.transform;
 
-            // x axis points
-            if (axesLabels.X != null)
+        // add origin block to all axis object lists
+        axisXPointObjs.Add(AxisOriginPoint);
+        axisYPointObjs.Add(AxisOriginPoint);
+        axisZPointObjs.Add(AxisOriginPoint);
+
+        // x axis points
+        if (activeAxesLabels.X != null)
+        {
+            materialProperties.SetColor("_Color", ViRMA_Colors.axisFadeRed);
+            for (int i = 0; i < activeAxesLabels.X.Labels.Count; i++)
             {
-                materialProperties.SetColor("_Color", ViRMA_Colors.axisFadeRed);
-                for (int i = 0; i < axesLabels.X.Labels.Count; i++)
-                {
-                    // create gameobject to represent axis point
-                    GameObject axisXPoint = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                    axisXPoint.GetComponent<Renderer>().material = transparentMaterial;
-                    axisXPoint.GetComponent<Renderer>().SetPropertyBlock(materialProperties);
-                    axisXPoint.name = "AxisXPoint_" + i;
-                    axisXPoint.transform.position = new Vector3(i + 1, 0, 0) * (defaultCellSpacingRatio + 1);
-                    axisXPoint.transform.localScale = Vector3.one * 0.5f;
-                    axisXPoint.transform.parent = cellsandAxesWrapper.transform;
-                    axisXPoint.AddComponent<ViRMA_AxisPoint>().x = true;
+                // create gameobject to represent axis point
+                GameObject axisXPoint = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                axisXPoint.GetComponent<Renderer>().material = transparentMaterial;
+                axisXPoint.GetComponent<Renderer>().SetPropertyBlock(materialProperties);
+                axisXPoint.name = "AxisXPoint_" + i;
+                axisXPoint.transform.position = new Vector3(i + 1, 0, 0) * (defaultCellSpacingRatio + 1);
+                axisXPoint.transform.localScale = Vector3.one * 0.5f;
+                axisXPoint.transform.parent = cellsandAxesWrapper.transform;
+                axisXPoint.AddComponent<ViRMA_AxisPoint>().x = true;
 
-                    // apply metadata to axis point
-                    ViRMA_AxisPoint axisPoint = axisXPoint.GetComponent<ViRMA_AxisPoint>();
-                    axisPoint.axisId = axesLabels.X.Id;
-                    axisPoint.axisLabel = axesLabels.X.Label;
-                    axisPoint.axisType = axesLabels.X.Type;
-                    axisPoint.axisPointLabel = axesLabels.X.Labels[i].Key;
-                    axisPoint.axisPointId = axesLabels.X.Labels[i].Value;
+                // apply metadata to axis point
+                ViRMA_AxisPoint axisPoint = axisXPoint.GetComponent<ViRMA_AxisPoint>();
+                axisPoint.axisId = activeAxesLabels.X.Id;
+                axisPoint.axisLabel = activeAxesLabels.X.Label;
+                axisPoint.axisType = activeAxesLabels.X.Type;
+                axisPoint.axisPointLabel = activeAxesLabels.X.Labels[i].Label;
+                axisPoint.axisPointId = activeAxesLabels.X.Labels[i].Id;
 
-                    // add gameobject to list
-                    axisXPointObjs.Add(axisXPoint);
+                // add gameobject to list
+                axisXPointObjs.Add(axisXPoint);
 
-                    // x axis roll up axis point
-                    if (i == axesLabels.X.Labels.Count - 1)
-                    {             
-                        GameObject axisXPointRollUp = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                        axisXPointRollUp.GetComponent<Renderer>().material = transparentMaterial;
-                        axisXPointRollUp.GetComponent<Renderer>().SetPropertyBlock(materialProperties);
-                        axisXPointRollUp.name = "AxisXPoint_RollUp";
-                        axisXPointRollUp.transform.position = new Vector3(i + 2, 0, 0) * (defaultCellSpacingRatio + 1);
-                        axisXPointRollUp.transform.parent = cellsandAxesWrapper.transform;
-                        axisXPointRollUp.AddComponent<ViRMA_RollUpPoint>().x = true;
-                        axisXPointRollUp.GetComponent<ViRMA_RollUpPoint>().axisId = axesLabels.X.Id;
-                        axisXPointRollUp.GetComponent<ViRMA_RollUpPoint>().axisLabel = axesLabels.X.Label;
-                        axisXPointRollUp.GetComponent<ViRMA_RollUpPoint>().axisType = axesLabels.X.Type;
-                    }
-                }
-
-                // x axis line
-                if (axisXPointObjs.Count > 2)
-                {
-                    GameObject AxisXLineObj = new GameObject("AxisXLine");
-                    axisXLine = AxisXLineObj.AddComponent<LineRenderer>();
-                    axisXLine.GetComponent<Renderer>().material = transparentMaterial;
-                    axisXLine.GetComponent<Renderer>().SetPropertyBlock(materialProperties);
-                    axisXLine.positionCount = 2;
-                    axisXLine.startWidth = axisLineWidth;
-                    axisXLine.endWidth = axisLineWidth;
+                // x axis roll up axis point
+                if (i == activeAxesLabels.X.Labels.Count - 1)
+                {             
+                    GameObject axisXPointRollUp = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                    axisXPointRollUp.GetComponent<Renderer>().material = transparentMaterial;
+                    axisXPointRollUp.GetComponent<Renderer>().SetPropertyBlock(materialProperties);
+                    axisXPointRollUp.name = "AxisXPoint_RollUp";
+                    axisXPointRollUp.transform.position = new Vector3(i + 2, 0, 0) * (defaultCellSpacingRatio + 1);
+                    axisXPointRollUp.transform.parent = cellsandAxesWrapper.transform;
+                    axisXPointRollUp.AddComponent<ViRMA_RollUpPoint>().x = true;
+                    axisXPointRollUp.GetComponent<ViRMA_RollUpPoint>().axisId = activeAxesLabels.X.Id;
+                    axisXPointRollUp.GetComponent<ViRMA_RollUpPoint>().axisLabel = activeAxesLabels.X.Label;
+                    axisXPointRollUp.GetComponent<ViRMA_RollUpPoint>().axisType = activeAxesLabels.X.Type;
                 }
             }
 
-            // y axis points
-            if (axesLabels.Y != null)
+            // x axis line
+            if (axisXPointObjs.Count > 2)
             {
-                materialProperties.SetColor("_Color", ViRMA_Colors.axisFadeGreen);
-                for (int i = 0; i < axesLabels.Y.Labels.Count; i++)
+                GameObject AxisXLineObj = new GameObject("AxisXLine");
+                axisXLine = AxisXLineObj.AddComponent<LineRenderer>();
+                axisXLine.GetComponent<Renderer>().material = transparentMaterial;
+                axisXLine.GetComponent<Renderer>().SetPropertyBlock(materialProperties);
+                axisXLine.positionCount = 2;
+                axisXLine.startWidth = axisLineWidth;
+                axisXLine.endWidth = axisLineWidth;
+            }
+        }
+
+        // y axis points
+        if (activeAxesLabels.Y != null)
+        {
+            materialProperties.SetColor("_Color", ViRMA_Colors.axisFadeGreen);
+            for (int i = 0; i < activeAxesLabels.Y.Labels.Count; i++)
+            {
+                // create gameobject to represent axis point
+                GameObject axisYPoint = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                axisYPoint.GetComponent<Renderer>().material = transparentMaterial;
+                axisYPoint.GetComponent<Renderer>().SetPropertyBlock(materialProperties);
+                axisYPoint.name = "AxisYPoint_" + i;
+                axisYPoint.transform.position = new Vector3(0, i + 1, 0) * (defaultCellSpacingRatio + 1);
+                axisYPoint.transform.localScale = Vector3.one * 0.5f;
+                axisYPoint.transform.parent = cellsandAxesWrapper.transform;
+                axisYPoint.AddComponent<ViRMA_AxisPoint>().y = true;
+
+                // apply metadata to axis point
+                ViRMA_AxisPoint axisPoint = axisYPoint.GetComponent<ViRMA_AxisPoint>();
+                axisPoint.axisId = activeAxesLabels.Y.Id;
+                axisPoint.axisLabel = activeAxesLabels.Y.Label;
+                axisPoint.axisType = activeAxesLabels.Y.Type;
+                axisPoint.axisPointLabel = activeAxesLabels.Y.Labels[i].Label;
+                axisPoint.axisPointId = activeAxesLabels.Y.Labels[i].Id;
+
+                // add gameobject to list
+                axisYPointObjs.Add(axisYPoint);
+
+                // y axis roll up axis point
+                if (i == activeAxesLabels.Y.Labels.Count - 1)
                 {
-                    // create gameobject to represent axis point
-                    GameObject axisYPoint = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                    axisYPoint.GetComponent<Renderer>().material = transparentMaterial;
-                    axisYPoint.GetComponent<Renderer>().SetPropertyBlock(materialProperties);
-                    axisYPoint.name = "AxisYPoint_" + i;
-                    axisYPoint.transform.position = new Vector3(0, i + 1, 0) * (defaultCellSpacingRatio + 1);
-                    axisYPoint.transform.localScale = Vector3.one * 0.5f;
-                    axisYPoint.transform.parent = cellsandAxesWrapper.transform;
-                    axisYPoint.AddComponent<ViRMA_AxisPoint>().y = true;
-
-                    // apply metadata to axis point
-                    ViRMA_AxisPoint axisPoint = axisYPoint.GetComponent<ViRMA_AxisPoint>();
-                    axisPoint.axisId = axesLabels.Y.Id;
-                    axisPoint.axisLabel = axesLabels.Y.Label;
-                    axisPoint.axisType = axesLabels.Y.Type;
-                    axisPoint.axisPointLabel = axesLabels.Y.Labels[i].Key;
-                    axisPoint.axisPointId = axesLabels.Y.Labels[i].Value;
-
-                    // add gameobject to list
-                    axisYPointObjs.Add(axisYPoint);
-
-                    // y axis roll up axis point
-                    if (i == axesLabels.Y.Labels.Count - 1)
-                    {
-                        GameObject axisYPointRollUp = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                        axisYPointRollUp.GetComponent<Renderer>().material = transparentMaterial;
-                        axisYPointRollUp.GetComponent<Renderer>().SetPropertyBlock(materialProperties);
-                        axisYPointRollUp.name = "AxisYPoint_RollUp";
-                        axisYPointRollUp.transform.position = new Vector3(0, i + 2, 0) * (defaultCellSpacingRatio + 1);
-                        axisYPointRollUp.transform.parent = cellsandAxesWrapper.transform;
-                        axisYPointRollUp.AddComponent<ViRMA_RollUpPoint>().y = true;
-                        axisYPointRollUp.GetComponent<ViRMA_RollUpPoint>().axisId = axesLabels.Y.Id;
-                        axisYPointRollUp.GetComponent<ViRMA_RollUpPoint>().axisLabel = axesLabels.Y.Label;
-                        axisYPointRollUp.GetComponent<ViRMA_RollUpPoint>().axisType = axesLabels.Y.Type;
-                    }
-                }
-
-                // y axis line
-                if (axisYPointObjs.Count > 2)
-                {
-                    GameObject AxisYLineObj = new GameObject("AxisYLine");
-                    axisYLine = AxisYLineObj.AddComponent<LineRenderer>();
-                    axisYLine.GetComponent<Renderer>().material = transparentMaterial;
-                    axisYLine.GetComponent<Renderer>().SetPropertyBlock(materialProperties);
-                    axisYLine.positionCount = 2;
-                    axisYLine.startWidth = axisLineWidth;
-                    axisYLine.endWidth = axisLineWidth;
+                    GameObject axisYPointRollUp = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                    axisYPointRollUp.GetComponent<Renderer>().material = transparentMaterial;
+                    axisYPointRollUp.GetComponent<Renderer>().SetPropertyBlock(materialProperties);
+                    axisYPointRollUp.name = "AxisYPoint_RollUp";
+                    axisYPointRollUp.transform.position = new Vector3(0, i + 2, 0) * (defaultCellSpacingRatio + 1);
+                    axisYPointRollUp.transform.parent = cellsandAxesWrapper.transform;
+                    axisYPointRollUp.AddComponent<ViRMA_RollUpPoint>().y = true;
+                    axisYPointRollUp.GetComponent<ViRMA_RollUpPoint>().axisId = activeAxesLabels.Y.Id;
+                    axisYPointRollUp.GetComponent<ViRMA_RollUpPoint>().axisLabel = activeAxesLabels.Y.Label;
+                    axisYPointRollUp.GetComponent<ViRMA_RollUpPoint>().axisType = activeAxesLabels.Y.Type;
                 }
             }
 
-            // z axis points
-            if (axesLabels.Z != null)
+            // y axis line
+            if (axisYPointObjs.Count > 2)
             {
-                materialProperties.SetColor("_Color", ViRMA_Colors.axisFadeBlue);
-                for (int i = 0; i < axesLabels.Z.Labels.Count; i++)
+                GameObject AxisYLineObj = new GameObject("AxisYLine");
+                axisYLine = AxisYLineObj.AddComponent<LineRenderer>();
+                axisYLine.GetComponent<Renderer>().material = transparentMaterial;
+                axisYLine.GetComponent<Renderer>().SetPropertyBlock(materialProperties);
+                axisYLine.positionCount = 2;
+                axisYLine.startWidth = axisLineWidth;
+                axisYLine.endWidth = axisLineWidth;
+            }
+        }
+
+        // z axis points
+        if (activeAxesLabels.Z != null)
+        {
+            materialProperties.SetColor("_Color", ViRMA_Colors.axisFadeBlue);
+            for (int i = 0; i < activeAxesLabels.Z.Labels.Count; i++)
+            {
+                // create gameobject to represent axis point
+                GameObject axisZPoint = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                axisZPoint.GetComponent<Renderer>().material = transparentMaterial;
+                axisZPoint.GetComponent<Renderer>().SetPropertyBlock(materialProperties);
+                axisZPoint.name = "AxisZPoint_" + i;
+                axisZPoint.transform.position = new Vector3(0, 0, i + 1) * (defaultCellSpacingRatio + 1);
+                axisZPoint.transform.localScale = Vector3.one * 0.5f;
+                axisZPoint.transform.parent = cellsandAxesWrapper.transform;
+                axisZPoint.AddComponent<ViRMA_AxisPoint>().z = true;
+
+                // apply metadata to axis point
+                ViRMA_AxisPoint axisPoint = axisZPoint.GetComponent<ViRMA_AxisPoint>();
+                axisPoint.axisId = activeAxesLabels.Z.Id;
+                axisPoint.axisLabel = activeAxesLabels.Z.Label;
+                axisPoint.axisType = activeAxesLabels.Z.Type;
+                axisPoint.axisPointLabel = activeAxesLabels.Z.Labels[i].Label;
+                axisPoint.axisPointId = activeAxesLabels.Z.Labels[i].Id;
+
+                // add gameobject to list
+                axisZPointObjs.Add(axisZPoint);
+
+                // z axis roll up axis point
+                if (i == activeAxesLabels.Z.Labels.Count - 1)
                 {
-                    // create gameobject to represent axis point
-                    GameObject axisZPoint = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                    axisZPoint.GetComponent<Renderer>().material = transparentMaterial;
-                    axisZPoint.GetComponent<Renderer>().SetPropertyBlock(materialProperties);
-                    axisZPoint.name = "AxisZPoint_" + i;
-                    axisZPoint.transform.position = new Vector3(0, 0, i + 1) * (defaultCellSpacingRatio + 1);
-                    axisZPoint.transform.localScale = Vector3.one * 0.5f;
-                    axisZPoint.transform.parent = cellsandAxesWrapper.transform;
-                    axisZPoint.AddComponent<ViRMA_AxisPoint>().z = true;
-
-                    // apply metadata to axis point
-                    ViRMA_AxisPoint axisPoint = axisZPoint.GetComponent<ViRMA_AxisPoint>();
-                    axisPoint.axisId = axesLabels.Z.Id;
-                    axisPoint.axisLabel = axesLabels.Z.Label;
-                    axisPoint.axisType = axesLabels.Z.Type;
-                    axisPoint.axisPointLabel = axesLabels.Z.Labels[i].Key;
-                    axisPoint.axisPointId = axesLabels.Z.Labels[i].Value;
-
-                    // add gameobject to list
-                    axisZPointObjs.Add(axisZPoint);
-
-                    // z axis roll up axis point
-                    if (i == axesLabels.Z.Labels.Count - 1)
-                    {
-                        GameObject axisZPointRollUp = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                        axisZPointRollUp.GetComponent<Renderer>().material = transparentMaterial;
-                        axisZPointRollUp.GetComponent<Renderer>().SetPropertyBlock(materialProperties);
-                        axisZPointRollUp.name = "AxisYPoint_RollUp";
-                        axisZPointRollUp.transform.position = new Vector3(0, 0, i + 2) * (defaultCellSpacingRatio + 1);
-                        axisZPointRollUp.transform.parent = cellsandAxesWrapper.transform;
-                        axisZPointRollUp.AddComponent<ViRMA_RollUpPoint>().z = true;
-                        axisZPointRollUp.GetComponent<ViRMA_RollUpPoint>().axisId = axesLabels.Z.Id;
-                        axisZPointRollUp.GetComponent<ViRMA_RollUpPoint>().axisLabel = axesLabels.Z.Label;
-                        axisZPointRollUp.GetComponent<ViRMA_RollUpPoint>().axisType = axesLabels.Z.Type;
-                    }
+                    GameObject axisZPointRollUp = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                    axisZPointRollUp.GetComponent<Renderer>().material = transparentMaterial;
+                    axisZPointRollUp.GetComponent<Renderer>().SetPropertyBlock(materialProperties);
+                    axisZPointRollUp.name = "AxisYPoint_RollUp";
+                    axisZPointRollUp.transform.position = new Vector3(0, 0, i + 2) * (defaultCellSpacingRatio + 1);
+                    axisZPointRollUp.transform.parent = cellsandAxesWrapper.transform;
+                    axisZPointRollUp.AddComponent<ViRMA_RollUpPoint>().z = true;
+                    axisZPointRollUp.GetComponent<ViRMA_RollUpPoint>().axisId = activeAxesLabels.Z.Id;
+                    axisZPointRollUp.GetComponent<ViRMA_RollUpPoint>().axisLabel = activeAxesLabels.Z.Label;
+                    axisZPointRollUp.GetComponent<ViRMA_RollUpPoint>().axisType = activeAxesLabels.Z.Type;
                 }
+            }
 
-                // z axis line
-                if (axisZPointObjs.Count > 2)
-                {
-                    GameObject AxisZLineObj = new GameObject("AxisZLine");
-                    axisZLine = AxisZLineObj.AddComponent<LineRenderer>();
-                    axisZLine.GetComponent<Renderer>().material = transparentMaterial;
-                    axisZLine.GetComponent<Renderer>().SetPropertyBlock(materialProperties);
-                    axisZLine.positionCount = 2;
-                    axisZLine.startWidth = axisLineWidth;
-                    axisZLine.endWidth = axisLineWidth;
-                }
-            }    
-        }));
-        
+            // z axis line
+            if (axisZPointObjs.Count > 2)
+            {
+                GameObject AxisZLineObj = new GameObject("AxisZLine");
+                axisZLine = AxisZLineObj.AddComponent<LineRenderer>();
+                axisZLine.GetComponent<Renderer>().material = transparentMaterial;
+                axisZLine.GetComponent<Renderer>().SetPropertyBlock(materialProperties);
+                axisZLine.positionCount = 2;
+                axisZLine.startWidth = axisLineWidth;
+                axisZLine.endWidth = axisLineWidth;
+            }
+        }           
     }
     private void CalculateCellsAndAxesBounds()
     {

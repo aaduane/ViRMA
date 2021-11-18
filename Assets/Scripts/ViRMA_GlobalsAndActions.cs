@@ -1,5 +1,4 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 using Valve.VR;
 using Valve.VR.InteractionSystem;
 
@@ -111,14 +110,6 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
         timeline_Select = SteamVR_Input.GetActionFromPath<SteamVR_Action_Boolean>("/actions/Timeline/in/Select");
         timeline_Scroll = SteamVR_Input.GetActionFromPath<SteamVR_Action_Boolean>("/actions/Timeline/in/Scroll");
         timeline_Back = SteamVR_Input.GetActionFromPath<SteamVR_Action_Boolean>("/actions/Timeline/in/Back");
-
-        /*
-        Debug.Log(dimExplorerActions.allActions);
-        foreach (var action in dimExplorerActions.allActions)
-        {
-            Debug.Log(action.GetShortName());
-        }     
-        */
     }
     private void AssignAllCustomActions()
     {
@@ -153,6 +144,7 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
     }
     private void ActionActivityController()
     {
+        
         if (dimExplorer.dimensionExpLorerLoaded)
         {
             dimExplorerActions.Activate();
@@ -164,11 +156,13 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
             dimExplorerActions.Deactivate();
         }
 
+
         if (dimExplorer.dimExKeyboard.keyboardLoaded)
         {
             dimExplorerActions.Activate();
             vizNavActions.Deactivate();
         }
+
 
         if (dimExplorer.dimExKeyboard.keyboardMoving)
         {   
@@ -176,9 +170,10 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
             vizNavActions.Deactivate();
         }
 
+
         if (timeline.timelineLoaded)
         {
-            timelineActions.Activate();
+            timelineActions.Activate();    
         }
         else
         {
@@ -187,27 +182,32 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
 
         menuInteractionActions.Activate();
 
+
         // debugging
         if (false)
         {
-            Debug.Log("dimensionExpLorerLoaded: " + dimExplorer.dimensionExpLorerLoaded + " | vizFullyLoaded: " + vizController.vizFullyLoaded + " | keyboardLoaded: " + dimExplorer.dimExKeyboard.keyboardLoaded + " | keyboardMoving: " + dimExplorer.dimExKeyboard.keyboardMoving);
+            //Debug.Log("dimensionExpLorerLoaded: " + dimExplorer.dimensionExpLorerLoaded + " | vizFullyLoaded: " + vizController.vizFullyLoaded + " | keyboardLoaded: " + dimExplorer.dimExKeyboard.keyboardLoaded + " | keyboardMoving: " + dimExplorer.dimExKeyboard.keyboardMoving);
 
             string activeSetDebug = "Active Sets:";
             if (defaultActions.IsActive())
             {
                 activeSetDebug += " | default";
             }
-            if (menuInteractionActions.IsActive())
-            {
-                activeSetDebug += " | menu interaction";
-            }
             if (vizNavActions.IsActive())
             {
-                activeSetDebug += " | viz nav";
+                activeSetDebug += " | viz";
             }
             if (dimExplorerActions.IsActive())
             {
-                activeSetDebug += " | dimension explorer nav";
+                activeSetDebug += " | dimEx";
+            }
+            if (menuInteractionActions.IsActive())
+            {
+                activeSetDebug += " | menu";
+            }
+            if (timelineActions.IsActive())
+            {
+                activeSetDebug += " | timeline";
             }
             Debug.Log(activeSetDebug);
         }    

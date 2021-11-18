@@ -59,9 +59,7 @@ public class ViRMA_MainMenu : MonoBehaviour
     private List<ViRMA_UiElement> toggledLocationUiElements;
     
     ///////////////////////////////////////////////// custom buttons
-    public List<GameObject> customButtons;
-
-    
+    public List<GameObject> customButtons; 
 
     private void Awake()
     {
@@ -419,7 +417,6 @@ public class ViRMA_MainMenu : MonoBehaviour
     private void RemoveAxis(GameObject buttonObj)
     {
         string axisType = buttonObj.transform.parent.parent.name.Substring(0, 1);
-
         globals.queryController.buildingQuery.ClearAxis(axisType);
     }
 
@@ -652,8 +649,16 @@ public class ViRMA_MainMenu : MonoBehaviour
     }
     public void ToggleMainMenuAlias(SteamVR_Action_Boolean action, SteamVR_Input_Sources source)
     {
-        mainMenuLoaded = !mainMenuLoaded;
-        ToggleMainMenu(mainMenuLoaded);
+        // toggle main menu as long as timeline isn't loaded as it shares the same button
+        if (globals.timeline.timelineLoaded)
+        {
+            ToggleMainMenu(false);
+        }
+        else
+        {
+            mainMenuLoaded = !mainMenuLoaded;
+            ToggleMainMenu(mainMenuLoaded);
+        }
     }
     public void ToggleLoadingIndicator()
     {

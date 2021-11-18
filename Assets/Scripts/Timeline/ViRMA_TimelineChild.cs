@@ -215,6 +215,7 @@ public class ViRMA_TimelineChild : MonoBehaviour
     {
         DateTime date = new DateTime();
         DateTime time = new DateTime();
+        DateTime seconds = new DateTime();
 
         for (int i = 0; i < tags.Count; i++)
         {
@@ -224,14 +225,18 @@ public class ViRMA_TimelineChild : MonoBehaviour
             {
                 date = outDate;
             }
-
             if (DateTime.TryParseExact(targetTag, "HH:mm", null, System.Globalization.DateTimeStyles.None, out DateTime outTime)) 
             {
                 time = outTime;
             }
+
+            if (DateTime.TryParseExact(targetTag, "MM/dd/yyyy HH:mm:ss", null, System.Globalization.DateTimeStyles.None, out DateTime outSeconds))
+            {
+                seconds = outSeconds;
+            }
         }
 
-        timestamp = new DateTime(date.Year, date.Month, date.Day, time.Hour, time.Minute, time.Second);
+        timestamp = new DateTime(date.Year, date.Month, date.Day, time.Hour, time.Minute, seconds.Second);
 
         LoadTooltip();
     }
@@ -239,8 +244,8 @@ public class ViRMA_TimelineChild : MonoBehaviour
     {
         tooltip = new GameObject();
         TextMeshPro textMesh = tooltip.AddComponent<TextMeshPro>();
-        tooltip.name = timestamp.ToString("ddd HH:mm dd/MM/yyyy");
-        textMesh.text = timestamp.ToString("ddd HH:mm dd/MM/yyyy");
+        tooltip.name = timestamp.ToString("ddd HH:mm:ss dd/MM/yyyy");
+        textMesh.text = timestamp.ToString("ddd HH:mm:ss dd/MM/yyyy");
 
         tooltip.GetComponent<RectTransform>().sizeDelta = new Vector2(1, 1);
 
@@ -252,7 +257,7 @@ public class ViRMA_TimelineChild : MonoBehaviour
 
         tooltip.transform.parent = transform;
         tooltip.transform.localScale = new Vector3(1 / transform.localScale.x, 1 / transform.localScale.y, 1); // adjust for parent's scale
-        tooltip.transform.localPosition = new Vector3(0.22f, -0.45f, -1f);
+        tooltip.transform.localPosition = new Vector3(0.21f, -0.45f, -1f);
         tooltip.transform.localRotation = Quaternion.identity;
     }
 

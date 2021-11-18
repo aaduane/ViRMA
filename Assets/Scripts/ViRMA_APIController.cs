@@ -300,17 +300,16 @@ public class AxesLabels {
         public int Id { get; set; }
         public string Label { get; set; }
         public string Type { get; set; }    
-        public List<KeyValuePair<string, int>> Labels { get; set; }
-        public AxisLabel(int id, string type, string label, List<KeyValuePair<string, int>> labels)
+        public List<Tag> Labels { get; set; }
+        public AxisLabel(int id, string type, string label, List<Tag> labels)
         {
-            Debug.Log(id);
             Id = id;
             Label = Sanitise(label);
             Type = type;
             Labels = labels;
         }
     }
-    public void SetAxisLabsls(string axis, int id, string type, string name, List<KeyValuePair<string, int>> labels)
+    public void SetAxisLabsls(string axis, int id, string type, string name, List<Tag> labels)
     {
         if (axis.ToUpper() == "X")
         {
@@ -345,7 +344,7 @@ public class AxesLabels {
 public class ViRMA_APIController : MonoBehaviour
 {
     // public
-    public static bool debugging = true;
+    public static bool debugging = false;
     public static string serverAddress = "https://localhost:44317/api/";
 
     //public static string imagesDirectory = System.IO.Directory.GetCurrentDirectory().ToString() + "/LaugavegurDataDDS/"; 
@@ -356,8 +355,6 @@ public class ViRMA_APIController : MonoBehaviour
 
     // private
     private static JSONNode jsonData;
-
-    // general API methods
     public static IEnumerator GetRequest(string paramsURL, Action<JSONNode> onSuccess)
     {
         //Debug.Log(paramsURL); // testing
@@ -521,86 +518,8 @@ public class ViRMA_APIController : MonoBehaviour
         }
         onSuccess(cells);
     }
-    public static IEnumerator GetAxesLabels(Query query, Action<AxesLabels> onSuccess)
-    {
-        AxesLabels axisLabels = new AxesLabels();
-
-        (string name, List<KeyValuePair<string, int>> labels) processLabelData(JSONNode response)
-        {
-            string name;
-            List<KeyValuePair<string, int>> labels = new List<KeyValuePair<string, int>>();
-            if (response["tags"] == null)
-            {
-                // hierarchy
-                name = response["tag"]["name"];
-                foreach (JSONObject child in response["children"])
-                {
-                    int labelId = child["id"];
-                    string labelName = child["tag"]["name"];
-                    int bracketIndex = labelName.IndexOf("(");
-                    if (bracketIndex > -1)
-                    {
-                        labelName = labelName.Substring(0, bracketIndex);
-                    }
-                    KeyValuePair<string, int> labelIdPair = new KeyValuePair<string, int>(labelName, labelId);
-                    labels.Add(labelIdPair);
-                }
-            }
-            else
-            {
-                // tagset
-                name = response["name"];
-                foreach (JSONObject child in response["tags"])
-                {
-                    int labelId = child["id"];
-                    string labelName = child["name"];
-                    int bracketIndex = labelName.IndexOf("(");
-                    if (bracketIndex > -1)
-                    {
-                        labelName = labelName.Substring(0, bracketIndex);
-                    }
-                    KeyValuePair<string, int> labelIdPair = new KeyValuePair<string, int>(labelName, labelId);
-                    labels.Add(labelIdPair);
-                }
-            }
-            labels = labels.OrderBy(kvp => kvp.Key).ToList();
-            return (name, labels);
-        }
-
-        if (query.X != null)
-        {
-            string type = query.X.Type;
-            yield return GetRequest(type + "/" + query.X.Id, (response) =>
-            {
-                (string name, List<KeyValuePair<string, int>> labels) = processLabelData(response);
-                axisLabels.SetAxisLabsls("X", query.X.Id, type, name, labels);
-            });
-        }
-
-        if (query.Y != null)
-        {
-            string type = query.Y.Type;
-            yield return GetRequest(type + "/" + query.Y.Id, (response) =>
-            {
-                (string name, List<KeyValuePair<string, int>> labels) = processLabelData(response);
-                axisLabels.SetAxisLabsls("Y", query.Y.Id, type, name, labels);
-            });
-        }
-
-        if (query.Z != null)
-        {
-            string type = query.Z.Type;
-            yield return GetRequest(type + "/" + query.Z.Id, (response) =>
-            {
-                (string name, List<KeyValuePair<string, int>> labels) = processLabelData(response);
-                axisLabels.SetAxisLabsls("Z", query.Z.Id, type, name, labels);
-            });
-        }
-
-        onSuccess(axisLabels);
-    }
-
-    // tagset(s) and hierarchies API
+    
+    // tagset and hierarchy API
     public static IEnumerator GetTagset(string targetId, Action<List<Tag>> onSuccess)
     {
         yield return GetRequest("tagset/" + targetId, (response) =>
@@ -659,8 +578,6 @@ public class ViRMA_APIController : MonoBehaviour
         }
         onSuccess(hierarchies);
     }
-
-    // dimension explorer API
     public static IEnumerator SearchHierachies(string searchParam, Action<List<Tag>> onSuccess)
     {
         //Debug.Log("Submitting... node/name=" + searchParam);
@@ -886,35 +803,39 @@ public class ViRMA_APIController : MonoBehaviour
     {
         // cell?filters=[{'type':'node','ids':['699']},{'type':'tag','ids':['17']},{'type':'tag','ids':['147','132']}]&all=[];
 
-        string url = "cell?filters=[";
-        foreach (Query.Filter filter in cellFiltersForTimeline)
-        {
-            if (filter.Type.ToLower() == "tagset")
-            {
-                filter.Type = "tag";
-            }
-            string idString = string.Join("','", filter.Ids);
-            url += "{'type': '" + filter.Type.ToLower() + "', 'ids': ['" + idString + "']},";
-        }
-        url = url.Substring(0, url.Length - 1) + "]&all=[]";
-        url = url.Replace("\'", "\"");
-
-        //Debug.Log("GetTimeline: " + url); // debugging
-
         List<KeyValuePair<int, string>> results = new List<KeyValuePair<int, string>>();
-        yield return GetRequest(url, (response) =>
-        {
-            jsonData = response;        
-        });
 
-        foreach (var obj in jsonData)
+        if (cellFiltersForTimeline.Count > 0)
         {
-            int imageId = obj.Value["id"];
-            string imagePath = obj.Value["fileURI"];
-            string imageNameDDS = imagePath.Substring(0, imagePath.Length - 4) + ".dds";
-            KeyValuePair<int, string> imageIdPath = new KeyValuePair<int, string>(imageId, imageNameDDS);
-            results.Add(imageIdPath);
-        }
+            string url = "cell?filters=[";
+            foreach (Query.Filter filter in cellFiltersForTimeline)
+            {
+                if (filter.Type.ToLower() == "tagset")
+                {
+                    filter.Type = "tag";
+                }
+                string idString = string.Join("','", filter.Ids);
+                url += "{'type': '" + filter.Type.ToLower() + "', 'ids': ['" + idString + "']},";
+            }
+            url = url.Substring(0, url.Length - 1) + "]&all=[]";
+            url = url.Replace("\'", "\"");
+
+            Debug.Log("GetTimeline: " + url); // debugging
+
+            yield return GetRequest(url, (response) =>
+            {
+                jsonData = response;
+            });
+
+            foreach (var obj in jsonData)
+            {
+                int imageId = obj.Value["id"];
+                string imagePath = obj.Value["fileURI"];
+                string imageNameDDS = imagePath.Substring(0, imagePath.Length - 4) + ".dds";
+                KeyValuePair<int, string> imageIdPath = new KeyValuePair<int, string>(imageId, imageNameDDS);
+                results.Add(imageIdPath);
+            }
+        } 
 
         onSuccess(results);
     }
@@ -1005,4 +926,83 @@ public class ViRMA_APIController : MonoBehaviour
         return (tex);
     }
 
+    // deprecated
+    public static IEnumerator GetAxesLabels(Query query, Action<AxesLabels> onSuccess)
+    {
+        AxesLabels axisLabels = new AxesLabels();
+
+        (string name, List<KeyValuePair<string, int>> labels) processLabelData(JSONNode response)
+        {
+            string name;
+            List<KeyValuePair<string, int>> labels = new List<KeyValuePair<string, int>>();
+            if (response["tags"] == null)
+            {
+                // hierarchy
+                name = "testing";
+                foreach (JSONObject child in response)
+                {
+                    int labelId = child["id"];
+                    string labelName = child["name"];
+                    int bracketIndex = labelName.IndexOf("(");
+                    if (bracketIndex > -1)
+                    {
+                        labelName = labelName.Substring(0, bracketIndex);
+                    }
+                    KeyValuePair<string, int> labelIdPair = new KeyValuePair<string, int>(labelName, labelId);
+                    labels.Add(labelIdPair);
+                }
+            }
+            else
+            {
+                // tagset
+                name = response["name"];
+                foreach (JSONObject child in response["tags"])
+                {
+                    int labelId = child["id"];
+                    string labelName = child["name"];
+                    int bracketIndex = labelName.IndexOf("(");
+                    if (bracketIndex > -1)
+                    {
+                        labelName = labelName.Substring(0, bracketIndex);
+                    }
+                    KeyValuePair<string, int> labelIdPair = new KeyValuePair<string, int>(labelName, labelId);
+                    labels.Add(labelIdPair);
+                }
+            }
+            labels = labels.OrderBy(kvp => kvp.Key).ToList();
+            return (name, labels);
+        }
+
+        if (query.X != null)
+        {
+            string type = query.X.Type;
+            yield return GetRequest(type + "/" + query.X.Id + "/children", (response) =>
+            {
+                (string name, List<KeyValuePair<string, int>> labels) = processLabelData(response);
+                //axisLabels.SetAxisLabsls("X", query.X.Id, type, name, labels);
+            });
+        }
+
+        if (query.Y != null)
+        {
+            string type = query.Y.Type;
+            yield return GetRequest(type + "/" + query.Y.Id + "/children", (response) =>
+            {
+                (string name, List<KeyValuePair<string, int>> labels) = processLabelData(response);
+                //axisLabels.SetAxisLabsls("Y", query.Y.Id, type, name, labels);
+            });
+        }
+
+        if (query.Z != null)
+        {
+            string type = query.Z.Type;
+            yield return GetRequest(type + "/" + query.Z.Id + "/children", (response) =>
+            {
+                (string name, List<KeyValuePair<string, int>> labels) = processLabelData(response);
+                //axisLabels.SetAxisLabsls("Z", query.Z.Id, type, name, labels);
+            });
+        }
+
+        onSuccess(axisLabels);
+    }
 } 
