@@ -303,6 +303,7 @@ public class AxesLabels {
         public List<KeyValuePair<string, int>> Labels { get; set; }
         public AxisLabel(int id, string type, string label, List<KeyValuePair<string, int>> labels)
         {
+            Debug.Log(id);
             Id = id;
             Label = Sanitise(label);
             Type = type;
@@ -344,7 +345,7 @@ public class AxesLabels {
 public class ViRMA_APIController : MonoBehaviour
 {
     // public
-    public static bool debugging = false;
+    public static bool debugging = true;
     public static string serverAddress = "https://localhost:44317/api/";
 
     //public static string imagesDirectory = System.IO.Directory.GetCurrentDirectory().ToString() + "/LaugavegurDataDDS/"; 
@@ -807,10 +808,10 @@ public class ViRMA_APIController : MonoBehaviour
             // tag id
             nodeTag.Id = targetId;
 
-            if (jsonData["tag"] != null)
+            if (jsonData["tagName"] != null)
             {
                 // tag name
-                string tagName = jsonData["tag"]["name"];
+                string tagName = jsonData["tagName"];
                 int bracketIndex = tagName.IndexOf("(");
                 if (bracketIndex > -1)
                 {

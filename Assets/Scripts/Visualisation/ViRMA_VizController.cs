@@ -266,6 +266,7 @@ public class ViRMA_VizController : MonoBehaviour
     }
     private IEnumerator GenerateAxesFromLabels(Query submittedQuery)
     {
+
         // get label data from server
         yield return StartCoroutine(ViRMA_APIController.GetAxesLabels(submittedQuery, (axesLabels) => {
 
@@ -459,6 +460,7 @@ public class ViRMA_VizController : MonoBehaviour
                 }
             }    
         }));
+        
     }
     private void CalculateCellsAndAxesBounds()
     {

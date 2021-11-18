@@ -482,7 +482,7 @@ public class ViRMA_MainMenu : MonoBehaviour
         toggledTimeUiElements = new List<ViRMA_UiElement>();
 
         // fetch weekday tagset id's
-        string weekdayTagsetId = "4";
+        string weekdayTagsetId = "5";
         StartCoroutine(ViRMA_APIController.GetTagset(weekdayTagsetId, (tagsetData) => {
             foreach (Tag weekdayData in tagsetData)
             {
@@ -495,7 +495,7 @@ public class ViRMA_MainMenu : MonoBehaviour
         }));
 
         // fetch hour tagset id's
-        string hourTagsetId = "11";
+        string hourTagsetId = "12";
         StartCoroutine(ViRMA_APIController.GetTagset(hourTagsetId, (tagsetData) => {
             foreach (Tag hourData in tagsetData)
             {
@@ -509,7 +509,7 @@ public class ViRMA_MainMenu : MonoBehaviour
         }));
 
         // fetch date tagset id's
-        string dateTagsetId = "6";
+        string dateTagsetId = "7";
         StartCoroutine(ViRMA_APIController.GetTagset(dateTagsetId, (tagsetData) => {
             foreach (Tag dateData in tagsetData)
             {
@@ -523,7 +523,7 @@ public class ViRMA_MainMenu : MonoBehaviour
         }));
 
         // fetch month tagset id's
-        string monthTagsetId = "9";
+        string monthTagsetId = "10";
         StartCoroutine(ViRMA_APIController.GetTagset(monthTagsetId, (tagsetData) => {
             foreach (Tag monthData in tagsetData)
             {
@@ -540,7 +540,7 @@ public class ViRMA_MainMenu : MonoBehaviour
         }));
 
         // fetch year tagset id's
-        string yearTagsetId = "10";
+        string yearTagsetId = "11";
         StartCoroutine(ViRMA_APIController.GetTagset(yearTagsetId, (tagsetData) => {
             for (int i = 0; i < tagsetData.Count; i++)
             {
