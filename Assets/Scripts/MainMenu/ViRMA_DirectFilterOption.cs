@@ -104,12 +104,19 @@ public class ViRMA_DirectFilterOption : MonoBehaviour
     {
         if (directFilterData != null)
         {
+            // enable and/or setting for concept tags 
+            int orEnabled = -1;
+            if (globals.queryController.queryModeOrSetting)
+            {
+                orEnabled = 0;
+            }
+
             if (optionType == "X_btn")
             {
                 if (globals.queryController.activeXAxisId != -1)
                 {
                     // if there is something already projected to X, set it as a direct filter
-                    globals.queryController.buildingQuery.AddFilter(globals.queryController.activeXAxisId, globals.queryController.activeXAxisType);
+                    globals.queryController.buildingQuery.AddFilter(globals.queryController.activeXAxisId, globals.queryController.activeXAxisType, orEnabled);
                 }
 
                 // project target filter to X axis
@@ -121,7 +128,7 @@ public class ViRMA_DirectFilterOption : MonoBehaviour
                 if (globals.queryController.activeYAxisId != -1)
                 {
                     // if there is something already projected to Y, set it as a direct filter
-                    globals.queryController.buildingQuery.AddFilter(globals.queryController.activeYAxisId, globals.queryController.activeYAxisType);
+                    globals.queryController.buildingQuery.AddFilter(globals.queryController.activeYAxisId, globals.queryController.activeYAxisType, orEnabled);
                 }
 
                 // project target filter to Y axis
@@ -133,7 +140,7 @@ public class ViRMA_DirectFilterOption : MonoBehaviour
                 if (globals.queryController.activeZAxisId != -1)
                 {
                     // if there is something already projected to Z, set it as a direct filter
-                    globals.queryController.buildingQuery.AddFilter(globals.queryController.activeZAxisId, globals.queryController.activeZAxisType);
+                    globals.queryController.buildingQuery.AddFilter(globals.queryController.activeZAxisId, globals.queryController.activeZAxisType, orEnabled);
                 }
 
                 // project target filter to Z axis

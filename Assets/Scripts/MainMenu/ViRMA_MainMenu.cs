@@ -116,6 +116,7 @@ public class ViRMA_MainMenu : MonoBehaviour
             {
                 browseFilterOption.GenerateBtnDefaults(ViRMA_Colors.darkBlue, Color.white);
                 browseFilterOption.GetComponent<Button>().onClick.AddListener(() => globals.dimExplorer.dimExKeyboard.ToggleDimExKeyboard(true));
+                browseFilterOption.GetComponent<Button>().onClick.AddListener(() => ToggleMainMenu(false));
             }
 
             if (browseFilterOption.name == "TimeBtn")

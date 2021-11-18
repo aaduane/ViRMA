@@ -10,6 +10,9 @@ public class ViRMA_QueryController : MonoBehaviour
     public Query buildingQuery;
     [HideInInspector] public bool vizQueryLoading;
 
+    // enable and/or setting for concept tags
+    public bool queryModeOrSetting;
+
     // --- active query parameters --- \\
 
     // x

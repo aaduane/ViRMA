@@ -555,29 +555,7 @@ public class ViRMA_APIController : MonoBehaviour
         }
 
         onSuccess(tagsetData);
-    }
-    public static IEnumerator GetAllHierarchies(Action<List<Tag>> onSuccess)
-    {
-        yield return GetRequest("hierarchy/", (response) =>
-        {
-            jsonData = response;
-        });
-
-        List<Tag> hierarchies = new List<Tag>();
-        foreach (var obj in jsonData)
-        {
-
-            ///Debug.Log(obj);
-
-            Tag newTag = new Tag
-            {
-                Id = obj.Value["id"],
-                Label = obj.Value["name"]
-            };
-            hierarchies.Add(newTag);
-        }
-        onSuccess(hierarchies);
-    }
+    }   
     public static IEnumerator SearchHierachies(string searchParam, Action<List<Tag>> onSuccess)
     {
         //Debug.Log("Submitting... node/name=" + searchParam);
@@ -1004,5 +982,27 @@ public class ViRMA_APIController : MonoBehaviour
         }
 
         onSuccess(axisLabels);
+    }
+    public static IEnumerator GetAllHierarchies(Action<List<Tag>> onSuccess)
+    {
+        yield return GetRequest("hierarchy/", (response) =>
+        {
+            jsonData = response;
+        });
+
+        List<Tag> hierarchies = new List<Tag>();
+        foreach (var obj in jsonData)
+        {
+
+            ///Debug.Log(obj);
+
+            Tag newTag = new Tag
+            {
+                Id = obj.Value["id"],
+                Label = obj.Value["name"]
+            };
+            hierarchies.Add(newTag);
+        }
+        onSuccess(hierarchies);
     }
 } 

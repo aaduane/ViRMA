@@ -312,9 +312,12 @@ public class ViRMA_DimExplorer : MonoBehaviour
             // push data to query controller
             if (axisQueryType == "filter")
             {
-                // tagQueryData.Label
-
-                globals.queryController.buildingQuery.AddFilter(tagQueryData.Id, "node");
+                int orEnabled = -1;
+                if (globals.queryController.queryModeOrSetting)
+                {
+                    orEnabled = 0;
+                }
+                globals.queryController.buildingQuery.AddFilter(tagQueryData.Id, "node", orEnabled);
             }
             else
             {
