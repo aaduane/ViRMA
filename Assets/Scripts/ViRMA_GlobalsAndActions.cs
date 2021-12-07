@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using Valve.VR;
 using Valve.VR.InteractionSystem;
+using System;
 
 public class ViRMA_GlobalsAndActions : MonoBehaviour
 {
@@ -67,18 +68,23 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
     }
     private void Update()
     {
-        /*
-        if (Input.GetKey("escape"))
-        {
-            Application.Quit();
-        }
-        */
-
         // SteamVR controller models take some frames to load so this waits for them to set some globals
         InitialiseSteamVRControllers();
 
         // control activation of SteamVR actions
         ActionActivityController();
+
+        // keyboard functions
+        if (Input.GetKey("escape"))
+        {
+            Application.Quit();
+        }
+        if (Input.GetKey("p"))
+        {
+            Debug.Log("Screenshot taken: " + "C:/Users/Aaron Duane/Downloads/" + DateTime.Now.ToString("HH_mm_ss") + ".png");
+            ScreenCapture.CaptureScreenshot("C:/Users/Aaron Duane/Downloads/" + DateTime.Now.ToString("HH_mm_ss") + ".png", 2);
+            //ScreenCapture.CaptureScreenshot(System.IO.Directory.GetCurrentDirectory().ToString() + "/" + DateTime.Now.ToString("HH_mm_ss") + ".png", 2);
+        }
     }
 
     // actions

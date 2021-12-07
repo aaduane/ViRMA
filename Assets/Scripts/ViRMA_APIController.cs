@@ -228,6 +228,8 @@ public class Query
     }
     public void RemoveFilter(int id, string type, int parentId = -1)
     {
+        Debug.Log("Fired!");
+
         string targetFilterId = "null_0";
         if (parentId != -1)
         {
