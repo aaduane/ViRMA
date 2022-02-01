@@ -518,6 +518,7 @@ public class ViRMA_APIController : MonoBehaviour
             }
             cells.Add(newCell);
         }
+
         onSuccess(cells);
     }
     
@@ -825,7 +826,7 @@ public class ViRMA_APIController : MonoBehaviour
 
         TimeSpan timeSpan = new TimeSpan(0, minutes, 0);
         DateTime future = timestamp.Add(timeSpan);
-        DateTime past = timestamp.Subtract(timeSpan);
+        DateTime past = timestamp.Subtract(timeSpan); 
         
         string url = "cell?filters=[{'type':'daterange','ids':['2'],'ranges':[['" + past.ToString("dd-MM-yyyy") + "','" + future.ToString("dd-MM-yyyy") + "']]},{'type':'timerange','ids':['3'],'ranges':[['" + past.ToString("HH:mm") + "','" + future.ToString("HH:mm") + "']]}]&all=[]";
 
@@ -851,8 +852,7 @@ public class ViRMA_APIController : MonoBehaviour
             else
             {
                 Debug.LogError("Something wrong with this image ---> " + imagePath);
-            }
-            
+            }            
         }
 
         onSuccess(results);

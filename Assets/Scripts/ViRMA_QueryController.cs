@@ -49,9 +49,9 @@ public class ViRMA_QueryController : MonoBehaviour
 
     private void Start()
     {
-        //buildingQuery.SetAxis("X", 1770, "node"); // computer
-        //buildingQuery.SetAxis("Y", 3733, "node"); // desk
-        //buildingQuery.SetAxis("Z", 690, "node"); // domestic animal
+        //buildingQuery.SetAxis("X", 1770, "node"); // computer (old)
+        //buildingQuery.SetAxis("Y", 3733, "node"); // desk (old)
+        //buildingQuery.SetAxis("Z", 690, "node"); // domestic animal (old)
 
         //buildingQuery.SetAxis("X", 690, "node"); // domestic animal
         //buildingQuery.SetAxis("Y", 691, "node"); // dog
@@ -70,6 +70,12 @@ public class ViRMA_QueryController : MonoBehaviour
         //buildingQuery.AddFilter(693, "node"); // ?
         //buildingQuery.AddFilter(216, "tag", 13); // shanghai timezone
         // buildingQuery.AddFilter(6649, "tag", 0); // June (only 4 images)
+
+        //buildingQuery.SetAxis("X", 3056, "node"); // computer
+        //buildingQuery.SetAxis("Y", 5505, "node"); // desk
+
+        buildingQuery.SetAxis("X", 1606, "node"); // food fish
+        buildingQuery.SetAxis("Y", 6967, "node"); // kitchen appliance
 
         //StartCoroutine(LateStart()); // testing
     }
