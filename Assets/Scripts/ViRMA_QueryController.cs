@@ -49,6 +49,9 @@ public class ViRMA_QueryController : MonoBehaviour
 
     private void Start()
     {
+        // EXPERIMENTAL: setting to True enables "or" instead of "and" in tag filtering
+        queryModeOrSetting = false;
+
         //buildingQuery.SetAxis("X", 1770, "node"); // computer (old)
         //buildingQuery.SetAxis("Y", 3733, "node"); // desk (old)
         //buildingQuery.SetAxis("Z", 690, "node"); // domestic animal (old)
@@ -74,8 +77,8 @@ public class ViRMA_QueryController : MonoBehaviour
         //buildingQuery.SetAxis("X", 3056, "node"); // computer
         //buildingQuery.SetAxis("Y", 5505, "node"); // desk
 
-        buildingQuery.SetAxis("X", 1606, "node"); // food fish
-        buildingQuery.SetAxis("Y", 6967, "node"); // kitchen appliance
+        //buildingQuery.SetAxis("X", 1606, "node"); // food fish
+        //buildingQuery.SetAxis("Y", 6967, "node"); // kitchen appliance
 
         //StartCoroutine(LateStart()); // testing
     }

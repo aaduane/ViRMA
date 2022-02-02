@@ -23,6 +23,7 @@ public class ViRMA_Timeline : MonoBehaviour
 
     public int currentTimelineSection;
     public int totalTimeLineSections;
+    public int totalContextTimelineSections;
     public List<KeyValuePair<int, string>> timelineResults;
     public List<KeyValuePair<int, string>> contextTimelineResults;
     private int targetContextTimelineChildId;
@@ -208,7 +209,7 @@ public class ViRMA_Timeline : MonoBehaviour
             activeTImelineRotation = Quaternion.identity;
         }
     }
-    private void PositionTimeline(int newPageIndex)
+    private void PositionTimeline(int newSectionIndex)
     {
         // if this is the first time positioning the timeline, pick a space in front of the user, otherwise use the active position and rotation
         if (activeTimelinePosition == Vector3.one * Mathf.Infinity || activeTImelineRotation == Quaternion.identity)
@@ -237,16 +238,17 @@ public class ViRMA_Timeline : MonoBehaviour
         maxRight = transform.position;
 
         // set timeline to correct position, and offset it slightly so nav buttons aren't the first thing seen
-        if (newPageIndex < currentTimelineSection)
+        if (newSectionIndex < currentTimelineSection)
         {
-            // when clicking previous button 
-            float distBetweenChildAndNav = Vector3.Distance(lastRealChild.transform.position, nextBtn.transform.position); // BUG HERE 
-            Vector3 childNavOffset = transform.right * distBetweenChildAndNav;
-            transform.position = maxLeft + childNavOffset;
+            if (nextBtn)
+            {
+                float distBetweenChildAndNav = Vector3.Distance(lastRealChild.transform.position, nextBtn.transform.position); 
+                Vector3 childNavOffset = transform.right * distBetweenChildAndNav;
+                transform.position = maxLeft + childNavOffset;
+            }      
         }
         else
         {
-            // when clicking next button
             if (prevBtn)
             {
                 float distBetweenChildAndNav = Vector3.Distance(firstRealChild.transform.position, prevBtn.transform.position);
@@ -301,7 +303,7 @@ public class ViRMA_Timeline : MonoBehaviour
         }
         metadataFetcher = null;
     }
-    private void ToggleTimelineSectionNavigation(int newPageIndex)
+    private void ToggleTimelineSectionNavigation(int newSectionIndex, int totalSections)
     {
         if (nextBtn)
         {
@@ -317,13 +319,11 @@ public class ViRMA_Timeline : MonoBehaviour
             prevBtn = null;
         }
 
-        if (newPageIndex < totalTimeLineSections - 1)
+        if (newSectionIndex < totalSections - 1)
         {
-            Debug.Log("TRUE | newPageIndex: " + newPageIndex + " < totalTimeLineSections: " + (totalTimeLineSections - 1));
-
             nextBtn = Instantiate(timelineNavPrefab);
             nextBtn.AddComponent<ViRMA_TimelineChild>().isNextBtn = true;
-            nextBtn.GetComponentInChildren<TextMesh>().text = "Next\n(" + (newPageIndex + 2) + "/" + totalTimeLineSections + ")";
+            nextBtn.GetComponentInChildren<TextMesh>().text = "Next\n(" + (newSectionIndex + 2) + "/" + totalSections + ")";
             nextBtn.GetComponent<Renderer>().material.SetColor("_Color", ViRMA_Colors.axisDarkBlue);
             nextBtn.name = "NextBtn";
             nextBtn.transform.parent = timelineChildrenWrapper.transform;
@@ -332,16 +332,12 @@ public class ViRMA_Timeline : MonoBehaviour
             Vector3 nextBtnPos = new Vector3(lastRealChild.transform.localPosition.x + lastRealChild.transform.localScale.x, lastRealChild.transform.localPosition.y, lastRealChild.transform.localPosition.z);
             nextBtn.transform.localPosition = nextBtnPos;
         }
-        else
-        {
-            Debug.Log("FALSE | newPageIndex: " + newPageIndex + " < totalTimeLineSections: " + (totalTimeLineSections - 1));
-        }
 
-        if (newPageIndex > 0)
+        if (newSectionIndex > 0)
         {
             prevBtn = Instantiate(timelineNavPrefab);
             prevBtn.AddComponent<ViRMA_TimelineChild>().isPrevBtn = true;
-            prevBtn.GetComponentInChildren<TextMesh>().text = "Previous\n(" + newPageIndex + "/" + totalTimeLineSections + ")";
+            prevBtn.GetComponentInChildren<TextMesh>().text = "Previous\n(" + newSectionIndex + "/" + totalSections + ")";
             prevBtn.GetComponent<Renderer>().material.SetColor("_Color", ViRMA_Colors.axisDarkBlue);
             prevBtn.name = "PrevBtn";
             prevBtn.transform.parent = timelineChildrenWrapper.transform;
@@ -356,7 +352,7 @@ public class ViRMA_Timeline : MonoBehaviour
             prevBtn.transform.localPosition = Vector3.zero;
         }
     }
-    private void LoadTimelineSection(int pageIndex)
+    private void LoadTimelineSection(int sectionIndex, int totalSections)
     {
         // hide main menu and viz
         globals.mainMenu.ToggleMainMenu(false);
@@ -381,7 +377,7 @@ public class ViRMA_Timeline : MonoBehaviour
         }
 
         // calculate correct start and end indexes to render correct section results     
-        int startIndex = pageIndex * resultsRenderSize;
+        int startIndex = sectionIndex * resultsRenderSize;
         int resultsToShow = resultsRenderSize;     
         if ((startIndex + resultsToShow) > loadedTimelineResults.Count)
         {
@@ -430,13 +426,13 @@ public class ViRMA_Timeline : MonoBehaviour
         // get associated metadata for each child in section (for non-concurrent fetch)
         //StartCoroutine(GetTimelineSectionMetadata()); 
 
-        ToggleTimelineSectionNavigation(pageIndex);
+        ToggleTimelineSectionNavigation(sectionIndex, totalSections);
 
         timelineChildrenWrapper.transform.localScale = Vector3.one * timelineScale;
 
-        PositionTimeline(pageIndex);
+        PositionTimeline(sectionIndex);
 
-        currentTimelineSection = pageIndex;
+        currentTimelineSection = sectionIndex;
 
         timelineLoaded = true;
     }
@@ -498,24 +494,18 @@ public class ViRMA_Timeline : MonoBehaviour
                         if (timelineResults.Count % resultsRenderSize == 0)
                         {
                             totalTimeLineSections = (timelineResults.Count / resultsRenderSize);
-
-                            Debug.Log("timelineResults: " + timelineResults.Count + " / resultsRenderSize: " + resultsRenderSize + " = " + totalTimeLineSections);
                         }
                         else
                         {
                             totalTimeLineSections = (timelineResults.Count / resultsRenderSize) + 1;
-
-                            Debug.Log("timelineResults: " + timelineResults.Count + " / resultsRenderSize: " + resultsRenderSize + " + 1 = " + totalTimeLineSections);
                         }
                     }
                     else
                     {
                         totalTimeLineSections = 1;
-
-                        Debug.Log("totalTimeLineSections = 1");
                     }
 
-                    LoadTimelineSection(0);
+                    LoadTimelineSection(0, totalTimeLineSections);
                 }          
 
             }));
@@ -539,22 +529,16 @@ public class ViRMA_Timeline : MonoBehaviour
                 {
                     if (contextTimelineResults.Count % resultsRenderSize == 0)
                     {
-                        totalTimeLineSections = (contextTimelineResults.Count / resultsRenderSize);
-
-                        Debug.Log("contextTimelineResults: " + contextTimelineResults.Count + " / resultsRenderSize: " + resultsRenderSize + " = " + totalTimeLineSections);
+                        totalContextTimelineSections = (contextTimelineResults.Count / resultsRenderSize);
                     }
                     else
                     {
-                        totalTimeLineSections = (contextTimelineResults.Count / resultsRenderSize) + 1;
-
-                        Debug.Log("contextTimelineResults: " + contextTimelineResults.Count + " / resultsRenderSize: " + resultsRenderSize + " + 1 = " + totalTimeLineSections);
+                        totalContextTimelineSections = (contextTimelineResults.Count / resultsRenderSize) + 1;
                     }
                 }
                 else
                 {
-                    totalTimeLineSections = 1;
-
-                    Debug.Log("totalTimeLineSections = 1");
+                    totalContextTimelineSections = 1;
                 }
 
                 int targetSection = 0;
@@ -572,7 +556,7 @@ public class ViRMA_Timeline : MonoBehaviour
                 }
 
                 isContextTimeline = true;
-                LoadTimelineSection(targetSection);
+                LoadTimelineSection(targetSection, totalContextTimelineSections);
             }        
         }));
     }
@@ -611,17 +595,28 @@ public class ViRMA_Timeline : MonoBehaviour
     {
         if (hoveredChild != null)
         {
+            int totalSections = 0;
+            if (isContextTimeline)
+            {
+                totalSections = totalContextTimelineSections;
+            }
+            else
+            {
+                totalSections = totalTimeLineSections;
+            }
+
+
             if (!hoveredChild.GetComponent<ViRMA_TimelineChild>().isNextBtn && !hoveredChild.GetComponent<ViRMA_TimelineChild>().isPrevBtn)
             {
                 //hoveredChild.GetComponent<ViRMA_TimelineChild>().LoadTImelineContextMenu();
             }
             else if (hoveredChild.GetComponent<ViRMA_TimelineChild>().isNextBtn)
             {
-                LoadTimelineSection(currentTimelineSection + 1);
+                LoadTimelineSection(currentTimelineSection + 1, totalSections);
             }
             else if (hoveredChild.GetComponent<ViRMA_TimelineChild>().isPrevBtn)
             {
-                LoadTimelineSection(currentTimelineSection - 1);
+                LoadTimelineSection(currentTimelineSection - 1, totalSections);
             }       
         }
     }
@@ -653,8 +648,7 @@ public class ViRMA_Timeline : MonoBehaviour
             if (isContextTimeline)
             {
                 isContextTimeline = false;
-                LoadTimelineSection(savedTimelineSection); // BUG: totalTimeLineSections needs to be recalculated for this
-
+                LoadTimelineSection(savedTimelineSection, totalTimeLineSections); 
                 savedTimelineSection = 0;
                 savedTimelineChildId = 0;
             }
