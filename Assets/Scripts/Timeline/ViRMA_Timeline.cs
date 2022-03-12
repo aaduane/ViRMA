@@ -442,6 +442,13 @@ public class ViRMA_Timeline : MonoBehaviour
 
         if (submittedCell.GetComponent<ViRMA_Cell>())
         {
+
+            // 1. switch cellFiltersForTimeline to full Query
+            // 2. keep direct filters by doing direct clone
+            // 3. use SetAxis to set target cell's coordinates as new Axis 
+            // 4. update GetTimeline (rename?) to accept Query, instead of Query.Filter
+
+
             // deep clone query filters for timeline API call
             List<Query.Filter> cellFiltersForTimeline = ObjectExtensions.Copy(globals.queryController.activeFilters);
 
