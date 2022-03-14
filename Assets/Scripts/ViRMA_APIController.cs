@@ -228,8 +228,6 @@ public class Query
     }
     public void RemoveFilter(int id, string type, int parentId = -1)
     {
-        Debug.Log("Fired!");
-
         string targetFilterId = "null_0";
         if (parentId != -1)
         {
@@ -779,16 +777,77 @@ public class ViRMA_APIController : MonoBehaviour
         onSuccess(parentTag);
     }
      
-    // timeline API
-    public static IEnumerator GetTimeline(List<Query.Filter> cellFiltersForTimeline, Action<List<KeyValuePair<int, string>>> onSuccess)
+    // cell contents and timeline API
+
+    public static IEnumerator GetCellContents(Query cellQueryData, Action<List<KeyValuePair<int, string>>> onSuccess)
     {
-        // cell?filters=[{'type':'node','ids':['699']},{'type':'tag','ids':['17']},{'type':'tag','ids':['147','132']}]&all=[];
-
-
         // OLD: cell/?filters=[{"type":"node","ids":[1001]},{"type":"tag","ids":[55]},{"type":"tag","ids":[23]},{"type":"tag","ids":[1872]},{"type":"tag","ids":[1874]}]&all=[]
 
         // NEW: cell/?xAxis={"type":"node","id":1001}&yAxis={"type":"tag","id":55}&filters=[{"type":"tag","ids":[23]},{"type":"tag","ids":[1872]},{"type":"tag","ids":[1874]}]&all=[]
 
+        List<KeyValuePair<int, string>> results = new List<KeyValuePair<int, string>>();
+
+        string url = "cell?";
+
+
+        if (cellQueryData.X != null)
+        {
+            url += "&xAxis={'type':'" + cellQueryData.X.Type + "','id':" + cellQueryData.X.Id + "}";
+        }
+
+        if (cellQueryData.Y != null)
+        {
+            url += "&yAxis={'type':'" + cellQueryData.Y.Type + "','id':" + cellQueryData.Y.Id + "}";
+        }
+
+        if (cellQueryData.Z != null)
+        {
+            url += "&zAxis={'type':'" + cellQueryData.Z.Type + "','id':" + cellQueryData.Z.Id + "}";
+        }
+
+        if (cellQueryData.Filters.Count > 0)
+        {
+            url += "&filters=[";
+
+            foreach (Query.Filter filter in cellQueryData.Filters)
+            {
+                if (filter.Type.ToLower() == "tagset")
+                {
+                    filter.Type = "tag";
+                }
+                string idString = string.Join("','", filter.Ids);
+                url += "{'type': '" + filter.Type.ToLower() + "', 'ids': ['" + idString + "']},";
+            }
+
+            url = url.Substring(0, url.Length - 1) + "]";
+            
+        }
+
+        url += "&all=[]";
+        url = url.Replace("\'", "\"");
+
+        Debug.Log("GetCellContents: " + url); // debugging
+
+        yield return GetRequest(url, (response) =>
+        {
+            jsonData = response;
+        });
+
+        foreach (var obj in jsonData)
+        {
+            int imageId = obj.Value["id"];
+            string imagePath = obj.Value["fileURI"];
+            string imageNameDDS = imagePath.Substring(0, imagePath.Length - 4) + ".dds";
+            KeyValuePair<int, string> imageIdPath = new KeyValuePair<int, string>(imageId, imageNameDDS);
+            results.Add(imageIdPath);
+        }
+
+        onSuccess(results);
+    }
+
+    public static IEnumerator GetTimeline(List<Query.Filter> cellFiltersForTimeline, Action<List<KeyValuePair<int, string>>> onSuccess)
+    {
+        // cell?filters=[{'type':'node','ids':['699']},{'type':'tag','ids':['17']},{'type':'tag','ids':['147','132']}]&all=[];
 
         List<KeyValuePair<int, string>> results = new List<KeyValuePair<int, string>>();
 
@@ -797,12 +856,6 @@ public class ViRMA_APIController : MonoBehaviour
             string url = "cell?filters=[";
             foreach (Query.Filter filter in cellFiltersForTimeline)
             {
-                Debug.Log(filter.Type);
-                Debug.Log(filter.Ids[0]);
-                Debug.Log(filter.FilterId);
-                Debug.Log("--------------");
-
-
                 if (filter.Type.ToLower() == "tagset")
                 {
                     filter.Type = "tag";

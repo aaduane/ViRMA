@@ -893,7 +893,8 @@ public class ViRMA_VizController : MonoBehaviour
     {
         if (focusedCell != null)
         {
-            globals.timeline.LoadTimelineData(focusedCell);
+            //globals.timeline.LoadTimelineData(focusedCell);
+            globals.timeline.LoadCellContentData(focusedCell);
         }      
     }
 
