@@ -436,8 +436,7 @@ public class ViRMA_Timeline : MonoBehaviour
 
         timelineLoaded = true;
     }
-
-    public void LoadCellContentData(GameObject submittedCell)
+    public void LoadCellContentTimelineData(GameObject submittedCell)
     {
         isContextTimeline = false;
 
@@ -510,82 +509,6 @@ public class ViRMA_Timeline : MonoBehaviour
             }));
         }
     }
-
-    public void LoadTimelineData(GameObject submittedCell)
-    {
-        isContextTimeline = false;
-
-        if (submittedCell.GetComponent<ViRMA_Cell>())
-        {
-            // deep clone query filters for timeline API call
-            List<Query.Filter> cellFiltersForTimeline = ObjectExtensions.Copy(globals.queryController.activeFilters);
-
-            // get cell data and currently active viz axes labels
-            timelineCellData = submittedCell.GetComponent<ViRMA_Cell>().thisCellData;
-            activeVizLabels = globals.vizController.activeAxesLabels;
-        
-            // if X axis exits, find location of submitted call on it and grab data
-            if (activeVizLabels.X != null)
-            {
-                int cellXPosition = (int) timelineCellData.Coordinates.x - 1;
-                int cellXAxisId = activeVizLabels.X.Labels[cellXPosition].Id;
-                string cellXAxisType = activeVizLabels.X.Type;
-
-                Query.Filter projFilterX = new Query.Filter(cellXAxisType, new List<int>() { cellXAxisId });
-                cellFiltersForTimeline.Add(projFilterX);
-            }
-
-            // if Y axis exits, find location of submitted call on it and grab data
-            if (activeVizLabels.Y != null)
-            {
-                int cellYPosition = (int)timelineCellData.Coordinates.y - 1;
-                int cellYAxisId = activeVizLabels.Y.Labels[cellYPosition].Id;
-                string cellYAxisType = activeVizLabels.Y.Type;
-
-                Query.Filter projFilterY = new Query.Filter(cellYAxisType, new List<int>() { cellYAxisId });
-                cellFiltersForTimeline.Add(projFilterY);
-            }
-
-            // if Z axis exits, find location of submitted call on it and grab data
-            if (activeVizLabels.Z != null)
-            {
-                int cellZPosition = (int)timelineCellData.Coordinates.z - 1;
-                int cellZAxisId = activeVizLabels.Z.Labels[cellZPosition].Id;
-                string cellZAxisType = activeVizLabels.Z.Type;
-
-                Query.Filter projFilterZ = new Query.Filter(cellZAxisType, new List<int>() { cellZAxisId });
-                cellFiltersForTimeline.Add(projFilterZ);
-            }
-
-            // get timeline image data from server and load it
-            StartCoroutine(ViRMA_APIController.GetTimeline(cellFiltersForTimeline, (results) => {
-
-                cellContentResults = results;
-
-                if (cellContentResults.Count > 0)
-                {
-                    if (cellContentResults.Count >= resultsRenderSize)
-                    {
-                        if (cellContentResults.Count % resultsRenderSize == 0)
-                        {
-                            totalTimeLineSections = (cellContentResults.Count / resultsRenderSize);
-                        }
-                        else
-                        {
-                            totalTimeLineSections = (cellContentResults.Count / resultsRenderSize) + 1;
-                        }
-                    }
-                    else
-                    {
-                        totalTimeLineSections = 1;
-                    }
-
-                    LoadTimelineSection(0, totalTimeLineSections);
-                }          
-
-            }));
-        }
-    }    
     private void LoadContextTimelineData(ViRMA_TimelineChild targetTimelineChild)
     {
         if (isContextTimeline == false)
@@ -735,4 +658,81 @@ public class ViRMA_Timeline : MonoBehaviour
         }
     }
 
+
+    // deprecated
+    public void LoadTimelineData(GameObject submittedCell)
+    {
+        isContextTimeline = false;
+
+        if (submittedCell.GetComponent<ViRMA_Cell>())
+        {
+            // deep clone query filters for timeline API call
+            List<Query.Filter> cellFiltersForTimeline = ObjectExtensions.Copy(globals.queryController.activeFilters);
+
+            // get cell data and currently active viz axes labels
+            timelineCellData = submittedCell.GetComponent<ViRMA_Cell>().thisCellData;
+            activeVizLabels = globals.vizController.activeAxesLabels;
+
+            // if X axis exits, find location of submitted call on it and grab data
+            if (activeVizLabels.X != null)
+            {
+                int cellXPosition = (int)timelineCellData.Coordinates.x - 1;
+                int cellXAxisId = activeVizLabels.X.Labels[cellXPosition].Id;
+                string cellXAxisType = activeVizLabels.X.Type;
+
+                Query.Filter projFilterX = new Query.Filter(cellXAxisType, new List<int>() { cellXAxisId });
+                cellFiltersForTimeline.Add(projFilterX);
+            }
+
+            // if Y axis exits, find location of submitted call on it and grab data
+            if (activeVizLabels.Y != null)
+            {
+                int cellYPosition = (int)timelineCellData.Coordinates.y - 1;
+                int cellYAxisId = activeVizLabels.Y.Labels[cellYPosition].Id;
+                string cellYAxisType = activeVizLabels.Y.Type;
+
+                Query.Filter projFilterY = new Query.Filter(cellYAxisType, new List<int>() { cellYAxisId });
+                cellFiltersForTimeline.Add(projFilterY);
+            }
+
+            // if Z axis exits, find location of submitted call on it and grab data
+            if (activeVizLabels.Z != null)
+            {
+                int cellZPosition = (int)timelineCellData.Coordinates.z - 1;
+                int cellZAxisId = activeVizLabels.Z.Labels[cellZPosition].Id;
+                string cellZAxisType = activeVizLabels.Z.Type;
+
+                Query.Filter projFilterZ = new Query.Filter(cellZAxisType, new List<int>() { cellZAxisId });
+                cellFiltersForTimeline.Add(projFilterZ);
+            }
+
+            // get timeline image data from server and load it
+            StartCoroutine(ViRMA_APIController.GetTimeline(cellFiltersForTimeline, (results) => {
+
+                cellContentResults = results;
+
+                if (cellContentResults.Count > 0)
+                {
+                    if (cellContentResults.Count >= resultsRenderSize)
+                    {
+                        if (cellContentResults.Count % resultsRenderSize == 0)
+                        {
+                            totalTimeLineSections = (cellContentResults.Count / resultsRenderSize);
+                        }
+                        else
+                        {
+                            totalTimeLineSections = (cellContentResults.Count / resultsRenderSize) + 1;
+                        }
+                    }
+                    else
+                    {
+                        totalTimeLineSections = 1;
+                    }
+
+                    LoadTimelineSection(0, totalTimeLineSections);
+                }
+
+            }));
+        }
+    }
 }

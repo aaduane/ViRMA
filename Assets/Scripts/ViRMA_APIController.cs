@@ -727,23 +727,27 @@ public class ViRMA_APIController : MonoBehaviour
         });
 
         List<Tag> children = new List<Tag>();
-        foreach (var obj in jsonData)
+
+        if (jsonData != null)
         {
-            Tag newTag = new Tag();
-
-            // tag id
-            newTag.Id = obj.Value["id"];
-
-            // tag name
-            string tagName = obj.Value["name"];
-            int bracketIndex = tagName.IndexOf("(");
-            if (bracketIndex > -1)
+            foreach (var obj in jsonData)
             {
-                tagName = tagName.Substring(0, bracketIndex);
+                Tag newTag = new Tag();
+
+                // tag id
+                newTag.Id = obj.Value["id"];
+
+                // tag name
+                string tagName = obj.Value["name"];
+                int bracketIndex = tagName.IndexOf("(");
+                if (bracketIndex > -1)
+                {
+                    tagName = tagName.Substring(0, bracketIndex);
+                }
+                newTag.Label = tagName;
+                children.Add(newTag);
             }
-            newTag.Label = tagName;
-            children.Add(newTag);
-        }
+        }   
 
         List<Tag> orderedList = children.OrderBy(s => s.Label).ToList();
         onSuccess(orderedList);
@@ -778,7 +782,6 @@ public class ViRMA_APIController : MonoBehaviour
     }
      
     // cell contents and timeline API
-
     public static IEnumerator GetCellContents(Query cellQueryData, Action<List<KeyValuePair<int, string>>> onSuccess)
     {
         // OLD: cell/?filters=[{"type":"node","ids":[1001]},{"type":"tag","ids":[55]},{"type":"tag","ids":[23]},{"type":"tag","ids":[1872]},{"type":"tag","ids":[1874]}]&all=[]
@@ -843,48 +846,7 @@ public class ViRMA_APIController : MonoBehaviour
         }
 
         onSuccess(results);
-    }
-
-    public static IEnumerator GetTimeline(List<Query.Filter> cellFiltersForTimeline, Action<List<KeyValuePair<int, string>>> onSuccess)
-    {
-        // cell?filters=[{'type':'node','ids':['699']},{'type':'tag','ids':['17']},{'type':'tag','ids':['147','132']}]&all=[];
-
-        List<KeyValuePair<int, string>> results = new List<KeyValuePair<int, string>>();
-
-        if (cellFiltersForTimeline.Count > 0)
-        {
-            string url = "cell?filters=[";
-            foreach (Query.Filter filter in cellFiltersForTimeline)
-            {
-                if (filter.Type.ToLower() == "tagset")
-                {
-                    filter.Type = "tag";
-                }
-                string idString = string.Join("','", filter.Ids);
-                url += "{'type': '" + filter.Type.ToLower() + "', 'ids': ['" + idString + "']},";
-            }
-            url = url.Substring(0, url.Length - 1) + "]&all=[]";
-            url = url.Replace("\'", "\"");
-
-            Debug.Log("GetTimeline: " + url); // debugging
-
-            yield return GetRequest(url, (response) =>
-            {
-                jsonData = response;
-            });
-
-            foreach (var obj in jsonData)
-            {
-                int imageId = obj.Value["id"];
-                string imagePath = obj.Value["fileURI"];
-                string imageNameDDS = imagePath.Substring(0, imagePath.Length - 4) + ".dds";
-                KeyValuePair<int, string> imageIdPath = new KeyValuePair<int, string>(imageId, imageNameDDS);
-                results.Add(imageIdPath);
-            }
-        } 
-
-        onSuccess(results);
-    }
+    }  
     public static IEnumerator GetContextTimeline(DateTime timestamp, int minutes, Action<List<KeyValuePair<int, string>>> onSuccess)
     {
         // cell?filters=[{'type':'daterange','ids':['2'],'ranges':[['23-08-2016','23-08-2016']]},{'type':'timerange','ids':['3'],'ranges':[['10:00','11:00']]}]&all=[]
@@ -1071,5 +1033,45 @@ public class ViRMA_APIController : MonoBehaviour
             hierarchies.Add(newTag);
         }
         onSuccess(hierarchies);
+    }
+    public static IEnumerator GetTimeline(List<Query.Filter> cellFiltersForTimeline, Action<List<KeyValuePair<int, string>>> onSuccess)
+    {
+        // cell?filters=[{'type':'node','ids':['699']},{'type':'tag','ids':['17']},{'type':'tag','ids':['147','132']}]&all=[];
+
+        List<KeyValuePair<int, string>> results = new List<KeyValuePair<int, string>>();
+
+        if (cellFiltersForTimeline.Count > 0)
+        {
+            string url = "cell?filters=[";
+            foreach (Query.Filter filter in cellFiltersForTimeline)
+            {
+                if (filter.Type.ToLower() == "tagset")
+                {
+                    filter.Type = "tag";
+                }
+                string idString = string.Join("','", filter.Ids);
+                url += "{'type': '" + filter.Type.ToLower() + "', 'ids': ['" + idString + "']},";
+            }
+            url = url.Substring(0, url.Length - 1) + "]&all=[]";
+            url = url.Replace("\'", "\"");
+
+            Debug.Log("GetTimeline: " + url); // debugging
+
+            yield return GetRequest(url, (response) =>
+            {
+                jsonData = response;
+            });
+
+            foreach (var obj in jsonData)
+            {
+                int imageId = obj.Value["id"];
+                string imagePath = obj.Value["fileURI"];
+                string imageNameDDS = imagePath.Substring(0, imagePath.Length - 4) + ".dds";
+                KeyValuePair<int, string> imageIdPath = new KeyValuePair<int, string>(imageId, imageNameDDS);
+                results.Add(imageIdPath);
+            }
+        }
+
+        onSuccess(results);
     }
 } 
