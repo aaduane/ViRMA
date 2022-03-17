@@ -857,7 +857,7 @@ public class ViRMA_APIController : MonoBehaviour
         
         string url = "cell?filters=[{'type':'daterange','ids':['2'],'ranges':[['" + past.ToString("dd-MM-yyyy") + "','" + future.ToString("dd-MM-yyyy") + "']]},{'type':'timerange','ids':['3'],'ranges':[['" + past.ToString("HH:mm") + "','" + future.ToString("HH:mm") + "']]}]&all=[]";
 
-        //Debug.Log(url); // testing
+        Debug.Log("GetTimeline: " + url); // debugging
 
         List<KeyValuePair<int, string>> results = new List<KeyValuePair<int, string>>();
         yield return GetRequest(url, (response) =>
