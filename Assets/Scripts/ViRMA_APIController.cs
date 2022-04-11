@@ -25,6 +25,7 @@ public class Cell
     public Material TextureArrayMaterial { get; set; }
     public int TextureArrayId { get; set; }
     public int TextureArraySize { get; set; }
+    public int imageCount { get; set; }
 }
 public class Query
 {
@@ -500,7 +501,8 @@ public class ViRMA_APIController : MonoBehaviour
         {
             Cell newCell = new Cell();
             newCell.Coordinates = new Vector3(obj.Value["x"], obj.Value["y"], obj.Value["z"]);
-            if (obj.Value["cubeObjects"].Count > 0)
+
+            if (obj.Value["count"] > 0)
             {
                 // OLD: 
                 // newCell.ImageName = obj.Value["CubeObjects"][0]["FileName"];
@@ -508,7 +510,8 @@ public class ViRMA_APIController : MonoBehaviour
 
                 newCell.ImageName = obj.Value["cubeObjects"][0]["fileURI"];
                 string imageNameDDS = newCell.ImageName.Substring(0, newCell.ImageName.Length - 4) + ".dds";
-                newCell.ImageName = imageNameDDS;             
+                newCell.ImageName = imageNameDDS;
+                newCell.imageCount = obj.Value["count"];
             }
             else
             {
@@ -685,7 +688,7 @@ public class ViRMA_APIController : MonoBehaviour
 
         // Debug.Log(nodes.Count + " dimension results found!"); // testing
 
-        List<Tag> orderedNodes = nodes.OrderBy(s => s.Id).ToList();
+        List<Tag> orderedNodes = nodes.OrderBy(s => s.Label).ToList();
         onSuccess(orderedNodes);
     }
     public static IEnumerator GetHierarchyTag(int targetId, Action<Tag> onSuccess)

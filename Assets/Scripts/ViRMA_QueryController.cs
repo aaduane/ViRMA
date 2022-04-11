@@ -74,9 +74,9 @@ public class ViRMA_QueryController : MonoBehaviour
         //buildingQuery.AddFilter(216, "tag", 13); // shanghai timezone
         //buildingQuery.AddFilter(6649, "tag", 0); // June (only 4 images)
 
-        //buildingQuery.SetAxis("X", 3056, "node"); // computer
-        //buildingQuery.SetAxis("Y", 5505, "node"); // desk
-        //buildingQuery.SetAxis("Y", 40, "node"); // entity
+        buildingQuery.SetAxis("X", 3056, "node"); // computer
+        buildingQuery.SetAxis("Y", 5505, "node"); // desk
+        buildingQuery.SetAxis("Y", 40, "node"); // entity
 
         //buildingQuery.SetAxis("X", 1606, "node"); // food fish
         //buildingQuery.SetAxis("Y", 6967, "node"); // kitchen appliance

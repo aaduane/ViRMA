@@ -237,6 +237,26 @@ public class ViRMA_VizController : MonoBehaviour
     }
     private void GenerateCells(List<Cell> cellData)
     {
+        // set min and max cell scales to reflect cell item count
+        float minScale = 0.5f;
+        float maxScale = 1.1f;
+
+        // find smallest and largest cell item counts in current browsing state
+        int largestCellSize = 0;
+        int smallestCellSize = int.MaxValue;
+        foreach (var newCellData in cellData)
+        {
+            if (newCellData.imageCount > largestCellSize)
+            {
+                largestCellSize = newCellData.imageCount;
+            }
+            if (newCellData.imageCount < smallestCellSize)
+            {
+                smallestCellSize = newCellData.imageCount;
+            }
+        }
+
+        // render each cell
         if (cellData.Count > 0)
         {
             // grab cell prefab from resoucres
@@ -252,6 +272,11 @@ public class ViRMA_VizController : MonoBehaviour
                 // adjust aspect ratio
                 float aspectRatio = 1.5f;
                 cell.transform.localScale = new Vector3(aspectRatio, 1, aspectRatio);
+
+                // scale cell item counts between 0 and 1 then translate that to minScale and maxScale
+                float normalizedScale = (float) (newCellData.imageCount - smallestCellSize) / (largestCellSize - smallestCellSize); 
+                float scaler = (maxScale - minScale) * normalizedScale + minScale; 
+                cell.transform.localScale = cell.transform.localScale * scaler; 
 
                 // assign coordinates to cell from server using a pre-defined space multiplier
                 Vector3 nodePosition = new Vector3(newCellData.Coordinates.x, newCellData.Coordinates.y, newCellData.Coordinates.z) * (defaultCellSpacingRatio + 1);
