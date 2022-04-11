@@ -38,7 +38,7 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
     public SteamVR_Action_Boolean vizNav_Position;
     public SteamVR_Action_Boolean vizNav_Rotation;
     public SteamVR_Action_Boolean vizNav_Select;
-    public SteamVR_Action_Single vizNav_HardGrip;
+    //public SteamVR_Action_Single vizNav_HardGrip;
 
     // dimExplorer actions
     public SteamVR_ActionSet dimExplorerActions;

@@ -354,10 +354,6 @@ public class ViRMA_Timeline : MonoBehaviour
     }
     private void LoadTimelineSection(int sectionIndex, int totalSections)
     {
-        // hide main menu and viz
-        globals.mainMenu.ToggleMainMenu(false);
-        globals.vizController.HideViz(true);
-
         // clear old timeline if one exists
         ClearTimeline();
 
@@ -444,7 +440,6 @@ public class ViRMA_Timeline : MonoBehaviour
         {
             Query cellContentQuery = new Query();
             cellContentQuery.Filters = ObjectExtensions.Copy(globals.queryController.activeFilters);
-
 
             // get cell data and currently active viz axes labels
             timelineCellData = submittedCell.GetComponent<ViRMA_Cell>().thisCellData;

@@ -918,6 +918,10 @@ public class ViRMA_VizController : MonoBehaviour
     {
         if (focusedCell != null)
         {
+            // hide main menu and viz
+            globals.mainMenu.ToggleMainMenu(false);
+            globals.vizController.HideViz(true);
+
             //globals.timeline.LoadTimelineData(focusedCell);
             globals.timeline.LoadCellContentTimelineData(focusedCell);
         }      
