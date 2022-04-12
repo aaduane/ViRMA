@@ -73,7 +73,6 @@ public class ViRMA_UIScrollable : MonoBehaviour
             }
         }
     }
-
     private void EnableJoystickTouchScrolling()
     {
         if (allowScrolling)

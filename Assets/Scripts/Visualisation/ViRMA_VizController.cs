@@ -274,9 +274,12 @@ public class ViRMA_VizController : MonoBehaviour
                 cell.transform.localScale = new Vector3(aspectRatio, 1, aspectRatio);
 
                 // scale cell item counts between 0 and 1 then translate that to minScale and maxScale
-                float normalizedScale = (float) (newCellData.imageCount - smallestCellSize) / (largestCellSize - smallestCellSize); 
-                float scaler = (maxScale - minScale) * normalizedScale + minScale; 
-                cell.transform.localScale = cell.transform.localScale * scaler; 
+                if (smallestCellSize != largestCellSize)
+                {
+                    float normalizedScale = (float)(newCellData.imageCount - smallestCellSize) / (largestCellSize - smallestCellSize);
+                    float scaler = (maxScale - minScale) * normalizedScale + minScale;
+                    cell.transform.localScale = cell.transform.localScale * scaler;
+                }           
 
                 // assign coordinates to cell from server using a pre-defined space multiplier
                 Vector3 nodePosition = new Vector3(newCellData.Coordinates.x, newCellData.Coordinates.y, newCellData.Coordinates.z) * (defaultCellSpacingRatio + 1);

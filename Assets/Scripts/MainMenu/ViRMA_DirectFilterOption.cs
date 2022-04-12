@@ -12,6 +12,7 @@ public class ViRMA_DirectFilterOption : MonoBehaviour
 
     public TextMeshProUGUI labelText;
     public Tag directFilterData;
+    public string filterType;
 
     private void Awake()
     {
@@ -82,17 +83,41 @@ public class ViRMA_DirectFilterOption : MonoBehaviour
 
             if (child.name == "X_btn")
             {
-                child.GenerateBtnDefaults(ViRMA_Colors.axisRed, Color.white);
+                if (filterType == "node")
+                {
+                    child.GenerateBtnDefaults(ViRMA_Colors.axisRed, Color.white);
+                }
+                else
+                {
+                    Destroy(child);
+                }        
             }
-            else if (child.name == "Y_btn")
+            
+            if (child.name == "Y_btn")
             {
-               child.GenerateBtnDefaults(ViRMA_Colors.axisGreen, Color.white);
+                if (filterType == "node")
+                {
+                    child.GenerateBtnDefaults(ViRMA_Colors.axisGreen, Color.white);
+                }
+                else
+                {
+                    Destroy(child);
+                }             
             }
-            else if (child.name == "Z_btn")
+            
+            if (child.name == "Z_btn")
             {
-                child.GenerateBtnDefaults(ViRMA_Colors.axisBlue, Color.white);
+                if (filterType == "node")
+                {
+                    child.GenerateBtnDefaults(ViRMA_Colors.axisBlue, Color.white);
+                }
+                else
+                {
+                    Destroy(child);
+                }      
             }
-            else if (child.name == "R_btn")
+            
+            if (child.name == "R_btn")
             {
                 child.GenerateBtnDefaults(ViRMA_Colors.darkGrey, Color.white);
             }
@@ -148,7 +173,15 @@ public class ViRMA_DirectFilterOption : MonoBehaviour
             }
 
             // remove target filter from the filter list
-            globals.queryController.buildingQuery.RemoveFilter(directFilterData.Id, "node");
+            if (filterType == "node")
+            {
+                globals.queryController.buildingQuery.RemoveFilter(directFilterData.Id, "node");
+            }
+
+            if (filterType == "tag")
+            {
+                ////////////////////////////////// add parent parameter to tagset Tag object so it is availble here and else where ? ? ? 
+            }
         }    
     }
 

@@ -18,7 +18,6 @@ public class ViRMA_QueryController : MonoBehaviour
     // x
     public int activeXAxisId;
     public string activeXAxisType;
-    public bool xAxisSet;
 
     // y
     public int activeYAxisId;
@@ -48,40 +47,22 @@ public class ViRMA_QueryController : MonoBehaviour
     }
 
     private void Start()
-    {
-        // EXPERIMENTAL: setting to True enables "or" instead of "and" in tag filtering
-        queryModeOrSetting = false;
-
-        //buildingQuery.SetAxis("X", 1770, "node"); // computer (old)
-        //buildingQuery.SetAxis("Y", 3733, "node"); // desk (old)
-        //buildingQuery.SetAxis("Z", 690, "node"); // domestic animal (old)
-
-        //buildingQuery.SetAxis("X", 690, "node"); // domestic animal
-        //buildingQuery.SetAxis("Y", 691, "node"); // dog
-
-        //buildingQuery.SetAxis("Z", 5, "tagset"); // day of the week (string)
-        //buildingQuery.SetAxis("Z", 13, "tagset"); // timezone
-
-        //buildingQuery.AddFilter(147, "tag", 100); // 6 (Saturday)
-        //buildingQuery.AddFilter(132, "tag", 100); // 7 (Sunday
-
-        //buildingQuery.AddFilter(690, "node"); // domestic animal
-        //buildingQuery.AddFilter(691, "node"); // person
-        //buildingQuery.AddFilter(1770, "node"); // computer
-        //buildingQuery.AddFilter(3733, "node"); // desk
-        //buildingQuery.AddFilter(692, "node"); // ?
-        //buildingQuery.AddFilter(693, "node"); // ?
-        //buildingQuery.AddFilter(216, "tag", 13); // shanghai timezone
-        //buildingQuery.AddFilter(6649, "tag", 0); // June (only 4 images)
+    { 
+        queryModeOrSetting = false; // EXPERIMENTAL ---> setting to True enables "or" instead of "and" in hierarchy concept tag filtering
 
         buildingQuery.SetAxis("X", 3056, "node"); // computer
         buildingQuery.SetAxis("Y", 5505, "node"); // desk
-        buildingQuery.SetAxis("Y", 40, "node"); // entity
 
+        //buildingQuery.SetAxis("X", 40, "node"); // entity
         //buildingQuery.SetAxis("X", 1606, "node"); // food fish
         //buildingQuery.SetAxis("Y", 6967, "node"); // kitchen appliance
 
-        //StartCoroutine(LateStart()); // testing
+        buildingQuery.AddFilter(56, "tag", 15); // work location
+        buildingQuery.AddFilter(130, "tag", 15); // home location
+
+        //buildingQuery.AddFilter(6649, "tag", 0); // June (only 4 images)
+
+        //StartCoroutine(LateStart()); // debugging
     }
 
     IEnumerator LateStart()

@@ -235,6 +235,8 @@ public class Query
             targetFilterId = type + "_" + parentId;
         }
 
+        Debug.Log(targetFilterId);
+
         for (int i = 0; i < Filters.Count; i++)
         {
             if (Filters[i].FilterId == targetFilterId)
