@@ -177,10 +177,9 @@ public class ViRMA_DirectFilterOption : MonoBehaviour
             {
                 globals.queryController.buildingQuery.RemoveFilter(directFilterData.Id, "node");
             }
-
-            if (filterType == "tag")
+            else if (filterType == "tag")
             {
-                ////////////////////////////////// add parent parameter to tagset Tag object so it is availble here and else where ? ? ? 
+                globals.queryController.buildingQuery.RemoveFilter(directFilterData.Id, "tag", directFilterData.Parent.Id);
             }
         }    
     }

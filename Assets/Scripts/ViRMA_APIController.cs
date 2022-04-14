@@ -235,8 +235,6 @@ public class Query
             targetFilterId = type + "_" + parentId;
         }
 
-        Debug.Log(targetFilterId);
-
         for (int i = 0; i < Filters.Count; i++)
         {
             if (Filters[i].FilterId == targetFilterId)
@@ -544,6 +542,13 @@ public class ViRMA_APIController : MonoBehaviour
                     Id = tag.Value["id"],
                     Label = tag.Value["name"]
                 };
+
+                newTag.Parent = new Tag
+                {
+                    Id = jsonData["id"],
+                    Label = jsonData["name"]
+                };
+
                 tagsetData.Add(newTag);
             }
         }

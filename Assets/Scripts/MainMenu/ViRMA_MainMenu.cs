@@ -41,10 +41,12 @@ public class ViRMA_MainMenu : MonoBehaviour
     private Transform zBtnWrapper;
 
     ///////////////////////////////////////////////// time picker
+    List<Tag> timeTagsetsData;
+
     public GameObject section_timePicker;
 
-    private List<ViRMA_UiElement> allTimeOptions;
-    private List<ViRMA_UiElement> toggledTimeUiElements;
+    public List<ViRMA_UiElement> allTimeOptions;
+    public List<ViRMA_UiElement> toggledTimeUiElements;
     
     public GameObject ui_weekdays;
     public GameObject ui_hours;
@@ -87,6 +89,8 @@ public class ViRMA_MainMenu : MonoBehaviour
         SetupBrowseFiltersOptions();
 
         SetupTimePicker();
+
+        StartCoroutine(SetupTimePickerNEW());
 
         SetupLocationPicker();
 
@@ -495,6 +499,43 @@ public class ViRMA_MainMenu : MonoBehaviour
     }
 
     // time picker
+
+    private IEnumerator SetupTimePickerNEW()
+    {
+        // current targset time picker tagsets
+        List<string> timeTagsets = new List<string> { "Day of week (number)", "Month (string)", "Year", "Hour", "Day within month" };
+
+        // get all time tagsets corresponding to list above 
+        timeTagsetsData = new List<Tag>();
+        yield return StartCoroutine(ViRMA_APIController.GetTagset("", (tagsetsData) => {
+            for (int i = tagsetsData.Count - 1; i > -1; i--)
+            {
+                if (!timeTagsets.Contains(tagsetsData[i].Label))
+                {
+                    tagsetsData.RemoveAt(i);
+                }
+            }
+            timeTagsetsData = tagsetsData;
+        }));
+
+        // populate tagsets with their children
+        foreach (Tag tagsetData in timeTagsetsData)
+        {
+            yield return StartCoroutine(ViRMA_APIController.GetTagset(tagsetData.Id.ToString(), (tagData) => {
+                tagsetData.Children = tagData;
+            }));
+        }
+
+        foreach (Tag timeTagset in timeTagsetsData)
+        {
+            Debug.Log("___________ " + timeTagset.Id + " | " + timeTagset.Label + " ___________");
+            foreach (Tag timeTag in timeTagset.Children)
+            {
+                Debug.Log(timeTag.Id + " | " + timeTag.Label);
+            }
+        }
+    }
+
     private void SetupTimePicker()
     {
         allTimeOptions = new List<ViRMA_UiElement>();
