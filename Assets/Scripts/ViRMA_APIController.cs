@@ -253,36 +253,6 @@ public class Query
                 }
             }
         }
-
-
-        /*
-        foreach (Filter filter in Filters)
-        {
-            if (filter.Id == id && filter.Type == type)
-            {
-                Filters.Remove(filter);
-                break;
-            }
-        }
-        */
-
-        /*
-        for (int i = 0; i < Filters.Count; i++)
-        {
-            if (Filters[i].Type == type)
-            {
-                if (Filters[i].Ids.Contains(id))
-                {
-                    Filters[i].Ids.Remove(id);
-                    if (Filters[i].Ids.Count == 0)
-                    {
-                        Filters.Remove(Filters[i]);
-                    }
-                    break;
-                }
-            }
-        }
-        */
     }
     public void ClearFilters()
     {

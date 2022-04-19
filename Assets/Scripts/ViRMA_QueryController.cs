@@ -27,7 +27,7 @@ public class ViRMA_QueryController : MonoBehaviour
     public int activeZAxisId;
     public string activeZAxisType;
 
-    // diect filters
+    // direct filters
     public List<Query.Filter> activeFilters = new List<Query.Filter>();
 
     private void Awake()
@@ -58,28 +58,28 @@ public class ViRMA_QueryController : MonoBehaviour
         //buildingQuery.SetAxis("Y", 6967, "node"); // kitchen appliance
 
         buildingQuery.AddFilter(56, "tag", 15); // work location
-        buildingQuery.AddFilter(130, "tag", 15); // home location
+        //buildingQuery.AddFilter(130, "tag", 15); // home location
 
+        buildingQuery.AddFilter(22, "tag", 6); // Monmday
+        buildingQuery.AddFilter(2001, "tag", 6); // Tuesday
         //buildingQuery.AddFilter(6649, "tag", 0); // June (only 4 images)
 
-        //StartCoroutine(LateStart()); // debugging
+        StartCoroutine(LateStart()); // debugging
     }
 
     IEnumerator LateStart()
     {
-        yield return new WaitForSeconds(2);
+        yield return new WaitForSeconds(5);
 
-        //buildingQuery.RemoveFilter(1770, "node");
+        buildingQuery.AddFilter(1869, "tag", 6); // add Wednesday
 
-        yield return new WaitForSeconds(2);
+        yield return new WaitForSeconds(5);
 
-        //buildingQuery.AddFilter(1770, "node");
-        //buildingQuery.AddFilter(3733, "node");
-        //buildingQuery.AddFilter(1771, "node");
+        buildingQuery.RemoveFilter(2001, "tag", 6); // remove Tuesday
 
-        yield return new WaitForSeconds(2);
 
-        //buildingQuery.RemoveFilter(147, "tag", 100);
+        //yield return new WaitForSeconds(2);
+
     }
 
     private void Update()

@@ -46,7 +46,7 @@ public class ViRMA_MainMenu : MonoBehaviour
     public GameObject section_timePicker;
 
     public List<ViRMA_UiElement> allTimeOptions;
-    public List<ViRMA_UiElement> toggledTimeUiElements;
+    public List<ViRMA_UiElement> toggledTimeUiElements; // deprecating ?
     
     public GameObject ui_weekdays;
     public GameObject ui_hours;
@@ -88,8 +88,7 @@ public class ViRMA_MainMenu : MonoBehaviour
     {
         SetupBrowseFiltersOptions();
 
-        SetupTimePicker();
-
+        //SetupTimePicker();
         StartCoroutine(SetupTimePickerNEW());
 
         SetupLocationPicker();
@@ -105,7 +104,8 @@ public class ViRMA_MainMenu : MonoBehaviour
 
         CheckActiveDirectFilterOptions();
 
-        TimePickerToggleController();
+        //TimePickerToggleController();
+        TimePickerToggleControllerNEW();
 
         ClearFiltersBtnsStateController();
     }
@@ -503,7 +503,7 @@ public class ViRMA_MainMenu : MonoBehaviour
     private IEnumerator SetupTimePickerNEW()
     {
         // current targset time picker tagsets
-        List<string> timeTagsets = new List<string> { "Day of week (number)", "Month (string)", "Year", "Hour", "Day within month" };
+        List<string> timeTagsets = new List<string> { "Day of week (string)", "Month (string)", "Year", "Hour", "Day within month" };
 
         // get all time tagsets corresponding to list above 
         timeTagsetsData = new List<Tag>();
@@ -528,14 +528,34 @@ public class ViRMA_MainMenu : MonoBehaviour
 
         foreach (Tag timeTagset in timeTagsetsData)
         {
+            if (timeTagset.Label == "Day of week (string)")
+            {
+                foreach (Transform weekdayObj in ui_weekdays.transform)
+                {
+                    string weekdayLabel = weekdayObj.GetComponentInChildren<Text>().text;
+                    foreach (Tag weekday in timeTagset.Children)
+                    {
+                        if (weekday.Label.Substring(0, 3) == weekdayLabel)
+                        {
+                            weekdayObj.GetComponent<ViRMA_UiElement>().buttonData = weekday.Id;
+                            allTimeOptions.Add(weekdayObj.GetComponent<ViRMA_UiElement>());
+                        }
+                    }
+                }
+            }
+
+            
+
+
+            /*
             Debug.Log("___________ " + timeTagset.Id + " | " + timeTagset.Label + " ___________");
             foreach (Tag timeTag in timeTagset.Children)
             {
                 Debug.Log(timeTag.Id + " | " + timeTag.Label);
             }
+            */
         }
     }
-
     private void SetupTimePicker()
     {
         allTimeOptions = new List<ViRMA_UiElement>();
@@ -645,6 +665,39 @@ public class ViRMA_MainMenu : MonoBehaviour
             }
         }
     }
+    private void TimePickerToggleControllerNEW()
+    {
+        // do every second frame for performance
+        frameSkipper++;
+        if (frameSkipper < 2)
+        {
+            return;
+        }
+        frameSkipper = 0;
+
+        foreach (ViRMA_UiElement timeOption in allTimeOptions)
+        {
+            bool toToggle = false;
+
+            foreach (Query.Filter activeFilter in globals.queryController.buildingQuery.Filters)
+            {
+                if (activeFilter.FilterId != "null_0")
+                {
+                    foreach (int activeTagId in activeFilter.Ids)
+                    {
+                        int buttonId = int.Parse(timeOption.buttonData.ToString());
+                        if (buttonId == activeTagId)
+                        {
+                            toToggle = true;
+                        }
+                    }
+                }
+            }
+
+            timeOption.toggle = toToggle;
+        }
+    }
+
     public void ToggleTimeOption(ViRMA_UiElement uiElement)
     {
         if (toggledTimeUiElements.Contains(uiElement))

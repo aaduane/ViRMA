@@ -39,7 +39,8 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 	public bool toggle;
 	public bool isToggled;
 
-	public object buttonData; // implement later?
+	// generic holder for any data we want to put on the button
+	public object buttonData; 
 
 	protected virtual void Awake()
 	{
