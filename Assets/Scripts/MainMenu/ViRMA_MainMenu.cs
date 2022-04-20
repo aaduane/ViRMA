@@ -41,12 +41,10 @@ public class ViRMA_MainMenu : MonoBehaviour
     private Transform zBtnWrapper;
 
     ///////////////////////////////////////////////// time picker
-    List<Tag> timeTagsetsData;
-
     public GameObject section_timePicker;
 
     public List<ViRMA_UiElement> allTimeOptions;
-    public List<ViRMA_UiElement> toggledTimeUiElements; // deprecating ?
+    //public List<ViRMA_UiElement> toggledTimeUiElements; // deprecating
     
     public GameObject ui_weekdays;
     public GameObject ui_hours;
@@ -88,8 +86,7 @@ public class ViRMA_MainMenu : MonoBehaviour
     {
         SetupBrowseFiltersOptions();
 
-        //SetupTimePicker();
-        StartCoroutine(SetupTimePickerNEW());
+        StartCoroutine(SetupTimePicker());
 
         SetupLocationPicker();
 
@@ -104,10 +101,7 @@ public class ViRMA_MainMenu : MonoBehaviour
 
         CheckActiveDirectFilterOptions();
 
-        //TimePickerToggleController();
-        TimePickerToggleControllerNEW();
-
-        ClearFiltersBtnsStateController();
+        TimePickerToggleController();
     }
 
     // browse filters
@@ -500,13 +494,13 @@ public class ViRMA_MainMenu : MonoBehaviour
 
     // time picker
 
-    private IEnumerator SetupTimePickerNEW()
+    private IEnumerator SetupTimePicker()
     {
         // current targset time picker tagsets
         List<string> timeTagsets = new List<string> { "Day of week (string)", "Month (string)", "Year", "Hour", "Day within month" };
 
         // get all time tagsets corresponding to list above 
-        timeTagsetsData = new List<Tag>();
+        List<Tag> timeTagsetsData = new List<Tag>();
         yield return StartCoroutine(ViRMA_APIController.GetTagset("", (tagsetsData) => {
             for (int i = tagsetsData.Count - 1; i > -1; i--)
             {
@@ -537,14 +531,22 @@ public class ViRMA_MainMenu : MonoBehaviour
                     {
                         if (weekday.Label.Substring(0, 3) == weekdayLabel)
                         {
-                            weekdayObj.GetComponent<ViRMA_UiElement>().buttonData = weekday.Id;
+                            ViRMA_UiElement uiElement = weekdayObj.GetComponent<ViRMA_UiElement>();
+                            uiElement.buttonData = weekday;
+                            weekdayObj.GetComponent<Button>().onClick.AddListener(() => ToggleTimeOption(uiElement));
                             allTimeOptions.Add(weekdayObj.GetComponent<ViRMA_UiElement>());
                         }
                     }
                 }
             }
 
-            
+            if (timeTagset.Label == "Hour")
+            {
+                foreach (Transform ui_hoursObj in ui_hours.transform)
+                {
+                    
+                }
+            }
 
 
             /*
@@ -556,24 +558,8 @@ public class ViRMA_MainMenu : MonoBehaviour
             */
         }
     }
-    private void SetupTimePicker()
-    {
-        allTimeOptions = new List<ViRMA_UiElement>();
-        toggledTimeUiElements = new List<ViRMA_UiElement>();
 
-        // fetch weekday tagset id's
-        string weekdayTagsetId = "5";
-        StartCoroutine(ViRMA_APIController.GetTagset(weekdayTagsetId, (tagsetData) => {
-            foreach (Tag weekdayData in tagsetData)
-            {
-                int index = int.Parse(weekdayData.Label) - 1;
-                ViRMA_UiElement uiElement = ui_weekdays.transform.GetChild(index).GetComponent<ViRMA_UiElement>();
-                uiElement.buttonData = new KeyValuePair<int, int>(int.Parse(weekdayTagsetId), weekdayData.Id);
-                uiElement.GetComponent<Button>().onClick.AddListener(() => ToggleTimeOption(uiElement));
-                allTimeOptions.Add(uiElement);
-            }
-        }));
-
+    /*
         // fetch hour tagset id's
         string hourTagsetId = "12";
         StartCoroutine(ViRMA_APIController.GetTagset(hourTagsetId, (tagsetData) => {
@@ -631,41 +617,8 @@ public class ViRMA_MainMenu : MonoBehaviour
                 allTimeOptions.Add(uiElement);
             }
         }));
-    }
+    */
     private void TimePickerToggleController()
-    {
-        // do every second frame for performance
-        frameSkipper++;
-        if (frameSkipper < 2)
-        {
-            return;
-        }
-        frameSkipper = 0;
-
-        // check list of toggled buttons and update states and query filters
-        foreach (ViRMA_UiElement uiElement in allTimeOptions)
-        {
-            if (toggledTimeUiElements.Contains(uiElement))
-            {
-                if (uiElement.isToggled == false)
-                {
-                    uiElement.toggle = true;
-                    KeyValuePair<int, int> tagData = (KeyValuePair<int, int>)uiElement.buttonData;
-                    globals.queryController.buildingQuery.AddFilter(tagData.Value, "tag", tagData.Key);
-                }
-            }
-            else
-            {
-                if (uiElement.isToggled == true)
-                {
-                    uiElement.toggle = false;
-                    KeyValuePair<int, int> tagData = (KeyValuePair<int, int>)uiElement.buttonData;
-                    globals.queryController.buildingQuery.RemoveFilter(tagData.Value, "tag", tagData.Key);
-                }
-            }
-        }
-    }
-    private void TimePickerToggleControllerNEW()
     {
         // do every second frame for performance
         frameSkipper++;
@@ -678,15 +631,14 @@ public class ViRMA_MainMenu : MonoBehaviour
         foreach (ViRMA_UiElement timeOption in allTimeOptions)
         {
             bool toToggle = false;
-
             foreach (Query.Filter activeFilter in globals.queryController.buildingQuery.Filters)
             {
                 if (activeFilter.FilterId != "null_0")
                 {
                     foreach (int activeTagId in activeFilter.Ids)
                     {
-                        int buttonId = int.Parse(timeOption.buttonData.ToString());
-                        if (buttonId == activeTagId)
+                        Tag timeTagData = (Tag) timeOption.buttonData;
+                        if (timeTagData.Id == activeTagId)
                         {
                             toToggle = true;
                         }
@@ -697,16 +649,19 @@ public class ViRMA_MainMenu : MonoBehaviour
             timeOption.toggle = toToggle;
         }
     }
-
     public void ToggleTimeOption(ViRMA_UiElement uiElement)
     {
-        if (toggledTimeUiElements.Contains(uiElement))
+        if (uiElement.buttonData != null)
         {
-            toggledTimeUiElements.Remove(uiElement);
-        }
-        else
-        {
-            toggledTimeUiElements.Add(uiElement);
+            Tag timeTagData = (Tag)uiElement.buttonData;
+            if (uiElement.isToggled)
+            {
+                globals.queryController.buildingQuery.RemoveFilter(timeTagData.Id, "tag", timeTagData.Parent.Id);
+            }
+            else
+            {
+                globals.queryController.buildingQuery.AddFilter(timeTagData.Id, "tag", timeTagData.Parent.Id);
+            }      
         }
     }
 
@@ -856,6 +811,14 @@ public class ViRMA_MainMenu : MonoBehaviour
             }
             if (customMenuBtn.name == "TimeBackBtn")
             {
+                customMenuBtn.GetComponent<ViRMA_UiElement>().GenerateBtnDefaults(ViRMA_Colors.grey, Color.white);
+            }
+            if (customMenuBtn.name == "ClearTimesBtn")
+            {
+                customMenuBtn.GetComponent<ViRMA_UiElement>().GenerateBtnDefaults(ViRMA_Colors.flatOrange, Color.white);
+            }
+            if (customMenuBtn.name == "ClearAllBtn")
+            {
                 customMenuBtn.GetComponent<ViRMA_UiElement>().GenerateBtnDefaults(ViRMA_Colors.flatOrange, Color.white);
             }
         }
@@ -871,7 +834,7 @@ public class ViRMA_MainMenu : MonoBehaviour
         {
             ToggleMenuSection(section_dimensionBrowser);
         }
-        if (customMenuBtn.name == "ClearTagsBtn")
+        if (customMenuBtn.name == "ClearAllBtn")
         {
             globals.queryController.buildingQuery.ClearAxis("X", true);
             globals.queryController.buildingQuery.ClearAxis("Y", true);
@@ -880,11 +843,15 @@ public class ViRMA_MainMenu : MonoBehaviour
         }
         if (customMenuBtn.name == "ClearTimesBtn")
         {
-            toggledTimeUiElements.Clear();
-        }
-        if (customMenuBtn.name == "ClearLocationsBtn")
-        {
-            // clear location list
+            foreach (ViRMA_UiElement timeOption in allTimeOptions)
+            {
+                if (timeOption.isToggled)
+                {
+                    Tag timeTagData = (Tag)timeOption.buttonData;
+                    globals.queryController.buildingQuery.RemoveFilter(timeTagData.Id, "tag", timeTagData.Parent.Id);
+                    timeOption.toggle = false;
+                }
+            }
         }
     }
     private void MainMenuRepositioning()
@@ -917,54 +884,6 @@ public class ViRMA_MainMenu : MonoBehaviour
                 }
             }
         }
-    }
-    private void ClearFiltersBtnsStateController()
-    {
-        foreach (GameObject customMenuBtn in customButtons)
-        {
-            if (customMenuBtn.name == "ClearTagsBtn")
-            {
-                if (globals.queryController.activeXAxisId == -1 && globals.queryController.activeXAxisId == -1 && globals.queryController.activeXAxisId == -1)
-                {
-                    customMenuBtn.GetComponent<ViRMA_UiElement>().GenerateBtnDefaults(ViRMA_Colors.lightGrey, Color.white, true);
-                    foreach (var directFilter in globals.queryController.activeFilters)
-                    {
-                        if (directFilter.Type == "node")
-                        {
-                            customMenuBtn.GetComponent<ViRMA_UiElement>().GenerateBtnDefaults(ViRMA_Colors.flatOrange, Color.white);
-                            break;
-                        }
-                    }            
-                }
-                else
-                {
-                    customMenuBtn.GetComponent<ViRMA_UiElement>().GenerateBtnDefaults(ViRMA_Colors.flatOrange, Color.white);
-                }
-            }
-            if (customMenuBtn.name == "ClearTimesBtn")
-            {
-                if (toggledTimeUiElements.Count < 1)
-                {
-                    customMenuBtn.GetComponent<ViRMA_UiElement>().GenerateBtnDefaults(ViRMA_Colors.lightGrey, Color.white, true);
-                }
-                else
-                {
-                    customMenuBtn.GetComponent<ViRMA_UiElement>().GenerateBtnDefaults(ViRMA_Colors.flatOrange, Color.white);
-                }
-            }
-            if (customMenuBtn.name == "ClearLocationsBtn")
-            {
-                // locations
-                if (toggledLocationUiElements.Count < 1)
-                {
-                    customMenuBtn.GetComponent<ViRMA_UiElement>().GenerateBtnDefaults(ViRMA_Colors.lightGrey, Color.white, true);
-                }
-                else
-                {
-                    customMenuBtn.GetComponent<ViRMA_UiElement>().GenerateBtnDefaults(ViRMA_Colors.flatOrange, Color.white);
-                }
-            }
-        }      
     }
 
     // testing

@@ -64,7 +64,7 @@ public class ViRMA_QueryController : MonoBehaviour
         buildingQuery.AddFilter(2001, "tag", 6); // Tuesday
         //buildingQuery.AddFilter(6649, "tag", 0); // June (only 4 images)
 
-        StartCoroutine(LateStart()); // debugging
+        //StartCoroutine(LateStart()); // debugging
     }
 
     IEnumerator LateStart()
@@ -77,9 +77,7 @@ public class ViRMA_QueryController : MonoBehaviour
 
         buildingQuery.RemoveFilter(2001, "tag", 6); // remove Tuesday
 
-
         //yield return new WaitForSeconds(2);
-
     }
 
     private void Update()

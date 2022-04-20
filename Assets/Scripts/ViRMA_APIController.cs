@@ -183,49 +183,6 @@ public class Query
                 }
             }
         }
-
-
-        /*
-        Filter addFilter = new Filter(id, type);
-        if (!Filters.Contains(addFilter))
-        {
-            Filters.Add(addFilter);
-        }
-        */
-
-        /*
-        if (Filters.Count == 0)
-        {
-            List<int> newIdList = new List<int>() { id };
-            Filter newFilter = new Filter(type, newIdList, parentId);
-            Filters.Add(newFilter);
-        }
-        else
-        {
-            for (int i = 0; i < Filters.Count; i++)
-            {
-                if (Filters[i].Type == type)
-                {
-                    if (!Filters[i].Ids.Contains(id))
-                    {
-                        Filters[i].Ids.Add(id);
-                        break;
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-
-                if (i == Filters.Count - 1)
-                {
-                    List<int> newIdList = new List<int>() { id };
-                    Filter newFilter = new Filter(type, newIdList, parentId);
-                    Filters.Add(newFilter);
-                }
-            }
-        }
-        */
     }
     public void RemoveFilter(int id, string type, int parentId = -1)
     {
