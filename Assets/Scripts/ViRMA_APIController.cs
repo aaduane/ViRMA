@@ -45,6 +45,8 @@ public class Query
     }
     public class Filter
     {
+        ////////////////////////////////////////////// re-work this with List<Tag> instead? 
+
         public string Type { get; set; }
         public List<int> Ids { get; set; }
         public string FilterId { get; set; }

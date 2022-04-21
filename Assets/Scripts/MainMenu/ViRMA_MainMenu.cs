@@ -527,14 +527,14 @@ public class ViRMA_MainMenu : MonoBehaviour
                 foreach (Transform weekdayObj in ui_weekdays.transform)
                 {
                     string weekdayLabel = weekdayObj.GetComponentInChildren<Text>().text;
-                    foreach (Tag weekday in timeTagset.Children)
+                    foreach (Tag weekdayTag in timeTagset.Children)
                     {
-                        if (weekday.Label.Substring(0, 3) == weekdayLabel)
+                        if (weekdayTag.Label.Substring(0, 3) == weekdayLabel)
                         {
                             ViRMA_UiElement uiElement = weekdayObj.GetComponent<ViRMA_UiElement>();
-                            uiElement.buttonData = weekday;
+                            uiElement.buttonData = weekdayTag;
                             weekdayObj.GetComponent<Button>().onClick.AddListener(() => ToggleTimeOption(uiElement));
-                            allTimeOptions.Add(weekdayObj.GetComponent<ViRMA_UiElement>());
+                            allTimeOptions.Add(uiElement);
                         }
                     }
                 }
@@ -542,12 +542,22 @@ public class ViRMA_MainMenu : MonoBehaviour
 
             if (timeTagset.Label == "Hour")
             {
-                foreach (Transform ui_hoursObj in ui_hours.transform)
+                foreach (Transform hourObj in ui_hours.transform)
                 {
-                    
+                    string hourLabel = hourObj.GetComponentInChildren<Text>().text;
+                    int hour = int.Parse(hourLabel.Substring(0, hourLabel.IndexOf(":")));
+                    foreach (Tag hourTag in timeTagset.Children)
+                    {
+                        if (hourTag.Label == hour.ToString())
+                        {
+                            ViRMA_UiElement uiElement = hourObj.GetComponent<ViRMA_UiElement>();
+                            uiElement.buttonData = hourTag;
+                            hourObj.GetComponent<Button>().onClick.AddListener(() => ToggleTimeOption(uiElement));
+                            allTimeOptions.Add(uiElement);
+                        }
+                    }
                 }
             }
-
 
             /*
             Debug.Log("___________ " + timeTagset.Id + " | " + timeTagset.Label + " ___________");
