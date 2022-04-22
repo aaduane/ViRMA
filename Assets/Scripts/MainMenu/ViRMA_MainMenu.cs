@@ -455,9 +455,24 @@ public class ViRMA_MainMenu : MonoBehaviour
                             if (tagData.Id == id)
                             {
                                 GameObject directFilterObj = Instantiate(directFilterPrefab, directFilterParent);
-                                directFilterObj.GetComponent<ViRMA_DirectFilterOption>().directFilterData = tagData;
-                                directFilterObj.GetComponent<ViRMA_DirectFilterOption>().labelText.text = tagData.Label;
                                 directFilterObj.GetComponent<ViRMA_DirectFilterOption>().filterType = "tag";
+                                directFilterObj.GetComponent<ViRMA_DirectFilterOption>().directFilterData = tagData;
+
+                                string adjustLabel = tagData.Label;
+
+                                if (tagData.Parent.Label == "Hour")
+                                {
+                                    if (tagData.Label.Length == 1)
+                                    {
+                                        adjustLabel = "0" + tagData.Label + ":00";
+                                    }
+                                    else
+                                    {
+                                        adjustLabel = tagData.Label + ":00";
+                                    }
+                                }
+
+                                directFilterObj.GetComponent<ViRMA_DirectFilterOption>().labelText.text = adjustLabel;
                             }
                         }
                     }
