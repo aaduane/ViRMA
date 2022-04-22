@@ -49,6 +49,9 @@ public class Query
 
         public string Type { get; set; }
         public List<int> Ids { get; set; }
+
+        // public List<Tag> Tags { get; set; }
+
         public string FilterId { get; set; }
         public Filter(string type, List<int> ids, int parentId = -1)
         {

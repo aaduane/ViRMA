@@ -21,7 +21,7 @@ public class ViRMA_DimExplorer : MonoBehaviour
     private float distToMaxRight;
     private float distToMaxLeft;
 
-    public bool dimensionExpLorerLoaded;  
+    public bool dimensionExpLorerLoaded;
 
     private void Awake()
     {
@@ -240,7 +240,7 @@ public class ViRMA_DimExplorer : MonoBehaviour
         // fetch and wait for sibling data
         if (parentTagData.Id == 0)
         {
-            // if the parent id is zero, it means we're atht top of hierarchy so replace normal siblings with previous parent instead
+            // if the parent id is zero, it means we're at the top of hierarchy so replace normal siblings with previous parent instead
             yield return StartCoroutine(ViRMA_APIController.GetHierarchyParent(childrenTagData[0].Id, (response) => {
                 siblingsTagData = new List<Tag>() { response };
             }));
@@ -253,7 +253,7 @@ public class ViRMA_DimExplorer : MonoBehaviour
             }));
         }
                
-        // reload parent dim ex grouo
+        // reload parent dim ex group
         if (parentTagData.Label == null)
         {
             parentGroup.ClearDimExplorerGroup();
@@ -318,6 +318,8 @@ public class ViRMA_DimExplorer : MonoBehaviour
                     orEnabled = 0;
                 }
                 globals.queryController.buildingQuery.AddFilter(tagQueryData.Id, "node", orEnabled);
+
+                Debug.Log("TESTING | " + tagQueryData.Parent.Id);  ////////////////////////////////////////////////////////// TESTING
             }
             else
             {
@@ -481,7 +483,6 @@ public class ViRMA_DimExplorer : MonoBehaviour
         }
         
     }
-
 
     // editor
     void OnDrawGizmosSelected()
