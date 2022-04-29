@@ -45,13 +45,8 @@ public class Query
     }
     public class Filter
     {
-        ////////////////////////////////////////////// re-work this with List<Tag> instead? 
-
         public string Type { get; set; }
         public List<int> Ids { get; set; }
-
-        // public List<Tag> Tags { get; set; }
-
         public string FilterId { get; set; }
         public Filter(string type, List<int> ids, int parentId = -1)
         {
@@ -290,8 +285,6 @@ public class ViRMA_APIController : MonoBehaviour
     private static JSONNode jsonData;
     public static IEnumerator GetRequest(string paramsURL, Action<JSONNode> onSuccess)
     {
-        //Debug.Log(paramsURL); // testing
-
         string getRequest = serverAddress + paramsURL;
         float beforeWebRequest = 0, afterWebRequest = 0, beforeJsonParse = 0, afterJsonParse = 0;
 

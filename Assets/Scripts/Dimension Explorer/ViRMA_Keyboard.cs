@@ -252,7 +252,7 @@ public class ViRMA_Keyboard : MonoBehaviour
                 key.enabled = false;
                 StartCoroutine(globals.dimExplorer.ClearDimExplorer());           
 
-                activeQueryCoroutine = StartCoroutine(ViRMA_APIController.SearchHierachies(typedWordString.ToLower(), (nodes) => {             
+                activeQueryCoroutine = StartCoroutine(ViRMA_APIController.SearchHierachies(typedWordString.ToLower(), (nodes) => {
                     StartCoroutine(globals.dimExplorer.LoadDimExplorer(nodes));
                     activeQueryCoroutine = null;
                     key.enabled = true;

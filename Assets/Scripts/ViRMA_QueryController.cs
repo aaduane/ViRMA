@@ -50,19 +50,11 @@ public class ViRMA_QueryController : MonoBehaviour
     { 
         queryModeOrSetting = false; // EXPERIMENTAL ---> setting to True enables "or" instead of "and" in hierarchy concept tag filtering
 
-        buildingQuery.SetAxis("X", 3056, "node"); // computer
-        buildingQuery.SetAxis("Y", 5505, "node"); // desk
+        //buildingQuery.SetAxis("Y", 1794, "node"); // computer
+        //buildingQuery.SetAxis("X", 4151, "node"); // desk
 
-        //buildingQuery.SetAxis("X", 40, "node"); // entity
-        //buildingQuery.SetAxis("X", 1606, "node"); // food fish
-        //buildingQuery.SetAxis("Y", 6967, "node"); // kitchen appliance
-
-        buildingQuery.AddFilter(56, "tag", 15); // work location
-        //buildingQuery.AddFilter(130, "tag", 15); // home location
-
-        buildingQuery.AddFilter(22, "tag", 6); // Monmday
-        buildingQuery.AddFilter(2001, "tag", 6); // Tuesday
-        //buildingQuery.AddFilter(6649, "tag", 0); // June (only 4 images)
+        //buildingQuery.AddFilter(21, "tag", 6); // Monmday
+        //buildingQuery.AddFilter(2336, "tag", 6); // Tuesday
 
         //StartCoroutine(LateStart()); // debugging
     }
@@ -71,13 +63,9 @@ public class ViRMA_QueryController : MonoBehaviour
     {
         yield return new WaitForSeconds(5);
 
-        buildingQuery.AddFilter(1869, "tag", 6); // add Wednesday
-
         yield return new WaitForSeconds(5);
 
-        buildingQuery.RemoveFilter(2001, "tag", 6); // remove Tuesday
-
-        //yield return new WaitForSeconds(2);
+        yield return new WaitForSeconds(2);
     }
 
     private void Update()

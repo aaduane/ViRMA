@@ -318,8 +318,6 @@ public class ViRMA_DimExplorer : MonoBehaviour
                     orEnabled = 0;
                 }
                 globals.queryController.buildingQuery.AddFilter(tagQueryData.Id, "node", orEnabled);
-
-                Debug.Log("TESTING | " + tagQueryData.Parent.Id);  ////////////////////////////////////////////////////////// TESTING
             }
             else
             {
