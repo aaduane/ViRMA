@@ -10,6 +10,7 @@ public class ViRMA_MainMenu : MonoBehaviour
 {
     private ViRMA_GlobalsAndActions globals;
     private List<GameObject> menuSections;
+    public GameObject activeSection;
     private Vector3 mainMenuPosition;
     private float mainMenuAngle;
     private int frameSkipper;
@@ -137,6 +138,7 @@ public class ViRMA_MainMenu : MonoBehaviour
             if (menuSection == targetMenuSection)
             {
                 menuSection.transform.localPosition = new Vector3(0, 0, 0);
+                activeSection = menuSection;
             }
             else
             {
@@ -460,6 +462,7 @@ public class ViRMA_MainMenu : MonoBehaviour
 
                                 string adjustLabel = tagData.Label;
 
+                                // adjust appearance of hour tags as direct filters
                                 if (tagData.Parent.Label == "Hour")
                                 {
                                     if (tagData.Label.Length == 1)
@@ -469,6 +472,27 @@ public class ViRMA_MainMenu : MonoBehaviour
                                     else
                                     {
                                         adjustLabel = tagData.Label + ":00";
+                                    }
+                                }
+
+                                // adjust the appearance of date tags as direct filters
+                                if (tagData.Parent.Label == "Day within month")
+                                {
+                                    if (tagData.Label == "1") 
+                                    {
+                                        adjustLabel = "1st";
+                                    }
+                                    else if (tagData.Label == "2")
+                                    {
+                                        adjustLabel = "2nd";
+                                    }
+                                    else if (tagData.Label == "3")
+                                    {
+                                        adjustLabel = "3rd";
+                                    }
+                                    else
+                                    {
+                                        adjustLabel = tagData.Label + "th";
                                     }
                                 }
 
@@ -537,112 +561,115 @@ public class ViRMA_MainMenu : MonoBehaviour
 
         foreach (Tag timeTagset in timeTagsetsData)
         {
+            // generate day of the week options
             if (timeTagset.Label == "Day of week (string)")
             {
                 foreach (Transform weekdayObj in ui_weekdays.transform)
                 {
+                    ViRMA_UiElement uiElement = weekdayObj.GetComponent<ViRMA_UiElement>();
+                    allTimeOptions.Add(uiElement);
+
                     string weekdayLabel = weekdayObj.GetComponentInChildren<Text>().text;
                     foreach (Tag weekdayTag in timeTagset.Children)
                     {
                         if (weekdayTag.Label.Substring(0, 3) == weekdayLabel)
-                        {
-                            ViRMA_UiElement uiElement = weekdayObj.GetComponent<ViRMA_UiElement>();
+                        {         
                             uiElement.buttonData = weekdayTag;
-                            weekdayObj.GetComponent<Button>().onClick.AddListener(() => ToggleTimeOption(uiElement));
-                            allTimeOptions.Add(uiElement);
+                            weekdayObj.GetComponent<Button>().onClick.AddListener(() => ToggleTimeOption(uiElement));                  
                         }
                     }
                 }
             }
 
+            // generate hour options
             if (timeTagset.Label == "Hour")
             {
                 foreach (Transform hourObj in ui_hours.transform)
                 {
+                    ViRMA_UiElement uiElement = hourObj.GetComponent<ViRMA_UiElement>();
+                    allTimeOptions.Add(uiElement);
                     string hourLabel = hourObj.GetComponentInChildren<Text>().text;
                     int hour = int.Parse(hourLabel.Substring(0, hourLabel.IndexOf(":")));
                     foreach (Tag hourTag in timeTagset.Children)
                     {
                         if (hourTag.Label == hour.ToString())
-                        {
-                            ViRMA_UiElement uiElement = hourObj.GetComponent<ViRMA_UiElement>();
+                        {              
                             uiElement.buttonData = hourTag;
-                            hourObj.GetComponent<Button>().onClick.AddListener(() => ToggleTimeOption(uiElement));
-                            allTimeOptions.Add(uiElement);
+                            hourObj.GetComponent<Button>().onClick.AddListener(() => ToggleTimeOption(uiElement));   
                         }
                     }
                 }
             }
 
-            /*
-            Debug.Log("___________ " + timeTagset.Id + " | " + timeTagset.Label + " ___________");
-            foreach (Tag timeTag in timeTagset.Children)
+            // generate date options
+            if (timeTagset.Label == "Day within month")
             {
-                Debug.Log(timeTag.Id + " | " + timeTag.Label);
-            }
-            */
-        }
-    }
-
-    /*
-        // fetch hour tagset id's
-        string hourTagsetId = "12";
-        StartCoroutine(ViRMA_APIController.GetTagset(hourTagsetId, (tagsetData) => {
-            foreach (Tag hourData in tagsetData)
-            {
-                int index = int.Parse(hourData.Label);
-                ViRMA_UiElement uiElement = ui_hours.transform.GetChild(index).GetComponent<ViRMA_UiElement>();
-                uiElement.buttonData = new KeyValuePair<int, int>(int.Parse(hourTagsetId), hourData.Id);
-                uiElement.GetComponent<Button>().onClick.AddListener(() => ToggleTimeOption(uiElement));
-                uiElement.GetComponentInChildren<Text>().text = index.ToString();
-                allTimeOptions.Add(uiElement);
-            }
-        }));
-
-        // fetch date tagset id's
-        string dateTagsetId = "7";
-        StartCoroutine(ViRMA_APIController.GetTagset(dateTagsetId, (tagsetData) => {
-            foreach (Tag dateData in tagsetData)
-            {
-                int index = int.Parse(dateData.Label) - 1;
-                ViRMA_UiElement uiElement = ui_dates.transform.GetChild(index).GetComponent<ViRMA_UiElement>();
-                uiElement.buttonData = new KeyValuePair<int, int>(int.Parse(dateTagsetId), dateData.Id);
-                uiElement.GetComponent<Button>().onClick.AddListener(() => ToggleTimeOption(uiElement));
-                uiElement.GetComponentInChildren<Text>().text = dateData.Label;
-                allTimeOptions.Add(uiElement);
-            }
-        }));
-
-        // fetch month tagset id's
-        string monthTagsetId = "10";
-        StartCoroutine(ViRMA_APIController.GetTagset(monthTagsetId, (tagsetData) => {
-            foreach (Tag monthData in tagsetData)
-            {
-                foreach (ViRMA_UiElement uiElement in ui_months.GetComponentsInChildren<ViRMA_UiElement>())
+                foreach (Transform dateObj in ui_dates.transform)
                 {
-                    if (uiElement.GetComponentInChildren<Text>().text == monthData.Label.Substring(0, 3))
+                    ViRMA_UiElement uiElement = dateObj.GetComponent<ViRMA_UiElement>();
+                    allTimeOptions.Add(uiElement);
+                    string dateLabel = dateObj.GetComponentInChildren<Text>().text;
+                    int date = int.Parse(dateLabel);
+                    foreach (Tag dateTag in timeTagset.Children)
                     {
-                        uiElement.buttonData = new KeyValuePair<int, int>(int.Parse(monthTagsetId), monthData.Id);
-                        uiElement.GetComponent<Button>().onClick.AddListener(() => ToggleTimeOption(uiElement));
-                        allTimeOptions.Add(uiElement);
+                        if (dateTag.Label == date.ToString())
+                        {
+                            uiElement.buttonData = dateTag;
+                            dateObj.GetComponent<Button>().onClick.AddListener(() => ToggleTimeOption(uiElement));
+                        }
                     }
                 }
             }
-        }));
 
-        // fetch year tagset id's
-        string yearTagsetId = "11";
-        StartCoroutine(ViRMA_APIController.GetTagset(yearTagsetId, (tagsetData) => {
-            for (int i = 0; i < tagsetData.Count; i++)
+            // generate month options
+            if (timeTagset.Label == "Month (string)")
             {
-                ViRMA_UiElement uiElement = ui_years.transform.GetChild(i).GetComponent<ViRMA_UiElement>();
-                uiElement.buttonData = new KeyValuePair<int, int>(int.Parse(yearTagsetId), tagsetData[i].Id);
-                uiElement.GetComponent<Button>().onClick.AddListener(() => ToggleTimeOption(uiElement));
-                uiElement.GetComponentInChildren<Text>().text = tagsetData[i].Label;
-                allTimeOptions.Add(uiElement);
+                foreach (Transform monthObj in ui_months.transform)
+                {
+                    ViRMA_UiElement uiElement = monthObj.GetComponent<ViRMA_UiElement>();
+                    allTimeOptions.Add(uiElement);
+                    string monthLabel = monthObj.GetComponentInChildren<Text>().text;
+                    foreach (Tag monthTag in timeTagset.Children)
+                    {
+                        string shortMonthLabel = monthTag.Label.Substring(0, 3);
+                        if (shortMonthLabel == monthLabel)
+                        {                
+                            uiElement.buttonData = monthTag;
+                            monthObj.GetComponent<Button>().onClick.AddListener(() => ToggleTimeOption(uiElement));
+                        }
+                    }
+                }
             }
-        }));
-    */
+
+            // generate year options
+            if (timeTagset.Label == "Year")
+            {
+                foreach (Transform yearObj in ui_years.transform)
+                {
+                    ViRMA_UiElement uiElement = yearObj.GetComponent<ViRMA_UiElement>();
+                    allTimeOptions.Add(uiElement);
+                    string yearLabel = yearObj.GetComponentInChildren<Text>().text;
+                    foreach (Tag yearTag in timeTagset.Children)
+                    {
+                        if (yearLabel == yearTag.Label)
+                        {
+                            uiElement.buttonData = yearTag;
+                            yearObj.GetComponent<Button>().onClick.AddListener(() => ToggleTimeOption(uiElement));
+                        }
+                    }
+                }
+            }
+
+            // if any time options do not exist in the DB, then reflect that in the button style
+            foreach (ViRMA_UiElement timeOption in allTimeOptions)
+            {
+                if (timeOption.buttonData == null)
+                {
+                    timeOption.GenerateBtnDefaults(ViRMA_Colors.lightGrey, Color.white, true);
+                }
+            }
+        }
+    }
     private void TimePickerToggleController()
     {
         // do every second frame for performance
@@ -662,11 +689,14 @@ public class ViRMA_MainMenu : MonoBehaviour
                 {
                     foreach (int activeTagId in activeFilter.Ids)
                     {
-                        Tag timeTagData = (Tag) timeOption.buttonData;
-                        if (timeTagData.Id == activeTagId)
+                        if (timeOption.buttonData != null)
                         {
-                            toToggle = true;
-                        }
+                            Tag timeTagData = (Tag)timeOption.buttonData;
+                            if (timeTagData.Id == activeTagId)
+                            {
+                                toToggle = true;
+                            }
+                        }           
                     }
                 }
             }
@@ -752,8 +782,24 @@ public class ViRMA_MainMenu : MonoBehaviour
         }
         else
         {
-            mainMenuLoaded = !mainMenuLoaded;
-            ToggleMainMenu(mainMenuLoaded);
+            if (mainMenuLoaded)
+            {
+                // if not on dim browser, use back button to return to dim browser
+                if (activeSection != section_dimensionBrowser)
+                {
+                    ToggleMenuSection(section_dimensionBrowser);
+                }
+                else
+                {
+                    mainMenuLoaded = !mainMenuLoaded;
+                    ToggleMainMenu(mainMenuLoaded);
+                }
+            }
+            else
+            {
+                mainMenuLoaded = !mainMenuLoaded;
+                ToggleMainMenu(mainMenuLoaded);
+            }
         }
     }
     public void ToggleLoadingIndicator()
