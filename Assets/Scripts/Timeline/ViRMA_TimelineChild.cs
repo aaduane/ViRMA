@@ -5,6 +5,10 @@ using UnityEngine;
 using Valve.VR.InteractionSystem;
 using TMPro;
 
+using UnityEngine.Networking;
+using System.Collections;
+using System.Threading;
+
 public class ViRMA_TimelineChild : MonoBehaviour
 {
     // globals
@@ -120,12 +124,16 @@ public class ViRMA_TimelineChild : MonoBehaviour
             byte[] imageBytes = new byte[0];
             try
             {
+                StartCoroutine(DownloadTimelineChildTexture());
+
+                /*
                 imageBytes = File.ReadAllBytes(ViRMA_APIController.imagesDirectory + fileName);
                 Texture2D imageTexture = ViRMA_APIController.ConvertImageFromDDS(imageBytes);
                 Material timelineChildMaterial = new Material(Resources.Load("Materials/UnlitCell") as Material);
                 timelineChildMaterial.mainTexture = imageTexture;
                 childRend.material = timelineChildMaterial;
                 childRend.material.SetTextureScale("_MainTex", new Vector2(-1, 1));
+                */
             }
             catch (FileNotFoundException e)
             {
@@ -133,6 +141,58 @@ public class ViRMA_TimelineChild : MonoBehaviour
             }
         }
     }
+
+    private IEnumerator DownloadTimelineChildTexture()
+    {
+        if (fileName.Length > 0)
+        {
+            string jpg = ViRMA_APIController.imagesAddress + fileName.Substring(0, fileName.Length - 3) + "jpg";
+            string JPG = ViRMA_APIController.imagesAddress + fileName.Substring(0, fileName.Length - 3) + "JPG";
+
+            UnityWebRequest www = UnityWebRequestTexture.GetTexture(jpg);
+            yield return www.SendWebRequest();
+            if (www.result != UnityWebRequest.Result.Success)
+            {
+                UnityWebRequest www2 = UnityWebRequestTexture.GetTexture(JPG);
+                yield return www2.SendWebRequest();
+
+                if (www2.result != UnityWebRequest.Result.Success)
+                {
+                    Debug.LogError(www2.error + " | " + JPG);
+                }
+                else
+                {
+                    Texture imageTexture = ((DownloadHandlerTexture)www2.downloadHandler).texture;
+
+                    Material timelineChildMaterial = new Material(Resources.Load("Materials/UnlitCell") as Material);
+                    timelineChildMaterial.mainTexture = imageTexture;
+                    childRend.material = timelineChildMaterial;
+                    childRend.material.SetTextureScale("_MainTex", new Vector2(-1, -1));
+                }
+            }
+            else
+            {
+                Texture imageTexture = ((DownloadHandlerTexture)www.downloadHandler).texture;
+
+                Material timelineChildMaterial = new Material(Resources.Load("Materials/UnlitCell") as Material);
+                timelineChildMaterial.mainTexture = imageTexture;
+                childRend.material = timelineChildMaterial;
+                childRend.material.SetTextureScale("_MainTex", new Vector2(-1, -1));
+            }
+
+            /*
+            Thread thread = new Thread(() => {
+
+            });
+            thread.Start();
+            while (thread.IsAlive)
+            {
+                yield return null;
+            }     
+            */
+        }    
+    }
+
     public void LoadTImelineContextMenu()
     {
         globals.timeline.timelineRb.velocity = Vector3.zero;

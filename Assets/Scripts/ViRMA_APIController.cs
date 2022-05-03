@@ -274,6 +274,7 @@ public class ViRMA_APIController : MonoBehaviour
     // public
     public static bool debugging = false;
     public static string serverAddress = "https://localhost:44317/api/";
+    public static string imagesAddress = "http://bjth.itu.dk:5005/images/";
 
     //public static string imagesDirectory = System.IO.Directory.GetCurrentDirectory().ToString() + "/LaugavegurDataDDS/"; 
     //public static string imagesDirectory = "C:/Users/aaron/Documents/Unity Projects/ViRMA/LaugavegurDataDDS/"; 
