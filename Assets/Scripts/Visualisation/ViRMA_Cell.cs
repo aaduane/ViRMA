@@ -119,7 +119,7 @@ public class ViRMA_Cell : MonoBehaviour
 
         /* - - - - - - - DDS Images - - - - - - - -*/
 
-        
+        /*
         // front of cube
         UVs[2] = bottomLeftOfTexture;
         UVs[3] = bottomRightOfTexture;
@@ -155,11 +155,11 @@ public class ViRMA_Cell : MonoBehaviour
         UVs[23] = topLeftOfTexture;
         UVs[20] = topRightOfTexture;
         UVs[21] = bottomRightOfTexture;
-        
+        */
 
         /* - - - - - - - JPG Images - - - - - - - -*/
 
-        /*
+        
         // front of cube
         UVs[0] = bottomLeftOfTexture;        
         UVs[1] = bottomRightOfTexture;       
@@ -195,7 +195,7 @@ public class ViRMA_Cell : MonoBehaviour
         UVs[21] = topLeftOfTexture;
         UVs[22] = topRightOfTexture;
         UVs[23] = bottomRightOfTexture;
-        */
+        
 
         thisCellMesh.uv = UVs;
     }

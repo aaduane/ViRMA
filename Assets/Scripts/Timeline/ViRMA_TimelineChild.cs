@@ -7,7 +7,6 @@ using TMPro;
 
 using UnityEngine.Networking;
 using System.Collections;
-using System.Threading;
 
 public class ViRMA_TimelineChild : MonoBehaviour
 {
@@ -146,50 +145,25 @@ public class ViRMA_TimelineChild : MonoBehaviour
     {
         if (fileName.Length > 0)
         {
-            string jpg = ViRMA_APIController.imagesAddress + fileName.Substring(0, fileName.Length - 3) + "jpg";
-            string JPG = ViRMA_APIController.imagesAddress + fileName.Substring(0, fileName.Length - 3) + "JPG";
-
-            UnityWebRequest www = UnityWebRequestTexture.GetTexture(jpg);
+            UnityWebRequest www = UnityWebRequestTexture.GetTexture(ViRMA_APIController.imagesAddress + fileName);
             yield return www.SendWebRequest();
-            if (www.result != UnityWebRequest.Result.Success)
+            if (www.result == UnityWebRequest.Result.Success)
             {
-                UnityWebRequest www2 = UnityWebRequestTexture.GetTexture(JPG);
-                yield return www2.SendWebRequest();
+                Texture2D imageTexture = DownloadHandlerTexture.GetContent(www);
 
-                if (www2.result != UnityWebRequest.Result.Success)
-                {
-                    Debug.LogError(www2.error + " | " + JPG);
-                }
-                else
-                {
-                    Texture imageTexture = ((DownloadHandlerTexture)www2.downloadHandler).texture;
-
-                    Material timelineChildMaterial = new Material(Resources.Load("Materials/UnlitCell") as Material);
-                    timelineChildMaterial.mainTexture = imageTexture;
-                    childRend.material = timelineChildMaterial;
-                    childRend.material.SetTextureScale("_MainTex", new Vector2(-1, -1));
-                }
-            }
-            else
-            {
-                Texture imageTexture = ((DownloadHandlerTexture)www.downloadHandler).texture;
+                //Texture imageTexture = ((DownloadHandlerTexture)www.downloadHandler).texture;
 
                 Material timelineChildMaterial = new Material(Resources.Load("Materials/UnlitCell") as Material);
                 timelineChildMaterial.mainTexture = imageTexture;
                 childRend.material = timelineChildMaterial;
                 childRend.material.SetTextureScale("_MainTex", new Vector2(-1, -1));
+
             }
-
-            /*
-            Thread thread = new Thread(() => {
-
-            });
-            thread.Start();
-            while (thread.IsAlive)
+            else
             {
-                yield return null;
-            }     
-            */
+                Debug.LogError(www.error + " | " + fileName);
+            }  
+
         }    
     }
 
@@ -315,7 +289,7 @@ public class ViRMA_TimelineChild : MonoBehaviour
         textMesh.fontSize = 0.75f;
         textMesh.outlineWidth = 0.2f;
 
-        tooltip.transform.parent = transform;
+        tooltip.transform.SetParent(transform);
         tooltip.transform.localScale = new Vector3(1 / transform.localScale.x, 1 / transform.localScale.y, 1); // adjust for parent's scale
         tooltip.transform.localPosition = new Vector3(0.21f, -0.45f, -1f);
         tooltip.transform.localRotation = Quaternion.identity;

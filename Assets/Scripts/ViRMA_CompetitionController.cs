@@ -25,9 +25,9 @@ public class ViRMA_CompetitionController : MonoBehaviour
         UnityWebRequest request = UnityWebRequest.Get(submissionRequest);
 
         yield return request.SendWebRequest();
-        if (request.isNetworkError || request.isHttpError)
+        if (request.result != UnityWebRequest.Result.Success)
         {
-            //Debug.LogError(request.error);
+            Debug.LogError(request.error);
         }
         string json = request.downloadHandler.text;
 

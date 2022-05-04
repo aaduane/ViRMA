@@ -274,7 +274,7 @@ public class ViRMA_APIController : MonoBehaviour
     // public
     public static bool debugging = false;
     public static string serverAddress = "https://localhost:44317/api/";
-    public static string imagesAddress = "http://bjth.itu.dk:5005/images/";
+    public static string imagesAddress = "http://bjth.itu.dk:5002/images/";
 
     //public static string imagesDirectory = System.IO.Directory.GetCurrentDirectory().ToString() + "/LaugavegurDataDDS/"; 
     //public static string imagesDirectory = "C:/Users/aaron/Documents/Unity Projects/ViRMA/LaugavegurDataDDS/"; 
@@ -299,12 +299,9 @@ public class ViRMA_APIController : MonoBehaviour
         // unity web request packet
         UnityWebRequest request = UnityWebRequest.Get(getRequest);
         yield return request.SendWebRequest();
-        if (request.isNetworkError || request.isHttpError)
+        if (request.result == UnityWebRequest.Result.ConnectionError)
         {
-            if (request.isNetworkError)
-            {
-                throw new Exception("Cannot connect to database! Is it running?");
-            }
+            throw new Exception("Cannot connect to database! Is the server running?");
         }
         string json = request.downloadHandler.text;
 
@@ -435,8 +432,8 @@ public class ViRMA_APIController : MonoBehaviour
                 // newCell.ImageName = obj.Value["CubeObjects"][0]["FileURI"];
 
                 newCell.ImageName = obj.Value["cubeObjects"][0]["fileURI"];
-                string imageNameDDS = newCell.ImageName.Substring(0, newCell.ImageName.Length - 4) + ".dds";
-                newCell.ImageName = imageNameDDS;
+                //string imageNameDDS = newCell.ImageName.Substring(0, newCell.ImageName.Length - 4) + ".dds";
+                //newCell.ImageName = imageNameDDS;
                 newCell.imageCount = obj.Value["count"];
             }
             else
@@ -776,8 +773,8 @@ public class ViRMA_APIController : MonoBehaviour
         {
             int imageId = obj.Value["id"];
             string imagePath = obj.Value["fileURI"];
-            string imageNameDDS = imagePath.Substring(0, imagePath.Length - 4) + ".dds";
-            KeyValuePair<int, string> imageIdPath = new KeyValuePair<int, string>(imageId, imageNameDDS);
+            //string imageNameDDS = imagePath.Substring(0, imagePath.Length - 4) + ".dds";
+            KeyValuePair<int, string> imageIdPath = new KeyValuePair<int, string>(imageId, imagePath);
             results.Add(imageIdPath);
         }
 
@@ -808,8 +805,8 @@ public class ViRMA_APIController : MonoBehaviour
 
             if (imagePath.Length > 0)
             {
-                string imageNameDDS = imagePath.Substring(0, imagePath.Length - 4) + ".dds";
-                KeyValuePair<int, string> imageIdPath = new KeyValuePair<int, string>(imageId, imageNameDDS);
+                //string imageNameDDS = imagePath.Substring(0, imagePath.Length - 4) + ".dds";
+                KeyValuePair<int, string> imageIdPath = new KeyValuePair<int, string>(imageId, imagePath);
                 results.Add(imageIdPath);
             }
             else
@@ -1002,8 +999,8 @@ public class ViRMA_APIController : MonoBehaviour
             {
                 int imageId = obj.Value["id"];
                 string imagePath = obj.Value["fileURI"];
-                string imageNameDDS = imagePath.Substring(0, imagePath.Length - 4) + ".dds";
-                KeyValuePair<int, string> imageIdPath = new KeyValuePair<int, string>(imageId, imageNameDDS);
+                //string imageNameDDS = imagePath.Substring(0, imagePath.Length - 4) + ".dds";
+                KeyValuePair<int, string> imageIdPath = new KeyValuePair<int, string>(imageId, imagePath);
                 results.Add(imageIdPath);
             }
         }
