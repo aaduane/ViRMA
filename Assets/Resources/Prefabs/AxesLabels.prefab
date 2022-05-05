@@ -10,7 +10,6 @@ GameObject:
   m_Component:
   - component: {fileID: 4490428082618664763}
   - component: {fileID: 5226226085762797964}
-  - component: {fileID: 6487221876358102216}
   - component: {fileID: 992291625253075516}
   m_Layer: 0
   m_Name: AxesLabelsCount
@@ -79,14 +78,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!222 &6487221876358102216
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8020020181232883652}
-  m_CullTransparentMesh: 0
 --- !u!114 &992291625253075516
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -189,7 +180,6 @@ GameObject:
   m_Component:
   - component: {fileID: 9216439354094218510}
   - component: {fileID: 9216439354094218507}
-  - component: {fileID: 9216439354094218508}
   - component: {fileID: 9216439354094218509}
   m_Layer: 0
   m_Name: AxesLabelsY
@@ -258,14 +248,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!222 &9216439354094218508
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9216439354094218511}
-  m_CullTransparentMesh: 0
 --- !u!114 &9216439354094218509
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -368,7 +350,6 @@ GameObject:
   m_Component:
   - component: {fileID: 9216439355171656572}
   - component: {fileID: 9216439355171656569}
-  - component: {fileID: 9216439355171656570}
   - component: {fileID: 9216439355171656571}
   m_Layer: 0
   m_Name: AxesLabelsZ
@@ -437,14 +418,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!222 &9216439355171656570
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9216439355171656573}
-  m_CullTransparentMesh: 0
 --- !u!114 &9216439355171656571
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -581,7 +554,6 @@ GameObject:
   m_Component:
   - component: {fileID: 9216439355599463201}
   - component: {fileID: 9216439355599463202}
-  - component: {fileID: 9216439355599463203}
   - component: {fileID: 9216439355599463204}
   m_Layer: 0
   m_Name: AxesLabelsX
@@ -650,14 +622,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!222 &9216439355599463203
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9216439355599463205}
-  m_CullTransparentMesh: 0
 --- !u!114 &9216439355599463204
 MonoBehaviour:
   m_ObjectHideFlags: 0

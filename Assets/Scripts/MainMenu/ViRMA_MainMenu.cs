@@ -13,11 +13,12 @@ public class ViRMA_MainMenu : MonoBehaviour
     public GameObject activeSection;
     private Vector3 mainMenuPosition;
     private float mainMenuAngle;
-    private int frameSkipper;
     public bool mainMenuPositionSet;
     public bool mainMenuLoaded;
     public bool mainMenuMoving;
-    public Hand handInteractingWithMainMenu; 
+    public Hand handInteractingWithMainMenu;
+
+    private int frameSkipper; // increase UPDATE performance for some functions
 
     ///////////////////////////////////////////////// dimension browser
     public GameObject section_dimensionBrowser;
@@ -45,7 +46,6 @@ public class ViRMA_MainMenu : MonoBehaviour
     public GameObject section_timePicker;
 
     public List<ViRMA_UiElement> allTimeOptions;
-    //public List<ViRMA_UiElement> toggledTimeUiElements; // deprecating
     
     public GameObject ui_weekdays;
     public GameObject ui_hours;

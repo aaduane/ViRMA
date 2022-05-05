@@ -1,6 +1,8 @@
 ﻿using TMPro;
 using UnityEngine;
 using Valve.VR.InteractionSystem;
+using UnityEngine.Networking;
+using System.Collections;
 
 public class ViRMA_Cell : MonoBehaviour
 {
@@ -32,11 +34,11 @@ public class ViRMA_Cell : MonoBehaviour
         }
         else
         {
-            // set material with texture array containing many images
-            thisCellRend.material = thisCellData.TextureArrayMaterial;
-
             // use id to only show relevant image on the mesh from the material texture array
-            SetTextureFromArray(thisCellData.TextureArrayId);
+            //SetTextureFromArray(thisCellData.TextureArrayId); // fetch texture from array (local method)
+
+            // download image from server and convert it to a texture concurrently with other cells
+            StartCoroutine(DownloadTexture()); // fetch texture from server (online method)
         }
     }
     private void Update()
@@ -103,101 +105,127 @@ public class ViRMA_Cell : MonoBehaviour
     // general
     public void SetTextureFromArray(int textureIndexInArray)
     {
-        Vector2[] UVs = new Vector2[thisCellMesh.vertices.Length];
-        int totalTexturesInArray = thisCellData.TextureArraySize;
-        float textureOffset = 1.0f / totalTexturesInArray;
-        float textureLocationInArray = textureIndexInArray * textureOffset;
-        if (textureIndexInArray >= totalTexturesInArray)
+        if (thisCellData.ImageTexture != null)
         {
-            Debug.LogError("Warning! Target texture index above texture array count.");
+            // set material with texture array containing many images
+            thisCellRend.material = thisCellData.TextureArrayMaterial;
+
+            Vector2[] UVs = new Vector2[thisCellMesh.vertices.Length];
+            int totalTexturesInArray = thisCellData.TextureArraySize;
+            float textureOffset = 1.0f / totalTexturesInArray;
+            float textureLocationInArray = textureIndexInArray * textureOffset;
+            if (textureIndexInArray >= totalTexturesInArray)
+            {
+                Debug.LogError("Warning! Target texture index above texture array count.");
+            }
+
+            Vector2 bottomLeftOfTexture = new Vector2(0, textureLocationInArray);
+            Vector2 bottomRightOfTexture = new Vector2(1, textureLocationInArray);
+            Vector2 topLeftOfTexture = new Vector2(0, textureLocationInArray + textureOffset);
+            Vector2 topRightOfTexture = new Vector2(1, textureLocationInArray + textureOffset);
+
+            // adjust location of UVs depending on texture format (if wrong, textures will appear upside down)
+            if (thisCellData.ImageTexture.format == TextureFormat.DXT1)
+            {
+                /* - - - - - - - DDS Format UVs - - - - - - - -*/
+
+                // front of cube
+                UVs[2] = bottomLeftOfTexture;
+                UVs[3] = bottomRightOfTexture;
+                UVs[0] = topLeftOfTexture;
+                UVs[1] = topRightOfTexture;
+
+                // top of cube
+                UVs[8] = topLeftOfTexture;
+                UVs[9] = topRightOfTexture;
+                UVs[4] = bottomLeftOfTexture;
+                UVs[5] = bottomRightOfTexture;
+
+                // back of cube
+                UVs[10] = bottomRightOfTexture;
+                UVs[11] = bottomLeftOfTexture;
+                UVs[6] = topRightOfTexture;
+                UVs[7] = topLeftOfTexture;
+
+                // bottom of cube
+                UVs[14] = bottomLeftOfTexture;
+                UVs[15] = topLeftOfTexture;
+                UVs[12] = topRightOfTexture;
+                UVs[13] = bottomRightOfTexture;
+
+                // left of cube
+                UVs[18] = bottomLeftOfTexture;
+                UVs[19] = topLeftOfTexture;
+                UVs[16] = topRightOfTexture;
+                UVs[17] = bottomRightOfTexture;
+
+                // right of cube
+                UVs[22] = bottomLeftOfTexture;
+                UVs[23] = topLeftOfTexture;
+                UVs[20] = topRightOfTexture;
+                UVs[21] = bottomRightOfTexture;
+
+            }
+            else
+            {
+                /* - - - - - - - JPG Texture UVs - - - - - - - -*/
+
+                // front of cube
+                UVs[0] = bottomLeftOfTexture;
+                UVs[1] = bottomRightOfTexture;
+                UVs[2] = topLeftOfTexture;
+                UVs[3] = topRightOfTexture;
+
+                // top of cube
+                UVs[4] = topLeftOfTexture;
+                UVs[5] = topRightOfTexture;
+                UVs[8] = bottomLeftOfTexture;
+                UVs[9] = bottomRightOfTexture;
+
+                // back of cube
+                UVs[6] = bottomRightOfTexture;
+                UVs[7] = bottomLeftOfTexture;
+                UVs[10] = topRightOfTexture;
+                UVs[11] = topLeftOfTexture;
+
+                // bottom of cube
+                UVs[12] = bottomLeftOfTexture;
+                UVs[13] = topLeftOfTexture;
+                UVs[14] = topRightOfTexture;
+                UVs[15] = bottomRightOfTexture;
+
+                // left of cube
+                UVs[16] = bottomLeftOfTexture;
+                UVs[17] = topLeftOfTexture;
+                UVs[18] = topRightOfTexture;
+                UVs[19] = bottomRightOfTexture;
+
+                // right of cube
+                UVs[20] = bottomLeftOfTexture;
+                UVs[21] = topLeftOfTexture;
+                UVs[22] = topRightOfTexture;
+                UVs[23] = bottomRightOfTexture;
+            }
+
+            thisCellMesh.uv = UVs;
+        }    
+    }
+    private IEnumerator DownloadTexture()
+    {
+        UnityWebRequest texture = UnityWebRequestTexture.GetTexture(ViRMA_APIController.imageThumbnailsAddress + thisCellData.ImageName);
+        yield return texture.SendWebRequest();
+        if (texture.result == UnityWebRequest.Result.Success)
+        {
+            Texture2D imageTexture = DownloadHandlerTexture.GetContent(texture);
+            Material timelineChildMaterial = new Material(Resources.Load("Materials/UnlitCell") as Material);
+            timelineChildMaterial.mainTexture = imageTexture;
+            thisCellRend.material = timelineChildMaterial;
+            thisCellRend.material.SetTextureScale("_MainTex", new Vector2(-1, -1));
         }
-
-        Vector2 bottomLeftOfTexture = new Vector2(0, textureLocationInArray);
-        Vector2 bottomRightOfTexture = new Vector2(1, textureLocationInArray);
-        Vector2 topLeftOfTexture = new Vector2(0, textureLocationInArray + textureOffset);
-        Vector2 topRightOfTexture = new Vector2(1, textureLocationInArray + textureOffset);
-
-        /* - - - - - - - DDS Images - - - - - - - -*/
-
-        /*
-        // front of cube
-        UVs[2] = bottomLeftOfTexture;
-        UVs[3] = bottomRightOfTexture;
-        UVs[0] = topLeftOfTexture;
-        UVs[1] = topRightOfTexture;
-
-        // top of cube
-        UVs[8] = topLeftOfTexture;
-        UVs[9] = topRightOfTexture;
-        UVs[4] = bottomLeftOfTexture;
-        UVs[5] = bottomRightOfTexture;
-
-        // back of cube
-        UVs[10] = bottomRightOfTexture;
-        UVs[11] = bottomLeftOfTexture;
-        UVs[6] = topRightOfTexture;
-        UVs[7] = topLeftOfTexture;
-
-        // bottom of cube
-        UVs[14] = bottomLeftOfTexture;
-        UVs[15] = topLeftOfTexture;
-        UVs[12] = topRightOfTexture;
-        UVs[13] = bottomRightOfTexture;
-
-        // left of cube
-        UVs[18] = bottomLeftOfTexture;
-        UVs[19] = topLeftOfTexture;
-        UVs[16] = topRightOfTexture;
-        UVs[17] = bottomRightOfTexture;
-
-        // right of cube
-        UVs[22] = bottomLeftOfTexture;
-        UVs[23] = topLeftOfTexture;
-        UVs[20] = topRightOfTexture;
-        UVs[21] = bottomRightOfTexture;
-        */
-
-        /* - - - - - - - JPG Images - - - - - - - -*/
-
-        
-        // front of cube
-        UVs[0] = bottomLeftOfTexture;        
-        UVs[1] = bottomRightOfTexture;       
-        UVs[2] = topLeftOfTexture;           
-        UVs[3] = topRightOfTexture;          
-
-        // top of cube
-        UVs[4] = topLeftOfTexture;
-        UVs[5] = topRightOfTexture;
-        UVs[8] = bottomLeftOfTexture;
-        UVs[9] = bottomRightOfTexture;
-
-        // back of cube
-        UVs[6] = bottomRightOfTexture;
-        UVs[7] = bottomLeftOfTexture;
-        UVs[10] = topRightOfTexture;
-        UVs[11] = topLeftOfTexture;
-
-        // bottom of cube
-        UVs[12] = bottomLeftOfTexture;
-        UVs[13] = topLeftOfTexture;
-        UVs[14] = topRightOfTexture;
-        UVs[15] = bottomRightOfTexture;
-
-        // left of cube
-        UVs[16] = bottomLeftOfTexture;
-        UVs[17] = topLeftOfTexture;
-        UVs[18] = topRightOfTexture;
-        UVs[19] = bottomRightOfTexture;
-
-        // right of cube
-        UVs[20] = bottomLeftOfTexture;
-        UVs[21] = topLeftOfTexture;
-        UVs[22] = topRightOfTexture;
-        UVs[23] = bottomRightOfTexture;
-        
-
-        thisCellMesh.uv = UVs;
+        else
+        {
+            Debug.LogError(texture.error + " | " + thisCellData.ImageName);
+        }
     }
     public void ToggleFade(bool toFade)
     {
@@ -277,87 +305,5 @@ public class ViRMA_Cell : MonoBehaviour
 
         }
     }
-
-    /*
-    private void OnHandHoverBegin(Hand hand)
-    {
-        Debug.Log("Old A");
-
-        globals.ToggleControllerFade(hand, true);
-
-        //globals.vizController.focusedCell = gameObject;
-        ToggleAxesLabels(true);
-
-        if (globals.vizController.cellObjs.Count > 0)
-        {
-            foreach (GameObject cell in globals.vizController.cellObjs)
-            {
-                if (cell != gameObject)
-                {
-                    cell.GetComponent<ViRMA_Cell>().ToggleFade(true);
-                }
-            }
-        }
-    }
-    private void OnHandHoverEnd(Hand hand)
-    {
-        Debug.Log("Old B");
-
-        globals.ToggleControllerFade(hand, false);
-
-        //globals.vizController.focusedCell = globals.vizController.axisXPointObjs[0];
-        ToggleAxesLabels(false);
-
-        if (globals.vizController.cellObjs.Count > 0)
-        {
-            foreach (GameObject cell in globals.vizController.cellObjs)
-            {
-                if (cell != gameObject)
-                {
-                    cell.GetComponent<ViRMA_Cell>().ToggleFade(false);
-                }
-            }
-        }
-    }
-    
-    public void OnHoverStart(Hand hand)
-    {
-        Debug.Log("New A");
-
-        globals.ToggleControllerFade(hand, true);
-
-        globals.vizController.focusedCell = gameObject;
-
-        if (globals.vizController.cellObjs.Count > 0)
-        {
-            foreach (GameObject cell in globals.vizController.cellObjs)
-            {
-                if (cell != gameObject)
-                {
-                    cell.GetComponent<ViRMA_Cell>().ToggleFade(true);
-                }
-            }
-        }
-    }
-    public void OnHoverEnd(Hand hand)
-    {
-        Debug.Log("New B");
-
-        globals.ToggleControllerFade(hand, false);
-
-        globals.vizController.focusedCell = globals.vizController.axisXPointObjs[0];
-
-        if (globals.vizController.cellObjs.Count > 0)
-        {
-            foreach (GameObject cell in globals.vizController.cellObjs)
-            {
-                if (cell != gameObject)
-                {
-                    cell.GetComponent<ViRMA_Cell>().ToggleFade(false);
-                }
-            }
-        }
-    }
-    */
 
 }

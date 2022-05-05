@@ -275,6 +275,8 @@ public class ViRMA_APIController : MonoBehaviour
     public static bool debugging = false;
     public static string serverAddress = "https://localhost:44317/api/";
     public static string imagesAddress = "http://bjth.itu.dk:5002/images/";
+    public static string imageThumbnailsAddress = "http://bjth.itu.dk:5002/thumbnails256/";
+    public static bool useLocalDDSFiles = false;
 
     //public static string imagesDirectory = System.IO.Directory.GetCurrentDirectory().ToString() + "/LaugavegurDataDDS/"; 
     //public static string imagesDirectory = "C:/Users/aaron/Documents/Unity Projects/ViRMA/LaugavegurDataDDS/"; 
@@ -339,9 +341,9 @@ public class ViRMA_APIController : MonoBehaviour
         else if (response["status"] != null)
         {
             if (response["status"] == 404)
-            {
-                Debug.LogWarning("STATUS 404: " + paramsURL);
+            {        
                 response = null;
+                //Debug.LogWarning("STATUS 404: " + paramsURL);
             }
         }
 
@@ -839,7 +841,7 @@ public class ViRMA_APIController : MonoBehaviour
     }
 
     // static helper methods
-    public static Texture2D ConvertImageFromDDS(byte[] ddsBytes)
+    public static Texture2D FormatDDSTexture(byte[] ddsBytes)
     {
         byte ddsSizeCheck = ddsBytes[4];
         if (ddsSizeCheck != 124)
@@ -858,7 +860,7 @@ public class ViRMA_APIController : MonoBehaviour
         texture.Apply();
         return (texture);
     }
-    public static Texture2D ConvertImageFromJPEG(byte[] jpgBytes)
+    public static Texture2D FormatJPGTexture(byte[] jpgBytes)
     {
         Texture2D tex = new Texture2D(1, 1);
         tex.LoadImage(jpgBytes);
@@ -1007,4 +1009,4 @@ public class ViRMA_APIController : MonoBehaviour
 
         onSuccess(results);
     }
-} 
+}

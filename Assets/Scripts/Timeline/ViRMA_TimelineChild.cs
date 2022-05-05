@@ -4,7 +4,6 @@ using System.IO;
 using UnityEngine;
 using Valve.VR.InteractionSystem;
 using TMPro;
-
 using UnityEngine.Networking;
 using System.Collections;
 
@@ -120,53 +119,47 @@ public class ViRMA_TimelineChild : MonoBehaviour
     {
         if (fileName.Length > 0)
         {
-            byte[] imageBytes = new byte[0];
-            try
+            if (ViRMA_APIController.useLocalDDSFiles)
             {
-                StartCoroutine(DownloadTimelineChildTexture());
-
-                /*
-                imageBytes = File.ReadAllBytes(ViRMA_APIController.imagesDirectory + fileName);
-                Texture2D imageTexture = ViRMA_APIController.ConvertImageFromDDS(imageBytes);
-                Material timelineChildMaterial = new Material(Resources.Load("Materials/UnlitCell") as Material);
-                timelineChildMaterial.mainTexture = imageTexture;
-                childRend.material = timelineChildMaterial;
-                childRend.material.SetTextureScale("_MainTex", new Vector2(-1, 1));
-                */
-            }
-            catch (FileNotFoundException e)
-            {
-                Debug.LogError(e.Message);
-            }
-        }
-    }
-
-    private IEnumerator DownloadTimelineChildTexture()
-    {
-        if (fileName.Length > 0)
-        {
-            UnityWebRequest www = UnityWebRequestTexture.GetTexture(ViRMA_APIController.imagesAddress + fileName);
-            yield return www.SendWebRequest();
-            if (www.result == UnityWebRequest.Result.Success)
-            {
-                Texture2D imageTexture = DownloadHandlerTexture.GetContent(www);
-
-                //Texture imageTexture = ((DownloadHandlerTexture)www.downloadHandler).texture;
-
-                Material timelineChildMaterial = new Material(Resources.Load("Materials/UnlitCell") as Material);
-                timelineChildMaterial.mainTexture = imageTexture;
-                childRend.material = timelineChildMaterial;
-                childRend.material.SetTextureScale("_MainTex", new Vector2(-1, -1));
-
+                try
+                {
+                    byte[] imageBytes = new byte[0];
+                    string imageDDS = fileName.Substring(0, fileName.Length - 3) + "dds";
+                    imageBytes = File.ReadAllBytes(ViRMA_APIController.imagesDirectory + imageDDS);
+                    Texture2D imageTexture = ViRMA_APIController.FormatDDSTexture(imageBytes);
+                    Material timelineChildMaterial = new Material(Resources.Load("Materials/UnlitCell") as Material);
+                    timelineChildMaterial.mainTexture = imageTexture;
+                    childRend.material = timelineChildMaterial;
+                    childRend.material.SetTextureScale("_MainTex", new Vector2(-1, 1));
+                }
+                catch (FileNotFoundException e)
+                {
+                    Debug.LogError(e.Message);
+                }
             }
             else
             {
-                Debug.LogError(www.error + " | " + fileName);
-            }  
-
-        }    
+                StartCoroutine(DownloadTimelineChildTexture());
+            }
+        }
     }
-
+    private IEnumerator DownloadTimelineChildTexture()
+    {
+        UnityWebRequest texture = UnityWebRequestTexture.GetTexture(ViRMA_APIController.imagesAddress + fileName);
+        yield return texture.SendWebRequest();
+        if (texture.result == UnityWebRequest.Result.Success)
+        {
+            Texture2D imageTexture = DownloadHandlerTexture.GetContent(texture);
+            Material timelineChildMaterial = new Material(Resources.Load("Materials/UnlitCell") as Material);
+            timelineChildMaterial.mainTexture = imageTexture;
+            childRend.material = timelineChildMaterial;
+            childRend.material.SetTextureScale("_MainTex", new Vector2(-1, -1));
+        }
+        else
+        {
+            Debug.LogError(texture.error + " | " + fileName);
+        }
+    }
     public void LoadTImelineContextMenu()
     {
         globals.timeline.timelineRb.velocity = Vector3.zero;
@@ -240,7 +233,7 @@ public class ViRMA_TimelineChild : MonoBehaviour
         {
             StartCoroutine(ViRMA_APIController.GetTimelineMetadata(id, (metadata) => {
                 tags = metadata;
-                var testing = String.Join(" | ", tags.ToArray());
+                //var testing = String.Join(" | ", tags.ToArray());
                 //Debug.Log(id + " : " + testing);
             }));
         }

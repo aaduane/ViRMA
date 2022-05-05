@@ -53,6 +53,9 @@ public class ViRMA_QueryController : MonoBehaviour
         buildingQuery.SetAxis("Y", 1794, "node"); // computer
         buildingQuery.SetAxis("X", 4151, "node"); // desk
 
+        //buildingQuery.SetAxis("X", 6702, "node"); // person
+        //buildingQuery.SetAxis("Y", 6702, "node"); // person
+
         //StartCoroutine(LateStart()); // debugging
     }
 

@@ -91,11 +91,10 @@ public class ViRMA_VizController : MonoBehaviour
         }));
 
         // generate textures and texture arrays from local image storage
-        GenerateTexturesAndTextureArrays(cellData);
-        //yield return StartCoroutine(GenerateTexturesAndTextureArrays(cellData));
+        //yield return StartCoroutine(GenerateTexturesAndTextureArrays(cellData)); 
 
-        // generate axes with axis labels (WAIT FOR)
-        yield return StartCoroutine(GenerateAxesFromLabels(submittedQuery));
+        // generate axes with axis labels
+        yield return StartCoroutine(GenerateAxesFromLabels(submittedQuery)); 
 
         // generate cells and their posiitons, centered on a parent
         GenerateCells(cellData);
@@ -122,65 +121,59 @@ public class ViRMA_VizController : MonoBehaviour
         globals.ToggleControllerFade(Player.instance.leftHand, false);
         globals.ToggleControllerFade(Player.instance.rightHand, false);
     }
-    private void GenerateTexturesAndTextureArrays(List<Cell> cellData)
+    private IEnumerator GenerateTexturesAndTextureArrays(List<Cell> cellData)
     {
         if (cellData.Count > 0)
         {
             //float before = Time.realtimeSinceStartup; // testing
 
-            int k = 0;
-
             // make a list of all the unique image textures present in the current query
             List<KeyValuePair<string, Texture2D>> uniqueTextures = new List<KeyValuePair<string, Texture2D>>();
             foreach (var newCell in cellData)
             {
-                k++;
-
                 if (!newCell.Filtered)
                 {
                     int index = uniqueTextures.FindIndex(a => a.Key == newCell.ImageName);
                     if (index == -1)
                     {
-
-                        /*
-                        if (newCell.ImageName.Length > 0)
+                        // use for local .dds copy of images
+                        if (ViRMA_APIController.useLocalDDSFiles)
                         {
-                            UnityWebRequest www = UnityWebRequest.Get(ViRMA_APIController.imagesAddress + newCell.ImageName);
-                            yield return www.SendWebRequest();
-                            if (www.result == UnityWebRequest.Result.Success)
-                            {                 
-                                byte[] imageBytes = www.downloadHandler.data;
-                                newCell.ImageTexture = ViRMA_APIController.ConvertImageFromJPEG(imageBytes);
+                            try
+                            {
+                                string imageDDS = newCell.ImageName.Substring(0, newCell.ImageName.Length - 3) + "dds";
+                                byte[] imageBytes = File.ReadAllBytes(ViRMA_APIController.imagesDirectory + imageDDS);
+                                newCell.ImageTexture = ViRMA_APIController.FormatDDSTexture(imageBytes);
+
                                 KeyValuePair<string, Texture2D> uniqueTexture = new KeyValuePair<string, Texture2D>(newCell.ImageName, newCell.ImageTexture);
                                 uniqueTextures.Add(uniqueTexture);
                             }
-                            else
+                            catch (FileNotFoundException e)
                             {
-                                Debug.LogError(www.error + " | " + newCell.ImageName);
+                                Debug.LogError(e.Message);
+                                newCell.Filtered = true;
                             }
                         }
-                        */
-                        
-
-                        
-                        try
+                        else
                         {
-                            //string imageDDS = newCell.ImageName.Substring(0, newCell.ImageName.Length - 4) + ".dds";
-                            byte[] imageBytes = File.ReadAllBytes(ViRMA_APIController.imagesDirectory + newCell.ImageName);
-                            //newCell.ImageTexture = ViRMA_APIController.ConvertImageFromDDS(imageBytes); // dds stuff
-                            newCell.ImageTexture = ViRMA_APIController.ConvertImageFromJPEG(imageBytes); // jpg stuff
-
-                            KeyValuePair<string, Texture2D> uniqueTexture = new KeyValuePair<string, Texture2D>(newCell.ImageName, newCell.ImageTexture);
-                            uniqueTextures.Add(uniqueTexture);
+                            // use for remote .jpg copy of images
+                            if (newCell.ImageName.Length > 0)
+                            {
+                                UnityWebRequest www = UnityWebRequest.Get(ViRMA_APIController.imagesAddress + newCell.ImageName);
+                                yield return www.SendWebRequest();
+                                if (www.result == UnityWebRequest.Result.Success)
+                                {
+                                    byte[] imageBytes = www.downloadHandler.data;
+                                    newCell.ImageTexture = ViRMA_APIController.FormatJPGTexture(imageBytes);
+                                    KeyValuePair<string, Texture2D> uniqueTexture = new KeyValuePair<string, Texture2D>(newCell.ImageName, newCell.ImageTexture);
+                                    uniqueTextures.Add(uniqueTexture);
+                                }
+                                else
+                                {
+                                    Debug.LogError(www.error + " | " + newCell.ImageName);
+                                }
+                            }
                         }
-                        catch(FileNotFoundException e)
-                        {
-                            Debug.LogError(e.Message);
-                            newCell.Filtered = true;
-                        }
-                        
-
-
                     }
                     else
                     {
@@ -192,6 +185,7 @@ public class ViRMA_VizController : MonoBehaviour
             // calculate the number of texture arrays needed based on the size of the first texture in the list
             int textureWidth = uniqueTextures[0].Value.width; // e.g. 1024 or 684
             int textureHeight = uniqueTextures[0].Value.height; // e.g. 765 or 485
+            TextureFormat textureFormat = uniqueTextures[0].Value.format; // RGB24 (.jpg) or DXT1 (.dds)
             int maxTextureArraySize = SystemInfo.maxTextureSize; // e.g. 16384 (most GPUs)
             int maxTexturesPerArray = maxTextureArraySize / textureHeight; // e.g. 22 or 33
             int totalTextureArrays = uniqueTextures.Count / maxTexturesPerArray + 1;
@@ -204,8 +198,16 @@ public class ViRMA_VizController : MonoBehaviour
                 {
                     Material newtextureArrayMaterial = new Material(Resources.Load(cellMaterial) as Material);
 
-                    //Texture2D newTextureArray = new Texture2D(textureWidth, textureHeight * maxTexturesPerArray, TextureFormat.DXT1, false); // dds stuff
-                    Texture2D newTextureArray = new Texture2D(textureWidth, textureHeight * maxTexturesPerArray, TextureFormat.RGB24, false); // jpg stuff
+                    // load correct texture format container
+                    Texture2D newTextureArray;
+                    if (textureFormat == TextureFormat.DXT1)
+                    {
+                        newTextureArray = new Texture2D(textureWidth, textureHeight * maxTexturesPerArray, TextureFormat.DXT1, false); // dds stuff
+                    }
+                    else
+                    {
+                        newTextureArray = new Texture2D(textureWidth, textureHeight * maxTexturesPerArray, TextureFormat.RGB24, false); // jpg stuff
+                    }
 
                     for (int j = 0; j < maxTexturesPerArray; j++)
                     {
@@ -237,8 +239,15 @@ public class ViRMA_VizController : MonoBehaviour
                     Material newtextureArrayMaterial = new Material(Resources.Load(cellMaterial) as Material);
                     int lastTextureArraySize = uniqueTextures.Count - (maxTexturesPerArray * (totalTextureArrays - 1));
 
-                    //Texture2D newTextureArray = new Texture2D(textureWidth, textureHeight * lastTextureArraySize, TextureFormat.DXT1, false); // dds stuff
-                    Texture2D newTextureArray = new Texture2D(textureWidth, textureHeight * lastTextureArraySize, TextureFormat.RGB24, false); // jpg stuff
+                    Texture2D newTextureArray;
+                    if (textureFormat == TextureFormat.DXT1)
+                    {
+                        newTextureArray = new Texture2D(textureWidth, textureHeight * lastTextureArraySize, TextureFormat.DXT1, false); // dds stuff
+                    }
+                    else
+                    {
+                        newTextureArray = new Texture2D(textureWidth, textureHeight * lastTextureArraySize, TextureFormat.RGB24, false); // jpg stuff
+                    }
 
                     for (int j = 0; j < lastTextureArraySize; j++)
                     {

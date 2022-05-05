@@ -188,35 +188,32 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
 
         menuInteractionActions.Activate();
 
-
+        /*
         // debugging
-        if (false)
+        //Debug.Log("dimensionExpLorerLoaded: " + dimExplorer.dimensionExpLorerLoaded + " | vizFullyLoaded: " + vizController.vizFullyLoaded + " | keyboardLoaded: " + dimExplorer.dimExKeyboard.keyboardLoaded + " | keyboardMoving: " + dimExplorer.dimExKeyboard.keyboardMoving);
+        string activeSetDebug = "Active Sets:";
+        if (defaultActions.IsActive())
         {
-            //Debug.Log("dimensionExpLorerLoaded: " + dimExplorer.dimensionExpLorerLoaded + " | vizFullyLoaded: " + vizController.vizFullyLoaded + " | keyboardLoaded: " + dimExplorer.dimExKeyboard.keyboardLoaded + " | keyboardMoving: " + dimExplorer.dimExKeyboard.keyboardMoving);
-
-            string activeSetDebug = "Active Sets:";
-            if (defaultActions.IsActive())
-            {
-                activeSetDebug += " | default";
-            }
-            if (vizNavActions.IsActive())
-            {
-                activeSetDebug += " | viz";
-            }
-            if (dimExplorerActions.IsActive())
-            {
-                activeSetDebug += " | dimEx";
-            }
-            if (menuInteractionActions.IsActive())
-            {
-                activeSetDebug += " | menu";
-            }
-            if (timelineActions.IsActive())
-            {
-                activeSetDebug += " | timeline";
-            }
-            Debug.Log(activeSetDebug);
-        }    
+            activeSetDebug += " | default";
+        }
+        if (vizNavActions.IsActive())
+        {
+            activeSetDebug += " | viz";
+        }
+        if (dimExplorerActions.IsActive())
+        {
+            activeSetDebug += " | dimEx";
+        }
+        if (menuInteractionActions.IsActive())
+        {
+            activeSetDebug += " | menu";
+        }
+        if (timelineActions.IsActive())
+        {
+            activeSetDebug += " | timeline";
+        }
+        Debug.Log(activeSetDebug);
+        */
     }
 
     // controller appearance
