@@ -126,8 +126,8 @@ public class ViRMA_MainMenu : MonoBehaviour
 
             if (browseFilterOption.name == "LocationsBtn")
             {
-                //browseFilterOption.GenerateBtnDefaults(ViRMA_Colors.darkBlue, Color.white);
-                //browseFilterOption.GetComponent<Button>().onClick.AddListener(() => ToggleMenuSection(section_locationPicker));
+                browseFilterOption.GenerateBtnDefaults(ViRMA_Colors.darkBlue, Color.white);
+                browseFilterOption.GetComponent<Button>().onClick.AddListener(() => ToggleMenuSection(section_locationPicker));
             }
         }
     }
@@ -725,6 +725,8 @@ public class ViRMA_MainMenu : MonoBehaviour
     {
         allLocationOptions = new List<ViRMA_UiElement>();
         toggledLocationUiElements = new List<ViRMA_UiElement>();
+
+
     }
 
     // general
