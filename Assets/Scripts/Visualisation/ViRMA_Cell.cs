@@ -34,11 +34,17 @@ public class ViRMA_Cell : MonoBehaviour
         }
         else
         {
-            // use id to only show relevant image on the mesh from the material texture array
-            //SetTextureFromArray(thisCellData.TextureArrayId); // fetch texture from array (local method)
-
-            // download image from server and convert it to a texture concurrently with other cells
-            StartCoroutine(DownloadTexture()); // fetch texture from server (online method)
+            // if a texture already exists, it means it's the texture array method
+            if (thisCellData.ImageTexture != null)
+            {
+                // use id to only show relevant image on the mesh from the material texture array
+                SetTextureFromArray(thisCellData.TextureArrayId); // fetch texture from array (local method)
+            }
+            else
+            {
+                // download image from server and convert it to a texture concurrently with other cells
+                StartCoroutine(DownloadTexture()); // fetch texture from server (online method)
+            }
         }
     }
     private void Update()
