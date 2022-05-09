@@ -551,6 +551,9 @@ public class ViRMA_APIController : MonoBehaviour
                 parentNode.Id = 0;
                 parentNode.Label = ".";
                 newTag.Parent = parentNode;
+
+                //////////////////////////////////////////////////////////////////////////////////////// FIX THIS
+
             }
 
             nodes.Add(newTag);
