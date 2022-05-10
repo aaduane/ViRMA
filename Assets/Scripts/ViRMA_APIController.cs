@@ -626,6 +626,10 @@ public class ViRMA_APIController : MonoBehaviour
                     node.Siblings = orderedList;
                 });
             }
+            else
+            {
+                node.Siblings = new List<Tag>() { node };
+            }
         }
 
         // Debug.Log(nodes.Count + " dimension results found!"); // testing
@@ -699,7 +703,7 @@ public class ViRMA_APIController : MonoBehaviour
     }
     public static IEnumerator GetHierarchyParent(int targetId, Action<Tag> onSuccess)
     {
-        Debug.Log("GetHierarchyParent | node/ " + targetId.ToString() + " / parent");
+        Debug.Log("GetHierarchyParent | node/ " + targetId.ToString() + "/ parent");
 
         yield return GetRequest("node/" + targetId.ToString() + "/parent", (response) =>
         {

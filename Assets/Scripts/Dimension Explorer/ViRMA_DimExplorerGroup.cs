@@ -139,17 +139,21 @@ public class ViRMA_DimExplorerGroup : MonoBehaviour
             {
                 // generate positions for tags in children (and parent) dim ex groups
                 float yIndex = 0;
-                foreach (var tag in tagsInGroup)
+                foreach (Tag tag in tagsInGroup)
                 {
-                    GameObject dimExBtn = Instantiate(dimExBtnPrefab);
-                    dimExBtn.GetComponent<ViRMA_DimExplorerBtn>().LoadDimExButton(tag);
-                    dimExBtn.transform.parent = transform;
-                    dimExBtn.transform.localRotation = Quaternion.identity;
+                    // tag can be null if at the top of hierarchy and there is no parent
+                    if (tag != null)
+                    {
+                        GameObject dimExBtn = Instantiate(dimExBtnPrefab);
+                        dimExBtn.GetComponent<ViRMA_DimExplorerBtn>().LoadDimExButton(tag);
+                        dimExBtn.transform.parent = transform;
+                        dimExBtn.transform.localRotation = Quaternion.identity;
 
-                    float yPos = yIndex * -0.1f;
-                    dimExBtn.transform.localPosition = new Vector3(0, yPos, 0);
+                        float yPos = yIndex * -0.1f;
+                        dimExBtn.transform.localPosition = new Vector3(0, yPos, 0);
 
-                    yIndex++;
+                        yIndex++;
+                    }             
                 }
             }
 
