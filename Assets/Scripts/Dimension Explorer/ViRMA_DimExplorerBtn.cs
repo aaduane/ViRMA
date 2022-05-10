@@ -1,6 +1,5 @@
 ﻿using TMPro;
 using UnityEngine;
-using Valve.VR;
 using Valve.VR.InteractionSystem;
 
 public class ViRMA_DimExplorerBtn : MonoBehaviour
@@ -18,7 +17,7 @@ public class ViRMA_DimExplorerBtn : MonoBehaviour
     public TextMeshPro textMesh;
     public BoxCollider col;
     public Renderer bgRend;
-    public MaterialPropertyBlock matPropBlock;    
+    public MaterialPropertyBlock matPropBlock;
 
     private void Awake()
     {
@@ -52,7 +51,7 @@ public class ViRMA_DimExplorerBtn : MonoBehaviour
             if (globals.dimExplorer.hoveredTagBtn == gameObject)
             {
                 globals.dimExplorer.hoveredTagBtn = null;
-            }          
+            }
         }
     }
 
@@ -89,7 +88,7 @@ public class ViRMA_DimExplorerBtn : MonoBehaviour
     }
     public void LoadDimExContextMenu()
     {
-        contextMenuActiveOnBtn = true;      
+        contextMenuActiveOnBtn = true;
 
         GameObject contextMenu = new GameObject("DimExContextMenu");
         contextMenu.AddComponent<ViRMA_DimExplorerContextMenu>().tagData = tagData;
@@ -101,7 +100,7 @@ public class ViRMA_DimExplorerBtn : MonoBehaviour
         contextMenu.AddComponent<Rigidbody>().useGravity = false;
         contextMenu.AddComponent<BoxCollider>().isTrigger = true;
         contextMenu.GetComponent<BoxCollider>().size = new Vector3(0.5f, 0.25f, 0.15f);
-        contextMenu.GetComponent<BoxCollider>().center = new Vector3(col.center.x, col.center.y, (col.size.z * 10f / 2f) * -1);     
+        contextMenu.GetComponent<BoxCollider>().center = new Vector3(col.center.x, col.center.y, (col.size.z * 10f / 2f) * -1);
     }
 
     // button state controls
@@ -137,7 +136,7 @@ public class ViRMA_DimExplorerBtn : MonoBehaviour
                 SetFadedState();
             }
             bgRend.SetPropertyBlock(matPropBlock);
-        }  
+        }
     }
     public void SetDefaultState()
     {
@@ -160,7 +159,7 @@ public class ViRMA_DimExplorerBtn : MonoBehaviour
 
             float borderThickness = innerBackground.transform.localScale.y * 0.1f;
             innerBackground.transform.localScale = new Vector3(innerBackground.transform.localScale.x - borderThickness, innerBackground.transform.localScale.y - borderThickness, innerBackground.transform.localScale.z - borderThickness);
-            innerBackground.transform.localPosition = new Vector3(innerBackground.transform.localPosition.x, innerBackground.transform.localPosition.y, innerBackground.transform.localPosition.z - 0.003f);            
+            innerBackground.transform.localPosition = new Vector3(innerBackground.transform.localPosition.x, innerBackground.transform.localPosition.y, innerBackground.transform.localPosition.z - 0.003f);
         }
     }
     public void SetFadedState()

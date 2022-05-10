@@ -546,14 +546,18 @@ public class ViRMA_APIController : MonoBehaviour
             }
             else
             {
+                Debug.Log("SearchHierachies | " + newTag.Label + ": no parent detected!");
+
                 // when there is no parent, it means we're at the top of the hierarchy and use a tag id of zero to indicate that
-                Tag parentNode = new Tag();
-                parentNode.Id = 0;
-                parentNode.Label = ".";
-                newTag.Parent = parentNode;
+                //Tag parentNode = new Tag();
+                //parentNode.Id = 0;
+                //parentNode.Label = ".";
+                //newTag.Parent = parentNode;
 
-                //////////////////////////////////////////////////////////////////////////////////////// FIX THIS
-
+                //Tag parentNode = new Tag();
+                //parentNode.Id = newTag.Id;
+                //parentNode.Label = newTag.Label;
+                //newTag.Parent = parentNode;
             }
 
             nodes.Add(newTag);
@@ -593,6 +597,9 @@ public class ViRMA_APIController : MonoBehaviour
             // get siblings
             if (node.Parent != null)
             {
+
+                Debug.Log("SearchHierachies | " + node.Label + " ---> node/" + node.Parent.Id.ToString() + "/children"); ////////////////////////////// debugging
+
                 yield return GetRequest("node/" + node.Parent.Id.ToString() + "/children", (response) =>
                 {
                     jsonData = response;
@@ -692,6 +699,8 @@ public class ViRMA_APIController : MonoBehaviour
     }
     public static IEnumerator GetHierarchyParent(int targetId, Action<Tag> onSuccess)
     {
+        Debug.Log("GetHierarchyParent | node/ " + targetId.ToString() + " / parent");
+
         yield return GetRequest("node/" + targetId.ToString() + "/parent", (response) =>
         {
             jsonData = response;

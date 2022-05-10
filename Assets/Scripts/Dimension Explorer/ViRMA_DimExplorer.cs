@@ -214,18 +214,15 @@ public class ViRMA_DimExplorer : MonoBehaviour
         ViRMA_DimExplorerGroup parentGroup = parentGroupObj.GetComponent<ViRMA_DimExplorerGroup>();
         Tag parentTagData = new Tag();
 
-
         // assign children groupings
         GameObject childrenGroupObj = hoveredTagBtn.transform.parent.GetComponent<ViRMA_DimExplorerGroup>().childrenDimExGrp;
         ViRMA_DimExplorerGroup childrenGroup = childrenGroupObj.GetComponent<ViRMA_DimExplorerGroup>();
         List<Tag> childrenTagData = new List<Tag>();
 
-
         // assign siblings groupings
         GameObject siblingsGroupObj = hoveredTagBtn.transform.parent.GetComponent<ViRMA_DimExplorerGroup>().siblingsDimExGrp;
         ViRMA_DimExplorerGroup siblingsGroup = siblingsGroupObj.GetComponent<ViRMA_DimExplorerGroup>();
         List<Tag> siblingsTagData = new List<Tag>();
-
 
         // fetch and wait for parent data
         yield return StartCoroutine(ViRMA_APIController.GetHierarchyParent(submittedTagData.Id, (response) => {
@@ -238,12 +235,22 @@ public class ViRMA_DimExplorer : MonoBehaviour
         }));
 
         // fetch and wait for sibling data
-        if (parentTagData.Id == 0)
+        if (parentTagData == null)
         {
+            Debug.Log("No parent!"); ////////////////////////////// debugging
+
+            parentGroup.ClearDimExplorerGroup();
+
+            yield return StartCoroutine(ViRMA_APIController.GetHierarchyTag(submittedTagData.Id, (response) => {
+                siblingsTagData = new List<Tag>() { response };
+            }));
+
+            /*
             // if the parent id is zero, it means we're at the top of hierarchy so replace normal siblings with previous parent instead
             yield return StartCoroutine(ViRMA_APIController.GetHierarchyParent(childrenTagData[0].Id, (response) => {
                 siblingsTagData = new List<Tag>() { response };
             }));
+            */
         }
         else
         {
@@ -251,8 +258,13 @@ public class ViRMA_DimExplorer : MonoBehaviour
             yield return StartCoroutine(ViRMA_APIController.GetHierarchyChildren(parentTagData.Id, (response) => {
                 siblingsTagData = response;
             }));
+
+
+            parentGroup.tagsInGroup = new List<Tag>() { parentTagData };
+            StartCoroutine(parentGroup.LoadDimExplorerGroup());
         }
                
+        /*
         // reload parent dim ex group
         if (parentTagData.Label == null)
         {
@@ -263,6 +275,7 @@ public class ViRMA_DimExplorer : MonoBehaviour
             parentGroup.tagsInGroup = new List<Tag>() { parentTagData };
             StartCoroutine(parentGroup.LoadDimExplorerGroup());
         }
+        */
 
         // reload childen dim ex grouo
         if (childrenTagData.Count < 1)
