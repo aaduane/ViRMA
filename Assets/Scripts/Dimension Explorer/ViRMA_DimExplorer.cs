@@ -237,53 +237,37 @@ public class ViRMA_DimExplorer : MonoBehaviour
         // fetch and wait for sibling data
         if (parentTagData == null)
         {
-            Debug.Log("No parent!"); ////////////////////////////// debugging
-
+            // if the parent is null, it means we're at the top of a hierarchy so clear parent group as it should be empty
             parentGroup.ClearDimExplorerGroup();
 
+            // then set the sibling data to just be the top tag in the hierarchy, which will be the last submitted tag
             yield return StartCoroutine(ViRMA_APIController.GetHierarchyTag(submittedTagData.Id, (response) => {
                 siblingsTagData = new List<Tag>() { response };
             }));
-
-            /*
-            // if the parent id is zero, it means we're at the top of hierarchy so replace normal siblings with previous parent instead
-            yield return StartCoroutine(ViRMA_APIController.GetHierarchyParent(childrenTagData[0].Id, (response) => {
-                siblingsTagData = new List<Tag>() { response };
-            }));
-            */
         }
         else
         {
-            // if parent isn't zero, then just get the normal siblings like always
+            // if parent isn't null, then just get the normal siblings like always and update the parent group
             yield return StartCoroutine(ViRMA_APIController.GetHierarchyChildren(parentTagData.Id, (response) => {
                 siblingsTagData = response;
             }));
 
+            // set the parent data for the parent group
+            parentGroup.tagsInGroup = new List<Tag>() { parentTagData };
 
-            parentGroup.tagsInGroup = new List<Tag>() { parentTagData };
+            // load the parent group
             StartCoroutine(parentGroup.LoadDimExplorerGroup());
         }
-               
-        /*
-        // reload parent dim ex group
-        if (parentTagData.Label == null)
-        {
-            parentGroup.ClearDimExplorerGroup();
-        }
-        else
-        {
-            parentGroup.tagsInGroup = new List<Tag>() { parentTagData };
-            StartCoroutine(parentGroup.LoadDimExplorerGroup());
-        }
-        */
 
         // reload childen dim ex grouo
         if (childrenTagData.Count < 1)
         {
+            // just clear previous children group if there are no children this time
             childrenGroup.ClearDimExplorerGroup();
         }
         else
         {
+            // set new children group
             childrenGroup.tagsInGroup = childrenTagData;
             StartCoroutine(childrenGroup.LoadDimExplorerGroup());
         }
@@ -291,11 +275,15 @@ public class ViRMA_DimExplorer : MonoBehaviour
         // reload sibling dim ex grouo
         if (siblingsTagData.Count < 1)
         {
+            // just clear previous sibling group if there are no siblings this time
             siblingsGroup.ClearDimExplorerGroup();
         }
         else
         {
+            // set the searched for tag in siblings to provide context to user
             siblingsGroup.searchedForTagData = submittedTagData;
+
+            // set new siblings group
             siblingsGroup.tagsInGroup = siblingsTagData;
             StartCoroutine(siblingsGroup.LoadDimExplorerGroup());
         }
