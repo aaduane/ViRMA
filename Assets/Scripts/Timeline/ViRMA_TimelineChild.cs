@@ -119,18 +119,34 @@ public class ViRMA_TimelineChild : MonoBehaviour
     {
         if (fileName.Length > 0)
         {
-            if (ViRMA_APIController.useLocalDDSFiles)
+            if (ViRMA_APIController.useLocalMedia)
             {
                 try
                 {
                     byte[] imageBytes = new byte[0];
-                    string imageDDS = fileName.Substring(0, fileName.Length - 3) + "dds";
-                    imageBytes = File.ReadAllBytes(ViRMA_APIController.imagesDirectory + imageDDS);
-                    Texture2D imageTexture = ViRMA_APIController.FormatDDSTexture(imageBytes);
+
                     Material timelineChildMaterial = new Material(Resources.Load("Materials/UnlitCell") as Material);
-                    timelineChildMaterial.mainTexture = imageTexture;
-                    childRend.material = timelineChildMaterial;
-                    childRend.material.SetTextureScale("_MainTex", new Vector2(-1, 1));
+
+                    string imageNameFormatted;
+                    if (ViRMA_APIController.localMediaType == "DDS")
+                    {
+                        imageNameFormatted = fileName.Substring(0, fileName.Length - 3) + "dds";
+                        imageBytes = File.ReadAllBytes(ViRMA_APIController.imagesDirectory + imageNameFormatted);
+                        timelineChildMaterial.mainTexture = ViRMA_APIController.FormatDDSTexture(imageBytes);
+                        childRend.material = timelineChildMaterial;
+                    }
+                    else if (ViRMA_APIController.localMediaType == "JPG")
+                    {
+                        imageNameFormatted = fileName;
+                        imageBytes = File.ReadAllBytes(ViRMA_APIController.imagesDirectory + imageNameFormatted);
+                        timelineChildMaterial.mainTexture = ViRMA_APIController.FormatJPGTexture(imageBytes);
+                        childRend.material = timelineChildMaterial;
+                        childRend.material.SetTextureScale("_MainTex", new Vector2(1, -1));
+                    }
+                    else
+                    {
+                        Debug.LogError(gameObject.name +  " | Invalid media file extension!");
+                    }
                 }
                 catch (FileNotFoundException e)
                 {

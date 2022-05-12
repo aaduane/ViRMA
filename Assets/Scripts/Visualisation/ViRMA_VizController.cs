@@ -91,7 +91,7 @@ public class ViRMA_VizController : MonoBehaviour
         }));
 
         // generate textures and texture arrays from local image storage
-        //yield return StartCoroutine(GenerateTexturesAndTextureArrays(cellData)); // comment out if do not want to pre-load images 
+        yield return StartCoroutine(GenerateTexturesAndTextureArrays(cellData)); // comment out if do not want to pre-load images 
 
         // generate axes with axis labels
         yield return StartCoroutine(GenerateAxesFromLabels(submittedQuery)); 
@@ -123,7 +123,7 @@ public class ViRMA_VizController : MonoBehaviour
     }
     private IEnumerator GenerateTexturesAndTextureArrays(List<Cell> cellData)
     {
-        if (cellData.Count > 0)
+        if (cellData.Count > 0 && ViRMA_APIController.useLocalMedia)
         {
             //float before = Time.realtimeSinceStartup; // testing
 
@@ -137,13 +137,27 @@ public class ViRMA_VizController : MonoBehaviour
                     if (index == -1)
                     {
                         // use for local .dds copy of images
-                        if (ViRMA_APIController.useLocalDDSFiles)
+                        if (ViRMA_APIController.useLocalMedia)
                         {
                             try
                             {
-                                string imageDDS = newCell.ImageName.Substring(0, newCell.ImageName.Length - 3) + "dds";
-                                byte[] imageBytes = File.ReadAllBytes(ViRMA_APIController.imagesDirectory + imageDDS);
-                                newCell.ImageTexture = ViRMA_APIController.FormatDDSTexture(imageBytes);
+                                string imageNameFormatted;
+                                if (ViRMA_APIController.localMediaType == "DDS")
+                                {
+                                    imageNameFormatted = newCell.ImageName.Substring(0, newCell.ImageName.Length - 3) + "dds";
+                                    byte[] imageBytes = File.ReadAllBytes(ViRMA_APIController.imagesDirectory + imageNameFormatted);
+                                    newCell.ImageTexture = ViRMA_APIController.FormatDDSTexture(imageBytes);
+                                }
+                                else if(ViRMA_APIController.localMediaType == "JPG")
+                                {
+                                    imageNameFormatted = newCell.ImageName;
+                                    byte[] imageBytes = File.ReadAllBytes(ViRMA_APIController.imagesDirectory + imageNameFormatted);
+                                    newCell.ImageTexture = ViRMA_APIController.FormatJPGTexture(imageBytes);
+                                }
+                                else
+                                {
+                                    Debug.LogError(gameObject.name + " | Invalid media file extension!");
+                                }
 
                                 KeyValuePair<string, Texture2D> uniqueTexture = new KeyValuePair<string, Texture2D>(newCell.ImageName, newCell.ImageTexture);
                                 uniqueTextures.Add(uniqueTexture);
@@ -345,36 +359,74 @@ public class ViRMA_VizController : MonoBehaviour
         if (submittedQuery.X != null)
         {
             string parentLabel = "";
-            yield return StartCoroutine(ViRMA_APIController.GetHierarchyTag(submittedQuery.X.Id, (Tag parentTag) => {
-                parentLabel = parentTag.Label;
-            }));
-            yield return StartCoroutine(ViRMA_APIController.GetHierarchyChildren(submittedQuery.X.Id, (List<Tag> childTags) => {
-                activeAxesLabels.SetAxisLabsls("X", submittedQuery.X.Id, submittedQuery.X.Type, parentLabel, childTags);
-            }));
+
+            if (submittedQuery.X.Type == "node")
+            {
+                yield return StartCoroutine(ViRMA_APIController.GetHierarchyTag(submittedQuery.X.Id, (Tag parentTag) => {
+                    parentLabel = parentTag.Label;
+                }));
+                yield return StartCoroutine(ViRMA_APIController.GetHierarchyChildren(submittedQuery.X.Id, (List<Tag> childTags) => {
+                    activeAxesLabels.SetAxisLabsls("X", submittedQuery.X.Id, submittedQuery.X.Type, parentLabel, childTags);
+                }));
+            }
+
+            if (submittedQuery.X.Type == "tagset")
+            {
+                yield return StartCoroutine(ViRMA_APIController.GetTagset(submittedQuery.X.Id.ToString(), (List<Tag> childTags) => {
+                    parentLabel = childTags[0].Parent.Label;
+                    activeAxesLabels.SetAxisLabsls("X", submittedQuery.X.Id, submittedQuery.X.Type, parentLabel, childTags);
+                }));
+            }   
+            
         }
 
         // get Y label data from server
         if (submittedQuery.Y != null)
         {
             string parentLabel = "";
-            yield return StartCoroutine(ViRMA_APIController.GetHierarchyTag(submittedQuery.Y.Id, (Tag parentTag) => {
-                parentLabel = parentTag.Label;
-            }));
-            yield return StartCoroutine(ViRMA_APIController.GetHierarchyChildren(submittedQuery.Y.Id, (List<Tag> childTags) => {
-                activeAxesLabels.SetAxisLabsls("Y", submittedQuery.Y.Id, submittedQuery.Y.Type, parentLabel, childTags);
-            }));
+
+            
+            {
+                yield return StartCoroutine(ViRMA_APIController.GetHierarchyTag(submittedQuery.Y.Id, (Tag parentTag) => {
+                    parentLabel = parentTag.Label;
+                }));
+                yield return StartCoroutine(ViRMA_APIController.GetHierarchyChildren(submittedQuery.Y.Id, (List<Tag> childTags) => {
+                    activeAxesLabels.SetAxisLabsls("Y", submittedQuery.Y.Id, submittedQuery.Y.Type, parentLabel, childTags);
+                }));
+            }
+        
+            if (submittedQuery.Y.Type == "tagset")
+            {
+                yield return StartCoroutine(ViRMA_APIController.GetTagset(submittedQuery.Y.Id.ToString(), (List<Tag> childTags) => {
+                    parentLabel = childTags[0].Parent.Label;
+                    activeAxesLabels.SetAxisLabsls("Y", submittedQuery.Y.Id, submittedQuery.Y.Type, parentLabel, childTags);
+                }));
+            }
         }
 
         // get Z label data from server
         if (submittedQuery.Z != null)
         {
             string parentLabel = "";
-            yield return StartCoroutine(ViRMA_APIController.GetHierarchyTag(submittedQuery.Z.Id, (Tag parentTag) => {
-                parentLabel = parentTag.Label;
-            }));
-            yield return StartCoroutine(ViRMA_APIController.GetHierarchyChildren(submittedQuery.Z.Id, (List<Tag> childTags) => {
-                activeAxesLabels.SetAxisLabsls("Z", submittedQuery.Z.Id, submittedQuery.Z.Type, parentLabel, childTags);
-            }));
+
+            if (submittedQuery.Z.Type == "node")
+            {
+                yield return StartCoroutine(ViRMA_APIController.GetHierarchyTag(submittedQuery.Z.Id, (Tag parentTag) => {
+                    parentLabel = parentTag.Label;
+                }));
+                yield return StartCoroutine(ViRMA_APIController.GetHierarchyChildren(submittedQuery.Z.Id, (List<Tag> childTags) => {
+                    activeAxesLabels.SetAxisLabsls("Z", submittedQuery.Z.Id, submittedQuery.Z.Type, parentLabel, childTags);
+                }));
+            }
+
+            if (submittedQuery.Z.Type == "tagset")
+            {
+                yield return StartCoroutine(ViRMA_APIController.GetTagset(submittedQuery.Z.Id.ToString(), (List<Tag> childTags) => {
+                    parentLabel = childTags[0].Parent.Label;
+                    activeAxesLabels.SetAxisLabsls("Z", submittedQuery.Z.Id, submittedQuery.Z.Type, parentLabel, childTags);
+                }));
+            }
+
         }    
 
         // // global style for propety blocks
@@ -934,31 +986,34 @@ public class ViRMA_VizController : MonoBehaviour
             else if (focusedAxisPoint.GetComponent<ViRMA_RollUpPoint>())
             {
                 ViRMA_RollUpPoint axisPoint = focusedAxisPoint.GetComponent<ViRMA_RollUpPoint>();
-                StartCoroutine(ViRMA_APIController.GetHierarchyParent(focusedAxisPoint.GetComponent<ViRMA_RollUpPoint>().axisId, (response) => {
-                    Tag parent = response;
-                    if (parent != null)
-                    {
-                        string axisQueryType = "";
-                        if (axisPoint.x)
+                if (axisPoint.axisType == "node")
+                {
+                    StartCoroutine(ViRMA_APIController.GetHierarchyParent(focusedAxisPoint.GetComponent<ViRMA_RollUpPoint>().axisId, (response) => {
+                        Tag parent = response;
+                        if (parent != null)
                         {
-                            axisQueryType = "X";
+                            string axisQueryType = "";
+                            if (axisPoint.x)
+                            {
+                                axisQueryType = "X";
+                            }
+                            else if (axisPoint.y)
+                            {
+                                axisQueryType = "Y";
+                            }
+                            else if (axisPoint.z)
+                            {
+                                axisQueryType = "Z";
+                            }
+                            globals.queryController.buildingQuery.SetAxis(axisQueryType, parent.Id, "node");
+                            // Debug.Log("Parent: " + parent.Name);
                         }
-                        else if (axisPoint.y)
+                        else
                         {
-                            axisQueryType = "Y";
+                            //Debug.Log("No parent!");
                         }
-                        else if (axisPoint.z)
-                        {
-                            axisQueryType = "Z";
-                        }
-                        globals.queryController.buildingQuery.SetAxis(axisQueryType, parent.Id, "node");
-                        // Debug.Log("Parent: " + parent.Name);
-                    }
-                    else
-                    {
-                        //Debug.Log("No parent!");
-                    }
-                }));
+                    }));
+                }       
             }
         }
     }

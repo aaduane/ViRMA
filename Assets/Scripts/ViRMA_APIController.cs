@@ -273,16 +273,16 @@ public class ViRMA_APIController : MonoBehaviour
 {
     // public
     public static bool debugging = false;
+
+    // remote globals
     public static string serverAddress = "https://localhost:44317/api/";
     public static string imagesAddress = "http://bjth.itu.dk:5002/images/";
-    public static string imageThumbnailsAddress = "http://bjth.itu.dk:5002/thumbnails256/";
-    public static bool useLocalDDSFiles = false;
+    public static string imagesThumbnailsAddress = "http://bjth.itu.dk:5002/thumbnails256/";
 
-    //public static string imagesDirectory = System.IO.Directory.GetCurrentDirectory().ToString() + "/LaugavegurDataDDS/"; 
-    //public static string imagesDirectory = "C:/Users/aaron/Documents/Unity Projects/ViRMA/LaugavegurDataDDS/"; 
-
+    // local globals
+    public static bool useLocalMedia = true;
+    public static string localMediaType = "DDS"; // DDS or JPG
     public static string imagesDirectory = System.IO.Directory.GetCurrentDirectory().ToString() + "/../LSC2021/";
-    //public static string imagesDirectory = "C:/Users/aaron/Documents/Unity Projects/LSC2021/"; 
 
     // private
     private static JSONNode jsonData;
@@ -361,9 +361,9 @@ public class ViRMA_APIController : MonoBehaviour
     // viz API
     public static IEnumerator GetCells(Query query, Action<List<Cell>> onSuccess)
     {
-        // OLD 1:   https://localhost:44317/api/cell?xAxis={'AxisType': 'Tagset', 'TagsetId': 3}&yAxis={'AxisType': 'Tagset', 'TagsetId': 7}&zAxis={'AxisType': 'Hierarchy', 'HierarchyNodeId': 77}&filters=[{'type': 'Tagset', 'tagId': 7},{'type': 'Hierarchy', 'nodeId': 5}]
-        // OLD 2:   https://localhost:44317/api/cell/?yAxis={"AxisType":"Hierarchy","Id":691}&zAxis={"AxisType":"Tagset","Id":13}&filters=[{"Id":132,"type":"day of week","name":"7"},{"Id":147,"type":"day of week","name":"6"}]
-        // NEW:     https://localhost:44317/api/cell/?yAxis={"type":"node","id":691}&zAxis={"type":"tagset","id":13}&filters=[{"type":"tag","ids":["147","132"]}]       
+        // V1:  /api/cell?xAxis={'AxisType': 'Tagset', 'TagsetId': 3}&yAxis={'AxisType': 'Tagset', 'TagsetId': 7}&zAxis={'AxisType': 'Hierarchy', 'HierarchyNodeId': 77}&filters=[{'type': 'Tagset', 'tagId': 7},{'type': 'Hierarchy', 'nodeId': 5}]
+        // V2:  /api/cell/?yAxis={"AxisType":"Hierarchy","Id":691}&zAxis={"AxisType":"Tagset","Id":13}&filters=[{"Id":132,"type":"day of week","name":"7"},{"Id":147,"type":"day of week","name":"6"}]
+        // V3:  /api/cell/?yAxis={"type":"node","id":691}&zAxis={"type":"tagset","id":13}&filters=[{"type":"tag","ids":["147","132"]}]       
 
         string url = "cell?";
         if (query.X != null)

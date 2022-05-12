@@ -81,9 +81,9 @@ public class ViRMA_GlobalsAndActions : MonoBehaviour
         }
         if (Input.GetKey("p"))
         {
-            Debug.Log("Screenshot taken: " + "C:/Users/Aaron Duane/Downloads/" + DateTime.Now.ToString("HH_mm_ss") + ".png");
-            ScreenCapture.CaptureScreenshot("C:/Users/Aaron Duane/Downloads/" + DateTime.Now.ToString("HH_mm_ss") + ".png", 2);
-            //ScreenCapture.CaptureScreenshot(System.IO.Directory.GetCurrentDirectory().ToString() + "/" + DateTime.Now.ToString("HH_mm_ss") + ".png", 2);
+            Debug.Log("Screenshot taken: " + System.IO.Directory.GetCurrentDirectory().ToString() + "/" + DateTime.Now.ToString("HH_mm_ss") + ".png");
+            //ScreenCapture.CaptureScreenshot("C:/Users/Aaron Duane/Downloads/" + DateTime.Now.ToString("HH_mm_ss") + ".png", 2);
+            ScreenCapture.CaptureScreenshot(System.IO.Directory.GetCurrentDirectory().ToString() + "/" + DateTime.Now.ToString("HH_mm_ss") + ".png", 2);
         }
     }
 

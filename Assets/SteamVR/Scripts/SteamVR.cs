@@ -670,7 +670,7 @@ namespace Valve.VR
         private SteamVR()
         {
             hmd = OpenVR.System;
-            Debug.LogFormat("<b>[SteamVR]</b> Initialized. Connected to {0} : {1} : {2} :: {3}", hmd_TrackingSystemName, hmd_ModelNumber, hmd_SerialNumber, hmd_Type);
+            //Debug.LogFormat("<b>[SteamVR]</b> Initialized. Connected to {0} : {1} : {2} :: {3}", hmd_TrackingSystemName, hmd_ModelNumber, hmd_SerialNumber, hmd_Type);
 
             compositor = OpenVR.Compositor;
             overlay = OpenVR.Overlay;

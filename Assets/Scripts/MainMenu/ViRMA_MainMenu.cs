@@ -532,7 +532,6 @@ public class ViRMA_MainMenu : MonoBehaviour
     }
 
     // time picker
-
     private IEnumerator SetupTimePicker()
     {
         // current targset time picker tagsets
