@@ -273,7 +273,7 @@ public class ViRMA_TimelineChild : MonoBehaviour
                 time = outTime;
             }
 
-            if (DateTime.TryParseExact(targetTag, "MM/dd/yyyy HH:mm:ss", null, System.Globalization.DateTimeStyles.None, out DateTime outSeconds))
+            if (DateTime.TryParseExact(targetTag, "dd/MM/yyyy HH:mm:ss", null, System.Globalization.DateTimeStyles.None, out DateTime outSeconds))
             {
                 seconds = outSeconds;
             }

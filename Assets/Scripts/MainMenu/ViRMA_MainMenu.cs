@@ -89,7 +89,7 @@ public class ViRMA_MainMenu : MonoBehaviour
 
         StartCoroutine(SetupTimePicker());
 
-        SetupLocationPicker();
+        StartCoroutine(SetupLocationPicker());
 
         ToggleMenuSection(section_dimensionBrowser);
     }
@@ -720,12 +720,35 @@ public class ViRMA_MainMenu : MonoBehaviour
     }
 
     // location picker
-    private void SetupLocationPicker()
+    private IEnumerator SetupLocationPicker()
     {
         allLocationOptions = new List<ViRMA_UiElement>();
         toggledLocationUiElements = new List<ViRMA_UiElement>();
 
+        // get all time tagsets corresponding to list above 
+        string locationTagsetId = "";
+        yield return StartCoroutine(ViRMA_APIController.GetTagset("", (tagsetsData) => {
+            foreach (Tag tagsetData in tagsetsData)
+            {
+                if (tagsetData.Label == "Location name")
+                {
+                    locationTagsetId = tagsetData.Id.ToString();
+                }
+            }
+        }));
 
+        List<Tag> locationTagsetData = new List<Tag>();
+        yield return StartCoroutine(ViRMA_APIController.GetTagset(locationTagsetId, (tagsetData) => {
+
+            Debug.Log(tagsetData.Count);
+
+            locationTagsetData = tagsetData;
+        }));
+
+        foreach (Tag locationTagset in locationTagsetData)
+        {
+            Debug.Log(locationTagset.Label + " | " + locationTagset.Id);
+        }
     }
 
     // general

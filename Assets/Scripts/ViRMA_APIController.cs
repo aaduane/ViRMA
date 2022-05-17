@@ -260,11 +260,21 @@ public class AxesLabels {
     private static string Sanitise(string unsanitisedLabel)
     {
         string sanitisedLabel = unsanitisedLabel;
+
+        // remove brackets
         int bracketIndex = unsanitisedLabel.IndexOf("(");
         if (bracketIndex > -1)
         {
             sanitisedLabel = unsanitisedLabel.Substring(0, bracketIndex);
         }
+
+        // remove slashes
+        int slashIndex = unsanitisedLabel.IndexOf("/");
+        if (slashIndex > -1)
+        {
+            sanitisedLabel = unsanitisedLabel.Substring(0, slashIndex);
+        }
+
         return sanitisedLabel;
     }
 }
@@ -279,9 +289,12 @@ public class ViRMA_APIController : MonoBehaviour
     public static string imagesAddress = "http://bjth.itu.dk:5002/images/";
     public static string imagesThumbnailsAddress = "http://bjth.itu.dk:5002/thumbnails256/";
 
+    //public static string imagesAddress = "http://bjth.itu.dk:5008/";
+    //public static string imagesThumbnailsAddress = "http://bjth.itu.dk:5008/";
+
     // local globals
     public static bool useLocalMedia = true;
-    public static string localMediaType = "DDS"; // DDS or JPG
+    public static string localMediaType = "JPG"; // DDS or JPG
     public static string imagesDirectory = System.IO.Directory.GetCurrentDirectory().ToString() + "/../LSC2021/";
 
     // private
