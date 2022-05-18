@@ -91,7 +91,7 @@ public class ViRMA_VizController : MonoBehaviour
         }));
 
         // generate textures and texture arrays from local image storage
-        yield return StartCoroutine(GenerateTexturesAndTextureArrays(cellData)); // comment out if do not want to pre-load images 
+        //yield return StartCoroutine(GenerateTexturesAndTextureArrays(cellData)); // comment out if do not want to pre-load images 
 
         // generate axes with axis labels
         yield return StartCoroutine(GenerateAxesFromLabels(submittedQuery)); 
@@ -173,7 +173,7 @@ public class ViRMA_VizController : MonoBehaviour
                             // use for remote .jpg copy of images
                             if (newCell.ImageName.Length > 0)
                             {
-                                UnityWebRequest www = UnityWebRequest.Get(ViRMA_APIController.imagesAddress + newCell.ImageName);
+                                UnityWebRequest www = UnityWebRequest.Get(ViRMA_APIController.remoteImageDirectory + newCell.ImageName);
                                 yield return www.SendWebRequest();
                                 if (www.result == UnityWebRequest.Result.Success)
                                 {

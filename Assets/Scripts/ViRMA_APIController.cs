@@ -7,10 +7,52 @@ using System;
 using System.Threading;
 using System.Linq;
 
+public static class MediaController
+{
+    public class LSC2021
+    {
+        public static string Remote = "http://bjth.itu.dk:5005/LSC21/";
+        public static string Local = "D:/Datasets/LSC2021/";
+    }
+    public class LSC2022
+    {
+        public static string Server = "http://bjth.itu.dk:5007/";
+        public static string Local = "D:/Datasets/LSC2022/";
+    }
+    public class VBS2022
+    {
+        public static string Server = "http://bjth.itu.dk:5008/";
+        public static string Local = "D:/Datasets/VBS2022/";
+    }
+}
 public class Tag
 {
-    public int Id { get; set; }
-    public string Label { get; set; }
+    private string _label; // needed to check for brackets/slashes when Label is get
+    public string Label
+    {
+        get
+        {
+            /*
+            // remove brackets
+            int bracketIndex = _label.IndexOf("(");
+            if (bracketIndex > -1)
+            {
+                _label = _label.Substring(0, bracketIndex);
+            }
+            */
+
+            // remove slashes
+            int slashIndex = _label.IndexOf("/");
+            if (slashIndex > -1)
+            {
+                _label = _label.Substring(0, slashIndex);
+            }
+
+            return _label;
+        }
+        set { _label = value; }
+    }
+    public int Id { get; set; } 
     public Tag Parent { get; set; }
     public List<Tag> Siblings { get; set; }
     public List<Tag> Children { get; set; }
@@ -232,7 +274,7 @@ public class AxesLabels {
         public AxisLabel(int id, string type, string label, List<Tag> labels)
         {
             Id = id;
-            Label = Sanitise(label);
+            Label = label;
             Type = type;
             Labels = labels;
         }
@@ -256,52 +298,26 @@ public class AxesLabels {
             Debug.LogError("Invalid axis selected.");
         }
     }
-
-    private static string Sanitise(string unsanitisedLabel)
-    {
-        string sanitisedLabel = unsanitisedLabel;
-
-        // remove brackets
-        int bracketIndex = unsanitisedLabel.IndexOf("(");
-        if (bracketIndex > -1)
-        {
-            sanitisedLabel = unsanitisedLabel.Substring(0, bracketIndex);
-        }
-
-        // remove slashes
-        int slashIndex = unsanitisedLabel.IndexOf("/");
-        if (slashIndex > -1)
-        {
-            sanitisedLabel = unsanitisedLabel.Substring(0, slashIndex);
-        }
-
-        return sanitisedLabel;
-    }
 }
 
 public class ViRMA_APIController : MonoBehaviour
 {
     // public
     public static bool debugging = false;
+    public static string restAPI = "https://localhost:44317/api/";
 
-    // remote globals
-    public static string serverAddress = "https://localhost:44317/api/";
-    public static string imagesAddress = "http://bjth.itu.dk:5002/images/";
-    public static string imagesThumbnailsAddress = "http://bjth.itu.dk:5002/thumbnails256/";
-
-    //public static string imagesAddress = "http://bjth.itu.dk:5008/";
-    //public static string imagesThumbnailsAddress = "http://bjth.itu.dk:5008/";
-
-    // local globals
     public static bool useLocalMedia = true;
     public static string localMediaType = "JPG"; // DDS or JPG
-    public static string imagesDirectory = System.IO.Directory.GetCurrentDirectory().ToString() + "/../LSC2021/";
+    public static string imagesDirectory = MediaController.LSC2021.Local;
+
+    public static string remoteImageDirectory = MediaController.LSC2021.Remote;
+    public static string remoteThumbnailDirectory = MediaController.LSC2021.Remote;  
 
     // private
     private static JSONNode jsonData;
     public static IEnumerator GetRequest(string paramsURL, Action<JSONNode> onSuccess)
     {
-        string getRequest = serverAddress + paramsURL;
+        string getRequest = restAPI + paramsURL;
         float beforeWebRequest = 0, afterWebRequest = 0, beforeJsonParse = 0, afterJsonParse = 0;
 
         // for debugging
@@ -530,12 +546,7 @@ public class ViRMA_APIController : MonoBehaviour
             newTag.Id = obj.Value["id"];
 
             // tag name
-            string tagName = obj.Value["name"];
-            int bracketIndex = tagName.IndexOf("(");
-            if (bracketIndex > -1) {
-                tagName = tagName.Substring(0, bracketIndex);
-            }
-            newTag.Label = tagName;
+            newTag.Label = obj.Value["name"];
 
             // if tag has a parent
             if (obj.Value["parentNode"] != null)
@@ -546,13 +557,7 @@ public class ViRMA_APIController : MonoBehaviour
                 parentNode.Id = obj.Value["parentNode"]["id"];
 
                 // parent tag name
-                string parentTagName = obj.Value["parentNode"]["name"];
-                int parentBracketIndex = parentTagName.IndexOf("(");
-                if (parentBracketIndex > -1)
-                {
-                    parentTagName = parentTagName.Substring(0, parentBracketIndex);
-                }
-                parentNode.Label = parentTagName;
+                parentNode.Label = obj.Value["parentNode"]["name"];
 
                 // attch parent tag info to new tag
                 newTag.Parent = parentNode;
@@ -578,13 +583,7 @@ public class ViRMA_APIController : MonoBehaviour
                     newTag.Id = obj.Value["id"];
 
                     // tag name
-                    string tagName = obj.Value["name"];
-                    int bracketIndex = tagName.IndexOf("(");
-                    if (bracketIndex > -1)
-                    {
-                        tagName = tagName.Substring(0, bracketIndex);
-                    }
-                    newTag.Label = tagName;
+                    newTag.Label = obj.Value["name"];
                     node.Children.Add(newTag);
                 }
 
@@ -607,13 +606,7 @@ public class ViRMA_APIController : MonoBehaviour
                         newTag.Id = obj.Value["id"];
 
                         // tag name
-                        string tagName = obj.Value["name"];
-                        int bracketIndex = tagName.IndexOf("(");
-                        if (bracketIndex > -1)
-                        {
-                            tagName = tagName.Substring(0, bracketIndex);
-                        }
-                        newTag.Label = tagName;
+                        newTag.Label = obj.Value["name"];
                         node.Siblings.Add(newTag);
                     }
 
@@ -656,13 +649,7 @@ public class ViRMA_APIController : MonoBehaviour
             if (jsonData["tagName"] != null)
             {
                 // tag name
-                string tagName = jsonData["tagName"];
-                int bracketIndex = tagName.IndexOf("(");
-                if (bracketIndex > -1)
-                {
-                    tagName = tagName.Substring(0, bracketIndex);
-                }
-                nodeTag.Label = tagName;
+                nodeTag.Label = jsonData["tagName"];
             }      
         }
 
@@ -687,13 +674,7 @@ public class ViRMA_APIController : MonoBehaviour
                 newTag.Id = obj.Value["id"];
 
                 // tag name
-                string tagName = obj.Value["name"];
-                int bracketIndex = tagName.IndexOf("(");
-                if (bracketIndex > -1)
-                {
-                    tagName = tagName.Substring(0, bracketIndex);
-                }
-                newTag.Label = tagName;
+                newTag.Label = obj.Value["name"];
                 children.Add(newTag);
             }
         }   
@@ -720,13 +701,7 @@ public class ViRMA_APIController : MonoBehaviour
             parentTag.Id = jsonData["id"];
 
             // tag name
-            string tagName = jsonData["name"];
-            int bracketIndex = tagName.IndexOf("(");
-            if (bracketIndex > -1)
-            {
-                tagName = tagName.Substring(0, bracketIndex);
-            }
-            parentTag.Label = tagName;
+            parentTag.Label = jsonData["name"];
         }
 
         onSuccess(parentTag);
@@ -885,84 +860,6 @@ public class ViRMA_APIController : MonoBehaviour
     }
 
     // deprecated
-    public static IEnumerator GetAxesLabels(Query query, Action<AxesLabels> onSuccess)
-    {
-        AxesLabels axisLabels = new AxesLabels();
-
-        (string name, List<KeyValuePair<string, int>> labels) processLabelData(JSONNode response)
-        {
-            string name;
-            List<KeyValuePair<string, int>> labels = new List<KeyValuePair<string, int>>();
-            if (response["tags"] == null)
-            {
-                // hierarchy
-                name = "testing";
-                foreach (JSONObject child in response)
-                {
-                    int labelId = child["id"];
-                    string labelName = child["name"];
-                    int bracketIndex = labelName.IndexOf("(");
-                    if (bracketIndex > -1)
-                    {
-                        labelName = labelName.Substring(0, bracketIndex);
-                    }
-                    KeyValuePair<string, int> labelIdPair = new KeyValuePair<string, int>(labelName, labelId);
-                    labels.Add(labelIdPair);
-                }
-            }
-            else
-            {
-                // tagset
-                name = response["name"];
-                foreach (JSONObject child in response["tags"])
-                {
-                    int labelId = child["id"];
-                    string labelName = child["name"];
-                    int bracketIndex = labelName.IndexOf("(");
-                    if (bracketIndex > -1)
-                    {
-                        labelName = labelName.Substring(0, bracketIndex);
-                    }
-                    KeyValuePair<string, int> labelIdPair = new KeyValuePair<string, int>(labelName, labelId);
-                    labels.Add(labelIdPair);
-                }
-            }
-            labels = labels.OrderBy(kvp => kvp.Key).ToList();
-            return (name, labels);
-        }
-
-        if (query.X != null)
-        {
-            string type = query.X.Type;
-            yield return GetRequest(type + "/" + query.X.Id + "/children", (response) =>
-            {
-                (string name, List<KeyValuePair<string, int>> labels) = processLabelData(response);
-                //axisLabels.SetAxisLabsls("X", query.X.Id, type, name, labels);
-            });
-        }
-
-        if (query.Y != null)
-        {
-            string type = query.Y.Type;
-            yield return GetRequest(type + "/" + query.Y.Id + "/children", (response) =>
-            {
-                (string name, List<KeyValuePair<string, int>> labels) = processLabelData(response);
-                //axisLabels.SetAxisLabsls("Y", query.Y.Id, type, name, labels);
-            });
-        }
-
-        if (query.Z != null)
-        {
-            string type = query.Z.Type;
-            yield return GetRequest(type + "/" + query.Z.Id + "/children", (response) =>
-            {
-                (string name, List<KeyValuePair<string, int>> labels) = processLabelData(response);
-                //axisLabels.SetAxisLabsls("Z", query.Z.Id, type, name, labels);
-            });
-        }
-
-        onSuccess(axisLabels);
-    }
     public static IEnumerator GetAllHierarchies(Action<List<Tag>> onSuccess)
     {
         yield return GetRequest("hierarchy/", (response) =>

@@ -161,7 +161,7 @@ public class ViRMA_TimelineChild : MonoBehaviour
     }
     private IEnumerator DownloadTimelineChildTexture()
     {
-        UnityWebRequest texture = UnityWebRequestTexture.GetTexture(ViRMA_APIController.imagesAddress + fileName);
+        UnityWebRequest texture = UnityWebRequestTexture.GetTexture(ViRMA_APIController.remoteImageDirectory + fileName);
         yield return texture.SendWebRequest();
         if (texture.result == UnityWebRequest.Result.Success)
         {

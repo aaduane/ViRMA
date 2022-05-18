@@ -218,7 +218,7 @@ public class ViRMA_Cell : MonoBehaviour
     }
     private IEnumerator DownloadTexture()
     {
-        UnityWebRequest texture = UnityWebRequestTexture.GetTexture(ViRMA_APIController.imagesThumbnailsAddress + thisCellData.ImageName);
+        UnityWebRequest texture = UnityWebRequestTexture.GetTexture(ViRMA_APIController.remoteThumbnailDirectory + thisCellData.ImageName);
         yield return texture.SendWebRequest();
         if (texture.result == UnityWebRequest.Result.Success)
         {

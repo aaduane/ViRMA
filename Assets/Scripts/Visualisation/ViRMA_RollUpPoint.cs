@@ -150,12 +150,6 @@ public class ViRMA_RollUpPoint : MonoBehaviour
         // set axis label text when it is ready and surround it in a collider
         if (axisLabel != "" && labelSet == false)
         {
-            // remove bracket id if it exists
-            int bracketIndex = axisLabel.IndexOf("(");
-            if (bracketIndex > -1)
-            {
-                axisLabel = axisLabel.Substring(0, bracketIndex);
-            }
             axisLabelText.text = axisLabel;
 
             float offsetSize = (axisLabelText.preferredWidth * 0.35f) + 1.5f;

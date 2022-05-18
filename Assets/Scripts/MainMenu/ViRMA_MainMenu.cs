@@ -5,6 +5,7 @@ using UnityEngine.UI;
 using Valve.VR.InteractionSystem;
 using TMPro;
 using Valve.VR;
+using System.Linq;
 
 public class ViRMA_MainMenu : MonoBehaviour
 {
@@ -56,9 +57,10 @@ public class ViRMA_MainMenu : MonoBehaviour
     ///////////////////////////////////////////////// location picker
     public GameObject section_locationPicker;
 
-    private List<ViRMA_UiElement> allLocationOptions;
-    private List<ViRMA_UiElement> toggledLocationUiElements;
-    
+    public List<ViRMA_UiElement> allLocationOptions;
+
+    public GameObject ui_locations;
+
     ///////////////////////////////////////////////// custom buttons
     public List<GameObject> customButtons; 
 
@@ -558,6 +560,7 @@ public class ViRMA_MainMenu : MonoBehaviour
             }));
         }
 
+        // generate day objects 
         foreach (Tag timeTagset in timeTagsetsData)
         {
             // generate day of the week options
@@ -723,7 +726,6 @@ public class ViRMA_MainMenu : MonoBehaviour
     private IEnumerator SetupLocationPicker()
     {
         allLocationOptions = new List<ViRMA_UiElement>();
-        toggledLocationUiElements = new List<ViRMA_UiElement>();
 
         // get all time tagsets corresponding to list above 
         string locationTagsetId = "";
@@ -739,16 +741,24 @@ public class ViRMA_MainMenu : MonoBehaviour
 
         List<Tag> locationTagsetData = new List<Tag>();
         yield return StartCoroutine(ViRMA_APIController.GetTagset(locationTagsetId, (tagsetData) => {
-
-            Debug.Log(tagsetData.Count);
-
-            locationTagsetData = tagsetData;
+            //locationTagsetData = tagsetData;
+            locationTagsetData = tagsetData.OrderBy(s => s.Label).ToList();
         }));
 
-        foreach (Tag locationTagset in locationTagsetData)
+        for (int i = 0; i < locationTagsetData.Count; i++)
         {
-            Debug.Log(locationTagset.Label + " | " + locationTagset.Id);
+            GameObject templateLocationBtn = ui_locations.transform.GetChild(0).gameObject;
+            if (i == 0)
+            {
+                templateLocationBtn.GetComponentInChildren<TMP_Text>().text = locationTagsetData[i].Label;
+            }
+            else
+            {
+                GameObject newOption = Instantiate(templateLocationBtn, templateLocationBtn.transform.parent);
+                newOption.GetComponentInChildren<TMP_Text>().text = locationTagsetData[i].Label;
+            }
         }
+
     }
 
     // general
@@ -912,6 +922,14 @@ public class ViRMA_MainMenu : MonoBehaviour
             {
                 customMenuBtn.GetComponent<ViRMA_UiElement>().GenerateBtnDefaults(ViRMA_Colors.flatOrange, Color.white);
             }
+            if (customMenuBtn.name == "ClearLocationsBtn")
+            {
+                customMenuBtn.GetComponent<ViRMA_UiElement>().GenerateBtnDefaults(ViRMA_Colors.flatOrange, Color.white);
+            }
+            if (customMenuBtn.name == "LocationBackBtn")
+            {
+                customMenuBtn.GetComponent<ViRMA_UiElement>().GenerateBtnDefaults(ViRMA_Colors.grey, Color.white);
+            }
             if (customMenuBtn.name == "ClearAllBtn")
             {
                 customMenuBtn.GetComponent<ViRMA_UiElement>().GenerateBtnDefaults(ViRMA_Colors.flatOrange, Color.white);
@@ -926,6 +944,10 @@ public class ViRMA_MainMenu : MonoBehaviour
             mainMenuMoving = true;
         }
         if (customMenuBtn.name == "TimeBackBtn")
+        {
+            ToggleMenuSection(section_dimensionBrowser);
+        }
+        if (customMenuBtn.name == "LocationBackBtn")
         {
             ToggleMenuSection(section_dimensionBrowser);
         }
@@ -947,6 +969,10 @@ public class ViRMA_MainMenu : MonoBehaviour
                     timeOption.toggle = false;
                 }
             }
+        }
+        if (customMenuBtn.name == "ClearLocationsBtn")
+        {
+            
         }
     }
     private void MainMenuRepositioning()
