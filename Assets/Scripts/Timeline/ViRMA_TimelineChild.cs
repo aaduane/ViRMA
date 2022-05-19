@@ -17,8 +17,13 @@ public class ViRMA_TimelineChild : MonoBehaviour
     // target timeline child paramters
     public int id;
     public string fileName;
-    public List<string> tags;
-    public DateTime timestamp;
+
+    public List<string> tags;       /////// OLD
+    public List<Tag> tagsData;      /////////////// NEW
+
+    public DateTime timestamp;      /////// OLD
+    public DateTime timestampUTC;   /////////////// NEW
+    public DateTime timestampLOC;   /////////////// NEW
 
     // border stuff
     private GameObject border;
@@ -44,6 +49,7 @@ public class ViRMA_TimelineChild : MonoBehaviour
     }
     private void Update()
     {
+
         if (delayComplete == false)
         {
             float timeSinceInitialization = Time.realtimeSinceStartup - initializationTime;
@@ -55,7 +61,7 @@ public class ViRMA_TimelineChild : MonoBehaviour
 
         if (tags != null && metadataLoaded == false)
         {
-            GetTimestamp();
+            //GetTimestamp();
             metadataLoaded = true;
         }
 
@@ -247,15 +253,43 @@ public class ViRMA_TimelineChild : MonoBehaviour
     {
         if (id != 0)
         {
+            /*
             StartCoroutine(ViRMA_APIController.GetTimelineMetadata(id, (metadata) => {
                 tags = metadata;
                 //var testing = String.Join(" | ", tags.ToArray());
                 //Debug.Log(id + " : " + testing);
             }));
+            */
+
+            StartCoroutine(ViRMA_APIController.GetTimelineMetadataNEW(id, (results) => {
+                tagsData = results;
+                GetTimestamp();
+                /*
+                if (transform.GetSiblingIndex() == 0)
+                {
+                    Debug.Log(id);
+
+                    foreach (Tag tagData in tagsData)
+                    {
+                        if (tagData.Parent.Label == "Timestamp LOC")
+                        {
+                            Debug.Log(tagData.Label);
+                        }
+                        if (tagData.Parent.Label == "Timestamp UTC")
+                        {
+                            Debug.Log(tagData.Label);
+                        }
+                    }
+                    Debug.Log("------------------------------------------------------------------------------------");
+                }       
+                */
+
+            }));
         }
     }
     public void GetTimestamp()
     {
+        /*
         DateTime date = new DateTime();
         DateTime time = new DateTime();
         DateTime seconds = new DateTime();
@@ -280,6 +314,25 @@ public class ViRMA_TimelineChild : MonoBehaviour
         }
 
         timestamp = new DateTime(date.Year, date.Month, date.Day, time.Hour, time.Minute, seconds.Second);
+        */
+
+        foreach (Tag tagData in tagsData)
+        {
+            if (tagData.Parent.Label == "Timestamp LOC")
+            {
+                if (DateTime.TryParseExact(tagData.Label, "dd/MM/yyyy HH:mm:ss", null, System.Globalization.DateTimeStyles.None, out DateTime parsedTimestamp))
+                {
+                    timestampLOC = parsedTimestamp;
+                }
+            }
+            if (tagData.Parent.Label == "Timestamp UTC")
+            {
+                if (DateTime.TryParseExact(tagData.Label, "dd/MM/yyyy HH:mm:ss", null, System.Globalization.DateTimeStyles.None, out DateTime parsedTimestamp))
+                {
+                    timestampUTC = parsedTimestamp;
+                }
+            }
+        }
 
         LoadTooltip();
     }
@@ -287,8 +340,8 @@ public class ViRMA_TimelineChild : MonoBehaviour
     {
         tooltip = new GameObject();
         TextMeshPro textMesh = tooltip.AddComponent<TextMeshPro>();
-        tooltip.name = timestamp.ToString("ddd HH:mm:ss dd/MM/yyyy");
-        textMesh.text = timestamp.ToString("ddd HH:mm:ss dd/MM/yyyy");
+        tooltip.name = timestampLOC.ToString("ddd HH:mm:ss dd/MM/yyyy");
+        textMesh.text = timestampLOC.ToString("ddd HH:mm:ss dd/MM/yyyy");
 
         tooltip.GetComponent<RectTransform>().sizeDelta = new Vector2(1, 1);
 

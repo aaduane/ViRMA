@@ -32,6 +32,21 @@ public class Tag
     {
         get
         {
+            // remove slashes
+            int slashIndex = _label.IndexOf("/");
+
+            // check if Label has a / in it
+            if (slashIndex > -1)
+            {
+                // if it does, check if there is a second / in it (this is a date, and should be ignored)
+                string restOfLabel = _label.Substring(slashIndex + 1);
+                if (restOfLabel.IndexOf("/") == -1)
+                {
+                    // if there is only a single /, then cut off everything after
+                    _label = _label.Substring(0, slashIndex);
+                }
+            }
+
             /*
             // remove brackets
             int bracketIndex = _label.IndexOf("(");
@@ -40,13 +55,6 @@ public class Tag
                 _label = _label.Substring(0, bracketIndex);
             }
             */
-
-            // remove slashes
-            int slashIndex = _label.IndexOf("/");
-            if (slashIndex > -1)
-            {
-                _label = _label.Substring(0, slashIndex);
-            }
 
             return _label;
         }
@@ -306,12 +314,12 @@ public class ViRMA_APIController : MonoBehaviour
     public static bool debugging = false;
     public static string restAPI = "https://localhost:44317/api/";
 
-    public static bool useLocalMedia = true;
+    public static bool useLocalMedia = false;
     public static string localMediaType = "JPG"; // DDS or JPG
     public static string imagesDirectory = MediaController.LSC2021.Local;
 
     public static string remoteImageDirectory = MediaController.LSC2021.Remote;
-    public static string remoteThumbnailDirectory = MediaController.LSC2021.Remote;  
+    public static string remoteThumbnailDirectory = MediaController.LSC2021.Remote;
 
     // private
     private static JSONNode jsonData;
@@ -370,7 +378,7 @@ public class ViRMA_APIController : MonoBehaviour
         else if (response["status"] != null)
         {
             if (response["status"] == 404)
-            {        
+            {
                 response = null;
                 //Debug.LogWarning("STATUS 404: " + paramsURL);
             }
@@ -426,7 +434,7 @@ public class ViRMA_APIController : MonoBehaviour
         if (query.X != null || query.Y != null || query.Y != null)
         {
             url = url.Substring(0, url.Length - 1);
-        }      
+        }
 
         if (query.Filters.Count > 0)
         {
@@ -476,7 +484,7 @@ public class ViRMA_APIController : MonoBehaviour
 
         onSuccess(cells);
     }
-    
+
     // tagset and hierarchy API
     public static IEnumerator GetTagset(string targetId, Action<List<Tag>> onSuccess)
     {
@@ -486,7 +494,7 @@ public class ViRMA_APIController : MonoBehaviour
         });
 
         List<Tag> tagsetData = new List<Tag>();
-      
+
         if (jsonData["tags"] != null)
         {
             foreach (var tag in jsonData["tags"])
@@ -520,7 +528,7 @@ public class ViRMA_APIController : MonoBehaviour
         }
 
         onSuccess(tagsetData);
-    }   
+    }
     public static IEnumerator SearchHierachies(string searchParam, Action<List<Tag>> onSuccess)
     {
         //Debug.Log("Submitting... node/name=" + searchParam);
@@ -650,7 +658,7 @@ public class ViRMA_APIController : MonoBehaviour
             {
                 // tag name
                 nodeTag.Label = jsonData["tagName"];
-            }      
+            }
         }
 
         onSuccess(nodeTag);
@@ -677,7 +685,7 @@ public class ViRMA_APIController : MonoBehaviour
                 newTag.Label = obj.Value["name"];
                 children.Add(newTag);
             }
-        }   
+        }
 
         List<Tag> orderedList = children.OrderBy(s => s.Label).ToList();
         onSuccess(orderedList);
@@ -706,7 +714,7 @@ public class ViRMA_APIController : MonoBehaviour
 
         onSuccess(parentTag);
     }
-     
+
     // cell contents and timeline API
     public static IEnumerator GetCellContents(Query cellQueryData, Action<List<KeyValuePair<int, string>>> onSuccess)
     {
@@ -749,7 +757,7 @@ public class ViRMA_APIController : MonoBehaviour
             }
 
             url = url.Substring(0, url.Length - 1) + "]";
-            
+
         }
 
         url += "&all=[]";
@@ -772,16 +780,34 @@ public class ViRMA_APIController : MonoBehaviour
         }
 
         onSuccess(results);
-    }  
+    }
     public static IEnumerator GetContextTimeline(DateTime timestamp, int minutes, Action<List<KeyValuePair<int, string>>> onSuccess)
     {
-        // cell?filters=[{'type':'daterange','ids':['2'],'ranges':[['23-08-2016','23-08-2016']]},{'type':'timerange','ids':['3'],'ranges':[['10:00','11:00']]}]&all=[]
+        // OLD: cell?filters=[{'type':'daterange','ids':['2'],'ranges':[['23-08-2016','23-08-2016']]},{'type':'timerange','ids':['3'],'ranges':[['10:00','11:00']]}]&all=[]
+        // OLD E.G: cell?filters=[{'type':'daterange','ids':['2'],'ranges':[['" + past.ToString("dd-MM-yyyy") + "','" + future.ToString("dd-MM-yyyy") + "']]},{'type':'timerange','ids':['3'],'ranges':[['" + past.ToString("HH:mm") + "','" + future.ToString("HH:mm") + "']]}]&all=[]     
+        // NEW E.G.: cell?filters=[{'type':'timestamprange','ids':['18'],'ranges':[['2016-09-24T19:26:00','2016-09-24T21:26:00']]}]&all=[]
 
         TimeSpan timeSpan = new TimeSpan(0, minutes, 0);
         DateTime future = timestamp.Add(timeSpan);
-        DateTime past = timestamp.Subtract(timeSpan); 
-        
-        string url = "cell?filters=[{'type':'daterange','ids':['2'],'ranges':[['" + past.ToString("dd-MM-yyyy") + "','" + future.ToString("dd-MM-yyyy") + "']]},{'type':'timerange','ids':['3'],'ranges':[['" + past.ToString("HH:mm") + "','" + future.ToString("HH:mm") + "']]}]&all=[]";
+        DateTime past = timestamp.Subtract(timeSpan);
+
+        string timestampTagsetIdUTC = "19";
+        // confirm tagset ID for UTC timestamp is correct
+        yield return GetRequest("tagset/", (tagsets) =>
+        {
+            if (tagsets["tags"] == null)
+            {
+                foreach (var tagset in tagsets)
+                {
+                    if (tagset.Value["name"] == "Timestamp UTC")
+                    {
+                        timestampTagsetIdUTC = tagset.Value["id"];
+                    }
+                }
+            }
+        });
+
+        string url = "cell?filters=[{'type':'timestamprange','ids':['" + timestampTagsetIdUTC + "'],'ranges':[['" + past.ToString("dd/MM/yyyy HH:mm:ss") + "','" + future.ToString("dd/MM/yyyy HH:mm:ss") + "']]}]&all=[]";
 
         Debug.Log("GetTimeline: " + url); // debugging
 
@@ -798,15 +824,43 @@ public class ViRMA_APIController : MonoBehaviour
 
             if (imagePath.Length > 0)
             {
-                //string imageNameDDS = imagePath.Substring(0, imagePath.Length - 4) + ".dds";
                 KeyValuePair<int, string> imageIdPath = new KeyValuePair<int, string>(imageId, imagePath);
                 results.Add(imageIdPath);
             }
             else
             {
                 Debug.LogError("Something wrong with this image ---> " + imagePath);
-            }            
+            }
         }
+
+        onSuccess(results);
+    }
+    public static IEnumerator GetTimelineMetadataNEW(int targetId, Action<List<Tag>> onSuccess)
+    {
+        // /api/CubeObject/5/tags
+
+        string url = "CubeObject/" + targetId + "/tags";
+
+        //Debug.Log(url);
+
+        List<Tag> results = new List<Tag>();
+        yield return GetRequest(url, (response) =>
+        {
+            foreach (var tagData in response)
+            {
+                Tag newTag = new Tag
+                {
+                    Id = tagData.Value["id"],
+                    Label = tagData.Value["name"]
+                };
+                newTag.Parent = new Tag
+                {
+                    Id = tagData.Value["tagsetId"],
+                    Label = tagData.Value["tagsetName"]
+                };
+                results.Add(newTag);
+            }
+        });
 
         onSuccess(results);
     }
@@ -830,6 +884,7 @@ public class ViRMA_APIController : MonoBehaviour
 
         onSuccess(results);
     }
+
 
     // static helper methods
     public static Texture2D FormatDDSTexture(byte[] ddsBytes)

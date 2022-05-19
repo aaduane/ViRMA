@@ -284,6 +284,7 @@ public class ViRMA_Timeline : MonoBehaviour
     }
     private IEnumerator GetTimelineSectionMetadata()
     {
+        // this is for preloading metadata rather than doing it async
         foreach (GameObject timelineSectionChild in timelineSectionChildren)
         {
             if (timelineSectionChild != null)
@@ -512,7 +513,7 @@ public class ViRMA_Timeline : MonoBehaviour
             savedTimelineChildId = targetTimelineChild.id;
         }
 
-        StartCoroutine(ViRMA_APIController.GetContextTimeline(targetTimelineChild.timestamp, contextTimelineTimespan, (results) => {
+        StartCoroutine(ViRMA_APIController.GetContextTimeline(targetTimelineChild.timestampUTC, contextTimelineTimespan, (results) => {
 
             contextTimelineResults = results;
 

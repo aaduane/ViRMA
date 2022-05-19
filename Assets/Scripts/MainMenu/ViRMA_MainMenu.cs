@@ -741,7 +741,6 @@ public class ViRMA_MainMenu : MonoBehaviour
 
         List<Tag> locationTagsetData = new List<Tag>();
         yield return StartCoroutine(ViRMA_APIController.GetTagset(locationTagsetId, (tagsetData) => {
-            //locationTagsetData = tagsetData;
             locationTagsetData = tagsetData.OrderBy(s => s.Label).ToList();
         }));
 
