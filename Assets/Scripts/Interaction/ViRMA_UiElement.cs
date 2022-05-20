@@ -3,6 +3,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using Valve.VR.InteractionSystem;
 using TMPro;
+using System.Collections;
 
 [RequireComponent(typeof(Interactable))]
 public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler, IPointerUpHandler, IPointerClickHandler
@@ -67,11 +68,19 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     private void Start()
     {
+		StartCoroutine(LateStart());
+	}
+
+	private IEnumerator LateStart()
+	{
+		// wait 1 frame so other things have a chance to load and values are accurate
+		yield return 0;
+
 		// set correct box collider size for UI interactions
 		SetKeyColliderSize();
 	}
 
-    private void Update()
+	private void Update()
     {
 		handINteractingWithUi = currentHand;
 

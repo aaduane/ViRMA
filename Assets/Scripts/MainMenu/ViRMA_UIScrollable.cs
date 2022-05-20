@@ -8,7 +8,8 @@ public class ViRMA_UIScrollable : MonoBehaviour
     private ViRMA_GlobalsAndActions globals;
     private ScrollRect scrollRect;  
     private Transform scrollContent;
-    private Rect rectangle;
+    private RectTransform rectTransform;
+    private Rect rect;
     private bool allowScrolling;
     private Canvas canvas;
 
@@ -19,7 +20,8 @@ public class ViRMA_UIScrollable : MonoBehaviour
         globals = Player.instance.gameObject.GetComponent<ViRMA_GlobalsAndActions>();
         scrollRect = GetComponent<ScrollRect>();
         scrollContent = scrollRect.content.transform;
-        rectangle = transform.GetComponent<RectTransform>().rect;
+        rectTransform = GetComponent<RectTransform>();
+        rect = rectTransform.rect;
         canvas = GetComponentInParent<Canvas>();
     }
 
@@ -57,20 +59,39 @@ public class ViRMA_UIScrollable : MonoBehaviour
         {
             Rect elementRect = scrollContent.GetChild(i).GetComponent<RectTransform>().rect;
 
-            float halfContainerHeight = (rectangle.height * canvas.transform.localScale.x) / 2;
+            float halfContainerHeight = (rect.height * canvas.transform.localScale.x) / 2;
             float halfButtonHeight = (elementRect.height * canvas.transform.localScale.x * scrollContent.GetChild(i).localScale.x) / 2;
-            float maxDist = (halfContainerHeight + halfButtonHeight) * 0.80f;
+            float maxDist = (halfContainerHeight + halfButtonHeight);
 
             float distance = Vector3.Distance(transform.position, scrollContent.GetChild(i).position);
             if (distance > maxDist)
             {
                 scrollContent.GetChild(i).GetComponent<BoxCollider>().enabled = false;
-
             }
             else
             {
                 scrollContent.GetChild(i).GetComponent<BoxCollider>().enabled = true;
             }
+
+            if (name == "LocationWrapper")
+            {
+                Transform child = scrollContent.GetChild(i);
+                Transform grandParent = child.transform.parent.parent;
+
+                Vector3 positionRelativeToCenter = grandParent.InverseTransformPoint(child.position);
+                float maxScrollingDist = grandParent.GetComponent<RectTransform>().sizeDelta.y / 2;
+                float yDist = positionRelativeToCenter.y;
+
+                if (yDist > maxScrollingDist || yDist < (maxScrollingDist * -1))
+                {
+                    scrollContent.GetChild(i).GetComponent<BoxCollider>().enabled = false;
+                }
+                else
+                {
+                    scrollContent.GetChild(i).GetComponent<BoxCollider>().enabled = true;
+                }
+            }
+            
         }
     }
     private void EnableJoystickTouchScrolling()

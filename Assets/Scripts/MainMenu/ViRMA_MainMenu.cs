@@ -105,6 +105,8 @@ public class ViRMA_MainMenu : MonoBehaviour
         CheckActiveDirectFilterOptions();
 
         TimePickerToggleController();
+
+        LocationPickerToggleController();
     }
 
     // browse filters
@@ -577,7 +579,7 @@ public class ViRMA_MainMenu : MonoBehaviour
                         if (weekdayTag.Label.Substring(0, 3) == weekdayLabel)
                         {         
                             uiElement.buttonData = weekdayTag;
-                            weekdayObj.GetComponent<Button>().onClick.AddListener(() => ToggleTimeOption(uiElement));                  
+                            weekdayObj.GetComponent<Button>().onClick.AddListener(() => ToggleTagPickerOption(uiElement));                  
                         }
                     }
                 }
@@ -597,7 +599,7 @@ public class ViRMA_MainMenu : MonoBehaviour
                         if (hourTag.Label == hour.ToString())
                         {              
                             uiElement.buttonData = hourTag;
-                            hourObj.GetComponent<Button>().onClick.AddListener(() => ToggleTimeOption(uiElement));   
+                            hourObj.GetComponent<Button>().onClick.AddListener(() => ToggleTagPickerOption(uiElement));   
                         }
                     }
                 }
@@ -617,7 +619,7 @@ public class ViRMA_MainMenu : MonoBehaviour
                         if (dateTag.Label == date.ToString())
                         {
                             uiElement.buttonData = dateTag;
-                            dateObj.GetComponent<Button>().onClick.AddListener(() => ToggleTimeOption(uiElement));
+                            dateObj.GetComponent<Button>().onClick.AddListener(() => ToggleTagPickerOption(uiElement));
                         }
                     }
                 }
@@ -637,7 +639,7 @@ public class ViRMA_MainMenu : MonoBehaviour
                         if (shortMonthLabel == monthLabel)
                         {                
                             uiElement.buttonData = monthTag;
-                            monthObj.GetComponent<Button>().onClick.AddListener(() => ToggleTimeOption(uiElement));
+                            monthObj.GetComponent<Button>().onClick.AddListener(() => ToggleTagPickerOption(uiElement));
                         }
                     }
                 }
@@ -656,7 +658,7 @@ public class ViRMA_MainMenu : MonoBehaviour
                         if (yearLabel == yearTag.Label)
                         {
                             uiElement.buttonData = yearTag;
-                            yearObj.GetComponent<Button>().onClick.AddListener(() => ToggleTimeOption(uiElement));
+                            yearObj.GetComponent<Button>().onClick.AddListener(() => ToggleTagPickerOption(uiElement));
                         }
                     }
                 }
@@ -675,12 +677,14 @@ public class ViRMA_MainMenu : MonoBehaviour
     private void TimePickerToggleController()
     {
         // do every second frame for performance
+        /*
         frameSkipper++;
         if (frameSkipper < 2)
         {
             return;
         }
         frameSkipper = 0;
+        */
 
         foreach (ViRMA_UiElement timeOption in allTimeOptions)
         {
@@ -704,21 +708,6 @@ public class ViRMA_MainMenu : MonoBehaviour
             }
 
             timeOption.toggle = toToggle;
-        }
-    }
-    public void ToggleTimeOption(ViRMA_UiElement uiElement)
-    {
-        if (uiElement.buttonData != null)
-        {
-            Tag timeTagData = (Tag)uiElement.buttonData;
-            if (uiElement.isToggled)
-            {
-                globals.queryController.buildingQuery.RemoveFilter(timeTagData.Id, "tag", timeTagData.Parent.Id);
-            }
-            else
-            {
-                globals.queryController.buildingQuery.AddFilter(timeTagData.Id, "tag", timeTagData.Parent.Id);
-            }      
         }
     }
 
@@ -750,17 +739,69 @@ public class ViRMA_MainMenu : MonoBehaviour
             if (i == 0)
             {
                 templateLocationBtn.GetComponentInChildren<TMP_Text>().text = locationTagsetData[i].Label;
+                ViRMA_UiElement uiElement = templateLocationBtn.GetComponent<ViRMA_UiElement>();  
+                uiElement.buttonData = locationTagsetData[i];
+                allLocationOptions.Add(uiElement);
+                templateLocationBtn.GetComponent<Button>().onClick.AddListener(() => ToggleTagPickerOption(uiElement));
+
+                templateLocationBtn.name = locationTagsetData[i].Label;
             }
             else
             {
                 GameObject newOption = Instantiate(templateLocationBtn, templateLocationBtn.transform.parent);
                 newOption.GetComponentInChildren<TMP_Text>().text = locationTagsetData[i].Label;
+                ViRMA_UiElement uiElement = newOption.GetComponent<ViRMA_UiElement>();
+                uiElement.buttonData = locationTagsetData[i];
+                allLocationOptions.Add(uiElement);
+                newOption.GetComponent<Button>().onClick.AddListener(() => ToggleTagPickerOption(uiElement));
+
+                newOption.name = locationTagsetData[i].Label;
             }
         }
+    }
+    private void LocationPickerToggleController()
+    {
+        foreach (ViRMA_UiElement locationOption in allLocationOptions)
+        {
+            bool toToggle = false;
+            foreach (Query.Filter activeFilter in globals.queryController.buildingQuery.Filters)
+            {
+                if (activeFilter.FilterId != "null_0")
+                {
+                    foreach (int activeTagId in activeFilter.Ids)
+                    {
+                        if (locationOption.buttonData != null)
+                        {
+                            Tag locationTagData = (Tag)locationOption.buttonData;
+                            if (locationTagData.Id == activeTagId)
+                            {
+                                toToggle = true;
+                            }
+                        }
+                    }
+                }
+            }
 
+            locationOption.toggle = toToggle;
+        }
     }
 
     // general
+    public void ToggleTagPickerOption(ViRMA_UiElement uiElement)
+    {
+        if (uiElement.buttonData != null)
+        {
+            Tag tagData = (Tag)uiElement.buttonData;
+            if (uiElement.isToggled)
+            {
+                globals.queryController.buildingQuery.RemoveFilter(tagData.Id, "tag", tagData.Parent.Id);
+            }
+            else
+            {
+                globals.queryController.buildingQuery.AddFilter(tagData.Id, "tag", tagData.Parent.Id);
+            }
+        }
+    }
     public void ToggleMainMenu(bool toShow)
     {
         if (toShow)
@@ -971,7 +1012,15 @@ public class ViRMA_MainMenu : MonoBehaviour
         }
         if (customMenuBtn.name == "ClearLocationsBtn")
         {
-            
+            foreach (ViRMA_UiElement locationOption in allLocationOptions)
+            {
+                if (locationOption.isToggled)
+                {
+                    Tag locationTagData = (Tag)locationOption.buttonData;
+                    globals.queryController.buildingQuery.RemoveFilter(locationTagData.Id, "tag", locationTagData.Parent.Id);
+                    locationOption.toggle = false;
+                }
+            }
         }
     }
     private void MainMenuRepositioning()
