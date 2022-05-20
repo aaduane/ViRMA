@@ -314,10 +314,14 @@ public class ViRMA_APIController : MonoBehaviour
     public static bool debugging = false;
     public static string restAPI = "https://localhost:44317/api/";
 
+    // choose remote or local media
     public static bool useLocalMedia = false;
+
+    // local variables
     public static string localMediaType = "JPG"; // DDS or JPG
     public static string imagesDirectory = MediaController.LSC2021.Local;
 
+    // remote variables
     public static string remoteImageDirectory = MediaController.LSC2021.Remote;
     public static string remoteThumbnailDirectory = MediaController.LSC2021.Remote;
 
@@ -485,7 +489,7 @@ public class ViRMA_APIController : MonoBehaviour
         onSuccess(cells);
     }
 
-    // tagset and hierarchy API
+    // tagset and hierarchy endpoints
     public static IEnumerator GetTagset(string targetId, Action<List<Tag>> onSuccess)
     {
         yield return GetRequest("tagset/" + targetId, (response) =>
@@ -715,7 +719,7 @@ public class ViRMA_APIController : MonoBehaviour
         onSuccess(parentTag);
     }
 
-    // cell contents and timeline API
+    // cell contents and timeline endpoints
     public static IEnumerator GetCellContents(Query cellQueryData, Action<List<KeyValuePair<int, string>>> onSuccess)
     {
         // OLD: cell/?filters=[{"type":"node","ids":[1001]},{"type":"tag","ids":[55]},{"type":"tag","ids":[23]},{"type":"tag","ids":[1872]},{"type":"tag","ids":[1874]}]&all=[]
@@ -784,8 +788,7 @@ public class ViRMA_APIController : MonoBehaviour
     public static IEnumerator GetContextTimeline(DateTime timestamp, int minutes, Action<List<KeyValuePair<int, string>>> onSuccess)
     {
         // OLD: cell?filters=[{'type':'daterange','ids':['2'],'ranges':[['23-08-2016','23-08-2016']]},{'type':'timerange','ids':['3'],'ranges':[['10:00','11:00']]}]&all=[]
-        // OLD E.G: cell?filters=[{'type':'daterange','ids':['2'],'ranges':[['" + past.ToString("dd-MM-yyyy") + "','" + future.ToString("dd-MM-yyyy") + "']]},{'type':'timerange','ids':['3'],'ranges':[['" + past.ToString("HH:mm") + "','" + future.ToString("HH:mm") + "']]}]&all=[]     
-        // NEW E.G.: cell?filters=[{'type':'timestamprange','ids':['18'],'ranges':[['2016-09-24T19:26:00','2016-09-24T21:26:00']]}]&all=[]
+        // NEW: cell?filters=[{'type':'timestamprange','ids':['18'],'ranges':[['2016-09-24T19:26:00','2016-09-24T21:26:00']]}]&all=[]
 
         TimeSpan timeSpan = new TimeSpan(0, minutes, 0);
         DateTime future = timestamp.Add(timeSpan);
@@ -835,7 +838,7 @@ public class ViRMA_APIController : MonoBehaviour
 
         onSuccess(results);
     }
-    public static IEnumerator GetTimelineMetadataNEW(int targetId, Action<List<Tag>> onSuccess)
+    public static IEnumerator GetMediaObjectTagData(int targetId, Action<List<Tag>> onSuccess)
     {
         // /api/CubeObject/5/tags
 
@@ -864,8 +867,10 @@ public class ViRMA_APIController : MonoBehaviour
 
         onSuccess(results);
     }
-    public static IEnumerator GetTimelineMetadata(int targetId, Action<List<string>> onSuccess)
+    public static IEnumerator GetMediaObjectTags(int targetId, Action<List<string>> onSuccess)
     {
+        /* This endpoint is basically deprecated in favour of GetMediaObjectTagData() */
+
         // tag?cubeObjectId=169869
 
         string url = "tag?cubeObjectId=" + targetId;

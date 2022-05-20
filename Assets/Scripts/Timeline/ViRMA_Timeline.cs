@@ -66,7 +66,7 @@ public class ViRMA_Timeline : MonoBehaviour
         timelineScale = 0.3f; // global scale of timeline
         childRelativeSpacing = 0.25f; // % width of the child to space by
         timelinePositionDistance = 0.6f; // how far away to place the timeline in front of user
-        resultsRenderSize = 100; // max results to render at a time
+        resultsRenderSize = 50; // max results to render at a time
         contextTimelineTimespan = 60; // number of minutes on each side of target for context timeline
     }
     private void Start()
@@ -290,14 +290,14 @@ public class ViRMA_Timeline : MonoBehaviour
             if (timelineSectionChild != null)
             {
                 int targetId = timelineSectionChild.GetComponent<ViRMA_TimelineChild>().id;
-                yield return metadataFetcher = StartCoroutine(ViRMA_APIController.GetTimelineMetadata(targetId, (metadata) => {
+                yield return metadataFetcher = StartCoroutine(ViRMA_APIController.GetMediaObjectTags(targetId, (metadata) => {
 
                     //var testing = String.Join(" | ", metadata.ToArray());
                     //Debug.Log(targetId + " : " + testing);
 
                     if (timelineSectionChild != null)
                     {
-                        timelineSectionChild.GetComponent<ViRMA_TimelineChild>().tags = metadata;
+                        //timelineSectionChild.GetComponent<ViRMA_TimelineChild>().tags = metadata; // needs to be updated
                     }
                 }));
             }          
@@ -507,6 +507,8 @@ public class ViRMA_Timeline : MonoBehaviour
     }
     private void LoadContextTimelineData(ViRMA_TimelineChild targetTimelineChild)
     {
+        ClearTimeline(); // clear timeline before loading new timeline data so application feels more snappy
+
         if (isContextTimeline == false)
         {
             savedTimelineSection = currentTimelineSection;

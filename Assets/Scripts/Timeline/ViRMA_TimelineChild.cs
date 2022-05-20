@@ -18,21 +18,16 @@ public class ViRMA_TimelineChild : MonoBehaviour
     public int id;
     public string fileName;
 
-    public List<string> tags;       /////// OLD
-    public List<Tag> tagsData;      /////////////// NEW
-
-    public DateTime timestamp;      /////// OLD
-    public DateTime timestampUTC;   /////////////// NEW
-    public DateTime timestampLOC;   /////////////// NEW
+    // timeline child data
+    public List<Tag> tagsData;      
+    public DateTime timestampUTC;   
+    public DateTime timestampLOC;
+    private bool metadataLoaded;
 
     // border stuff
     private GameObject border;
     public bool hasBorder;
     public bool contextMenuActiveOnChild;
-
-    private float initializationTime;
-    private bool delayComplete;
-    private bool metadataLoaded;
 
     // prev/next btn stuff
     public bool isNextBtn;
@@ -43,28 +38,9 @@ public class ViRMA_TimelineChild : MonoBehaviour
         globals = Player.instance.gameObject.GetComponent<ViRMA_GlobalsAndActions>();
         childRend = GetComponent<Renderer>();
     }
-    private void Start()
-    {
-        initializationTime = Time.realtimeSinceStartup;
-    }
     private void Update()
     {
-
-        if (delayComplete == false)
-        {
-            float timeSinceInitialization = Time.realtimeSinceStartup - initializationTime;
-            if (timeSinceInitialization > 0.1f)
-            {
-                delayComplete = true;
-            }
-        }       
-
-        if (tags != null && metadataLoaded == false)
-        {
-            //GetTimestamp();
-            metadataLoaded = true;
-        }
-
+        // if this is the child source of the timeline, then highlight it with a border
         if (globals.timeline.targetContextTimelineChild)
         {
             if (globals.timeline.targetContextTimelineChild == gameObject)
@@ -79,15 +55,15 @@ public class ViRMA_TimelineChild : MonoBehaviour
     {
         if (triggeredCol.GetComponent<ViRMA_Drumstick>())
         {
-            if (delayComplete)
-            {
-                globals.timeline.hoveredChild = gameObject;
+            globals.timeline.hoveredChild = gameObject;
 
-                if (isPrevBtn || isNextBtn)
-                {
-                    ToggleBorder(true);             
-                }   
-                else
+            if (isPrevBtn || isNextBtn)
+            {
+                ToggleBorder(true);
+            }
+            else
+            {
+                if (metadataLoaded)
                 {
                     LoadTImelineContextMenu();
                 }
@@ -104,7 +80,7 @@ public class ViRMA_TimelineChild : MonoBehaviour
 
                 if (contextMenuActiveOnChild == false)
                 {
-                    //ToggleBorder(false);
+                    ToggleBorder(false);
                 }          
             }
         }
@@ -116,9 +92,10 @@ public class ViRMA_TimelineChild : MonoBehaviour
         fileName = targetFilename;
         name = id + "_" + fileName;
 
+        // get the textur
         GetTimelineChildTexture();
 
-        // get associated metadata for timeline child (for concurrent fetch)
+        // get associated metadata for timeline child (for async fetch)
         GetTimelineChildMetadata();
     }
     public void GetTimelineChildTexture()
@@ -253,69 +230,14 @@ public class ViRMA_TimelineChild : MonoBehaviour
     {
         if (id != 0)
         {
-            /*
-            StartCoroutine(ViRMA_APIController.GetTimelineMetadata(id, (metadata) => {
-                tags = metadata;
-                //var testing = String.Join(" | ", tags.ToArray());
-                //Debug.Log(id + " : " + testing);
-            }));
-            */
-
-            StartCoroutine(ViRMA_APIController.GetTimelineMetadataNEW(id, (results) => {
+            StartCoroutine(ViRMA_APIController.GetMediaObjectTagData(id, (results) => {
                 tagsData = results;
-                GetTimestamp();
-                /*
-                if (transform.GetSiblingIndex() == 0)
-                {
-                    Debug.Log(id);
-
-                    foreach (Tag tagData in tagsData)
-                    {
-                        if (tagData.Parent.Label == "Timestamp LOC")
-                        {
-                            Debug.Log(tagData.Label);
-                        }
-                        if (tagData.Parent.Label == "Timestamp UTC")
-                        {
-                            Debug.Log(tagData.Label);
-                        }
-                    }
-                    Debug.Log("------------------------------------------------------------------------------------");
-                }       
-                */
-
+                GenerateTimestamp();
             }));
         }
     }
-    public void GetTimestamp()
+    public void GenerateTimestamp()
     {
-        /*
-        DateTime date = new DateTime();
-        DateTime time = new DateTime();
-        DateTime seconds = new DateTime();
-
-        for (int i = 0; i < tags.Count; i++)
-        {
-            string targetTag = tags[i];
-
-            if (DateTime.TryParseExact(targetTag, "dd/MM/yyyy", null, System.Globalization.DateTimeStyles.None, out DateTime outDate))
-            {
-                date = outDate;
-            }
-            if (DateTime.TryParseExact(targetTag, "HH:mm", null, System.Globalization.DateTimeStyles.None, out DateTime outTime)) 
-            {
-                time = outTime;
-            }
-
-            if (DateTime.TryParseExact(targetTag, "dd/MM/yyyy HH:mm:ss", null, System.Globalization.DateTimeStyles.None, out DateTime outSeconds))
-            {
-                seconds = outSeconds;
-            }
-        }
-
-        timestamp = new DateTime(date.Year, date.Month, date.Day, time.Hour, time.Minute, seconds.Second);
-        */
-
         foreach (Tag tagData in tagsData)
         {
             if (tagData.Parent.Label == "Timestamp LOC")
@@ -355,6 +277,8 @@ public class ViRMA_TimelineChild : MonoBehaviour
         tooltip.transform.localScale = new Vector3(1 / transform.localScale.x, 1 / transform.localScale.y, 1); // adjust for parent's scale
         tooltip.transform.localPosition = new Vector3(0.21f, -0.45f, -1f);
         tooltip.transform.localRotation = Quaternion.identity;
+
+        metadataLoaded = true;
     }
 
 }
