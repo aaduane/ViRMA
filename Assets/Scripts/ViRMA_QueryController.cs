@@ -50,7 +50,9 @@ public class ViRMA_QueryController : MonoBehaviour
     { 
         queryModeOrSetting = false; // BUGGY IF TRUE ---> setting to True enables "or" instead of "and" in hierarchy concept tag filtering
 
-        buildingQuery.SetAxis("X", 6902, "node"); // computer (V5)
+        //buildingQuery.SetAxis("X", 4716, "node"); // car (LSC21 V1)
+        //buildingQuery.SetAxis("X", 6902, "node"); // computer (LSC21 V5)
+
 
         //StartCoroutine(LateStart()); // debugging
     }

@@ -126,6 +126,12 @@ public class ViRMA_DimExplorer : MonoBehaviour
         CalculateBounds();
         PositionDimExplorer();
 
+        // fade keyboard if there is at least one result
+        if (nodes.Count > 1)
+        {
+            dimExKeyboard.FadeKeyboard(true);
+        }
+
         dimensionExpLorerLoaded = true;
         dimExKeyboard.dimExQueryLoading = false;
     }

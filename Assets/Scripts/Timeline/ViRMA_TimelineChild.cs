@@ -65,7 +65,7 @@ public class ViRMA_TimelineChild : MonoBehaviour
             {
                 if (metadataLoaded)
                 {
-                    LoadTImelineContextMenu();
+                    LoadTimelineContextMenu();
                 }
             }
         }
@@ -159,7 +159,7 @@ public class ViRMA_TimelineChild : MonoBehaviour
             Debug.LogError(texture.error + " | " + fileName);
         }
     }
-    public void LoadTImelineContextMenu()
+    public void LoadTimelineContextMenu()
     {
         globals.timeline.timelineRb.velocity = Vector3.zero;
         globals.timeline.timelineRb.angularVelocity = Vector3.zero;

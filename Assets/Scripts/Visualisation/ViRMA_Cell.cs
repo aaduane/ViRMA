@@ -223,7 +223,7 @@ public class ViRMA_Cell : MonoBehaviour
         if (texture.result == UnityWebRequest.Result.Success)
         {
             Texture2D imageTexture = DownloadHandlerTexture.GetContent(texture);
-            Material timelineChildMaterial = new Material(Resources.Load("Materials/UnlitCell") as Material);
+            Material timelineChildMaterial = new Material(Resources.Load("Materials/BasicTransparent") as Material);
             timelineChildMaterial.mainTexture = imageTexture;
             thisCellRend.material = timelineChildMaterial;
             thisCellRend.material.SetTextureScale("_MainTex", new Vector2(-1, -1));

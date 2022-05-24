@@ -721,7 +721,7 @@ public class ViRMA_MainMenu : MonoBehaviour
         yield return StartCoroutine(ViRMA_APIController.GetTagset("", (tagsetsData) => {
             foreach (Tag tagsetData in tagsetsData)
             {
-                if (tagsetData.Label == "Location name")
+                if (tagsetData.Label == "Top location")
                 {
                     locationTagsetId = tagsetData.Id.ToString();
                 }
@@ -853,6 +853,13 @@ public class ViRMA_MainMenu : MonoBehaviour
         if (globals.timeline.timelineLoaded)
         {
             ToggleMainMenu(false);
+        }
+        else if(globals.dimExplorer.dimExKeyboard.keyboardLoaded)
+        {
+            // enable back button to clear dim explorer and hide keyboard
+            StartCoroutine(globals.dimExplorer.ClearDimExplorer());
+            globals.dimExplorer.dimExKeyboard.ToggleDimExKeyboard(false);
+            ToggleMainMenu(true);
         }
         else
         {

@@ -604,7 +604,7 @@ public class ViRMA_Timeline : MonoBehaviour
 
             if (!hoveredChild.GetComponent<ViRMA_TimelineChild>().isNextBtn && !hoveredChild.GetComponent<ViRMA_TimelineChild>().isPrevBtn)
             {
-                //hoveredChild.GetComponent<ViRMA_TimelineChild>().LoadTImelineContextMenu();
+                //hoveredChild.GetComponent<ViRMA_TimelineChild>().LoadTimelineContextMenu();
             }
             else if (hoveredChild.GetComponent<ViRMA_TimelineChild>().isNextBtn)
             {

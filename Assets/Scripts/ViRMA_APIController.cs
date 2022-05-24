@@ -16,12 +16,12 @@ public static class MediaController
     }
     public class LSC2022
     {
-        public static string Server = "http://bjth.itu.dk:5007/";
+        public static string Remote = "http://bjth.itu.dk:5007/";
         public static string Local = "D:/Datasets/LSC2022/";
     }
     public class VBS2022
     {
-        public static string Server = "http://bjth.itu.dk:5008/";
+        public static string Remote = "http://bjth.itu.dk:5008/";
         public static string Local = "D:/Datasets/VBS2022/";
     }
 }
@@ -319,11 +319,11 @@ public class ViRMA_APIController : MonoBehaviour
 
     // local variables
     public static string localMediaType = "JPG"; // DDS or JPG
-    public static string imagesDirectory = MediaController.LSC2021.Local;
+    public static string imagesDirectory = MediaController.LSC2022.Local;
 
     // remote variables
-    public static string remoteImageDirectory = MediaController.LSC2021.Remote;
-    public static string remoteThumbnailDirectory = MediaController.LSC2021.Remote;
+    public static string remoteImageDirectory = MediaController.VBS2022.Remote;
+    public static string remoteThumbnailDirectory = MediaController.VBS2022.Remote;
 
     // private
     private static JSONNode jsonData;
