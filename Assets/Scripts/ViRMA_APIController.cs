@@ -7,24 +7,6 @@ using System;
 using System.Threading;
 using System.Linq;
 
-public static class MediaController
-{
-    public class LSC2021
-    {
-        public static string Remote = "http://bjth.itu.dk:5005/LSC21/";
-        public static string Local = "D:/Datasets/LSC2021/";
-    }
-    public class LSC2022
-    {
-        public static string Remote = "http://bjth.itu.dk:5007/";
-        public static string Local = "D:/Datasets/LSC2022/";
-    }
-    public class VBS2022
-    {
-        public static string Remote = "http://bjth.itu.dk:5008/";
-        public static string Local = "D:/Datasets/VBS2022/";
-    }
-}
 public class Tag
 {
     private string _label; // needed to check for brackets/slashes when Label is get
@@ -314,21 +296,60 @@ public class ViRMA_APIController : MonoBehaviour
     public static bool debugging = false;
     public static string restAPI = "https://localhost:44317/api/";
 
-    // choose remote or local media
-    public static bool useLocalMedia = false;
-
-    // local variables
-    public static string localMediaType = "JPG"; // DDS or JPG
-    public static string imagesDirectory = MediaController.LSC2022.Local;
-
-    // remote variables
-    public static string remoteImageDirectory = MediaController.VBS2022.Remote;
-    public static string remoteThumbnailDirectory = MediaController.VBS2022.Remote;
+    // medta database variables
+    public static bool useLocalMedia;
+    public static string localMediaType;
+    public static string localMediaDirectory;
+    public static string remoteMediaDirectory;
+    public static string remoteThumbnailMediaDirectory;
+    public static string database;
+    private static void SetLSC2021(bool isLocal = false, string fileType = "JPG")
+    {
+        useLocalMedia = isLocal;
+        if (!isLocal)
+        {
+            fileType = "JPG";
+        }
+        localMediaType = fileType;
+        localMediaDirectory = "D:/Datasets/LSC2021/";
+        remoteMediaDirectory = "http://bjth.itu.dk:5005/LSC21/";
+        remoteThumbnailMediaDirectory = "http://bjth.itu.dk:5005/LSC21/";
+        database = "LSC";
+    }
+    private static void SetLSC2022(bool isLocal = false, string fileType = "JPG")
+    {
+        useLocalMedia = isLocal;
+        if (!isLocal)
+        {
+            fileType = "JPG";
+        }
+        localMediaType = fileType;
+        localMediaDirectory = "D:/Datasets/LSC2022/";
+        remoteMediaDirectory = "http://bjth.itu.dk:5007/";
+        remoteThumbnailMediaDirectory = "http://bjth.itu.dk:5007/";
+        database = "LSC";
+    }
+    private static void SetVBS2022(bool isLocal = false, string fileType = "JPG")
+    {
+        useLocalMedia = isLocal;
+        if (!isLocal)
+        {
+            fileType = "JPG";
+        }
+        localMediaType = fileType;
+        localMediaDirectory = "D:/Datasets/VBS2022/";
+        remoteMediaDirectory = "http://bjth.itu.dk:5008/";
+        remoteThumbnailMediaDirectory = "http://bjth.itu.dk:5008/";
+        database = "VBS";
+    }
 
     // private
     private static JSONNode jsonData;
     public static IEnumerator GetRequest(string paramsURL, Action<JSONNode> onSuccess)
     {
+        // set correct database settings
+        SetLSC2022(); 
+
         string getRequest = restAPI + paramsURL;
         float beforeWebRequest = 0, afterWebRequest = 0, beforeJsonParse = 0, afterJsonParse = 0;
 
@@ -848,9 +869,43 @@ public class ViRMA_APIController : MonoBehaviour
 
         List<Tag> results = new List<Tag>();
         yield return GetRequest(url, (response) =>
-        {
+        {    
             foreach (var tagData in response)
             {
+                Tag checkIfTagsetExists = results.FirstOrDefault(s => s.Label == tagData.Value["tagsetName"]);
+
+                if (checkIfTagsetExists == null)
+                {
+                    Tag newTagset = new Tag
+                    {
+                        Id = tagData.Value["tagsetId"],
+                        Label = tagData.Value["tagsetName"]
+                    };
+                    newTagset.Children = new List<Tag>();
+                    Tag newTag = new Tag
+                    {
+                        Id = tagData.Value["id"],
+                        Label = tagData.Value["name"]
+                    };
+                    newTagset.Children.Add(newTag);
+
+                    results.Add(newTagset);
+                }
+                else
+                {
+                    if (checkIfTagsetExists.Children == null)
+                    {
+                        checkIfTagsetExists.Children = new List<Tag>();
+                    }
+                    Tag newTag = new Tag
+                    {
+                        Id = tagData.Value["id"],
+                        Label = tagData.Value["name"]
+                    };
+                    checkIfTagsetExists.Children.Add(newTag);
+                }
+
+                /*
                 Tag newTag = new Tag
                 {
                     Id = tagData.Value["id"],
@@ -862,6 +917,7 @@ public class ViRMA_APIController : MonoBehaviour
                     Label = tagData.Value["tagsetName"]
                 };
                 results.Add(newTag);
+                */
             }
         });
 

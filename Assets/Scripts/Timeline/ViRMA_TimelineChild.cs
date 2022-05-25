@@ -12,7 +12,7 @@ public class ViRMA_TimelineChild : MonoBehaviour
     // globals
     private ViRMA_GlobalsAndActions globals;
     private Renderer childRend;
-    private GameObject tooltip;
+    private GameObject timelineChildLabel;
 
     // target timeline child paramters
     public int id;
@@ -114,14 +114,14 @@ public class ViRMA_TimelineChild : MonoBehaviour
                     if (ViRMA_APIController.localMediaType == "DDS")
                     {
                         imageNameFormatted = fileName.Substring(0, fileName.Length - 3) + "dds";
-                        imageBytes = File.ReadAllBytes(ViRMA_APIController.imagesDirectory + imageNameFormatted);
+                        imageBytes = File.ReadAllBytes(ViRMA_APIController.localMediaDirectory + imageNameFormatted);
                         timelineChildMaterial.mainTexture = ViRMA_APIController.FormatDDSTexture(imageBytes);
                         childRend.material = timelineChildMaterial;
                     }
                     else if (ViRMA_APIController.localMediaType == "JPG")
                     {
                         imageNameFormatted = fileName;
-                        imageBytes = File.ReadAllBytes(ViRMA_APIController.imagesDirectory + imageNameFormatted);
+                        imageBytes = File.ReadAllBytes(ViRMA_APIController.localMediaDirectory + imageNameFormatted);
                         timelineChildMaterial.mainTexture = ViRMA_APIController.FormatJPGTexture(imageBytes);
                         childRend.material = timelineChildMaterial;
                         childRend.material.SetTextureScale("_MainTex", new Vector2(1, -1));
@@ -144,7 +144,7 @@ public class ViRMA_TimelineChild : MonoBehaviour
     }
     private IEnumerator DownloadTimelineChildTexture()
     {
-        UnityWebRequest texture = UnityWebRequestTexture.GetTexture(ViRMA_APIController.remoteImageDirectory + fileName);
+        UnityWebRequest texture = UnityWebRequestTexture.GetTexture(ViRMA_APIController.remoteMediaDirectory + fileName);
         yield return texture.SendWebRequest();
         if (texture.result == UnityWebRequest.Result.Success)
         {
@@ -237,48 +237,80 @@ public class ViRMA_TimelineChild : MonoBehaviour
         }
     }
     public void GenerateTimestamp()
-    {
+    {  
         foreach (Tag tagData in tagsData)
         {
-            if (tagData.Parent.Label == "Timestamp LOC")
+            if (tagData.Label == "Timestamp LOC")
             {
-                if (DateTime.TryParseExact(tagData.Label, "dd/MM/yyyy HH:mm:ss", null, System.Globalization.DateTimeStyles.None, out DateTime parsedTimestamp))
+                if (DateTime.TryParseExact(tagData.Children[0].Label, "dd/MM/yyyy HH:mm:ss", null, System.Globalization.DateTimeStyles.None, out DateTime parsedTimestamp))
                 {
                     timestampLOC = parsedTimestamp;
                 }
             }
-            if (tagData.Parent.Label == "Timestamp UTC")
+            if (tagData.Label == "Timestamp UTC")
             {
-                if (DateTime.TryParseExact(tagData.Label, "dd/MM/yyyy HH:mm:ss", null, System.Globalization.DateTimeStyles.None, out DateTime parsedTimestamp))
+                if (DateTime.TryParseExact(tagData.Children[0].Label, "dd/MM/yyyy HH:mm:ss", null, System.Globalization.DateTimeStyles.None, out DateTime parsedTimestamp))
                 {
                     timestampUTC = parsedTimestamp;
                 }
             }
         }
-
-        LoadTooltip();
+        LoadTimelineChild();
     }
-    private void LoadTooltip()
+    private void LoadTimelineChild()
     {
-        tooltip = new GameObject();
-        TextMeshPro textMesh = tooltip.AddComponent<TextMeshPro>();
-        tooltip.name = timestampLOC.ToString("ddd HH:mm:ss dd/MM/yyyy");
-        textMesh.text = timestampLOC.ToString("ddd HH:mm:ss dd/MM/yyyy");
-
-        tooltip.GetComponent<RectTransform>().sizeDelta = new Vector2(1, 1);
+        timelineChildLabel = new GameObject();
+        TextMeshPro textMesh = timelineChildLabel.AddComponent<TextMeshPro>();
+        
+        timelineChildLabel.GetComponent<RectTransform>().sizeDelta = new Vector2(1, 1);
 
         textMesh.alignment = TextAlignmentOptions.Center;
         textMesh.horizontalAlignment = HorizontalAlignmentOptions.Center;
-        textMesh.verticalAlignment = VerticalAlignmentOptions.Middle;
+        textMesh.verticalAlignment = VerticalAlignmentOptions.Bottom;
         textMesh.fontSize = 0.75f;
         textMesh.outlineWidth = 0.2f;
 
-        tooltip.transform.SetParent(transform);
-        tooltip.transform.localScale = new Vector3(1 / transform.localScale.x, 1 / transform.localScale.y, 1); // adjust for parent's scale
-        tooltip.transform.localPosition = new Vector3(0.21f, -0.45f, -1f);
-        tooltip.transform.localRotation = Quaternion.identity;
+        timelineChildLabel.transform.SetParent(transform);
+        timelineChildLabel.transform.localScale = new Vector3(1 / transform.localScale.x, 1 / transform.localScale.y, 1); // adjust for parent's scale
+        timelineChildLabel.transform.localRotation = Quaternion.identity;
+        timelineChildLabel.transform.localPosition = new Vector3(0, 0, -1f);
+
+        if (ViRMA_APIController.database == "LSC")
+        {
+            timelineChildLabel.name = timestampLOC.ToString("ddd HH:mm:ss dd/MM/yyyy");
+            textMesh.text = timestampLOC.ToString("ddd HH:mm:ss dd/MM/yyyy");
+        }
+
+        if (ViRMA_APIController.database == "VBS")
+        {
+            int firstSlash = fileName.IndexOf("/");
+            string remainingSlash = fileName.Substring(firstSlash + 1);
+            int secondSlash = remainingSlash.IndexOf("/");
+            string videoId = fileName.Substring(firstSlash + 1, secondSlash);
+
+            int underScore = fileName.IndexOf("_");
+            string keyframeCount = fileName.Substring(underScore + 1);
+            keyframeCount = keyframeCount.Substring(0, keyframeCount.Length - 4);
+
+            timelineChildLabel.name = videoId;
+            textMesh.text = videoId + " | " + keyframeCount;        
+        }
 
         metadataLoaded = true;
+    }
+    public void LoadTimelineChildTooltip()
+    {
+        Debug.Log("ID: " + id);
+
+        foreach (Tag tagsetData in tagsData)
+        {
+            Debug.Log(" * * * * * * * * " + tagsetData.Label + " * * * * * * * * ");
+            foreach (Tag tagData in tagsetData.Children)
+            {
+                Debug.Log(tagData.Label);
+            }
+        }
+
     }
 
 }

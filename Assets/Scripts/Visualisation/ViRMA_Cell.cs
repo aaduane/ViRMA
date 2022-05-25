@@ -34,8 +34,7 @@ public class ViRMA_Cell : MonoBehaviour
         }
         else
         {
-            // if a texture already exists, it means it's the texture array method
-            if (thisCellData.ImageTexture != null)
+            if (ViRMA_APIController.useLocalMedia)
             {
                 // use id to only show relevant image on the mesh from the material texture array
                 SetTextureFromArray(thisCellData.TextureArrayId); // fetch texture from array (local method)
@@ -218,7 +217,7 @@ public class ViRMA_Cell : MonoBehaviour
     }
     private IEnumerator DownloadTexture()
     {
-        UnityWebRequest texture = UnityWebRequestTexture.GetTexture(ViRMA_APIController.remoteThumbnailDirectory + thisCellData.ImageName);
+        UnityWebRequest texture = UnityWebRequestTexture.GetTexture(ViRMA_APIController.remoteThumbnailMediaDirectory + thisCellData.ImageName);
         yield return texture.SendWebRequest();
         if (texture.result == UnityWebRequest.Result.Success)
         {

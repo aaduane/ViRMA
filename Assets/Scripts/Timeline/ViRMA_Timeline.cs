@@ -631,9 +631,14 @@ public class ViRMA_Timeline : MonoBehaviour
             if (btnOption.btnType.ToLower() == "submit")
             {
                 string submissionId = btnOption.targetTimelineChild.GetComponent<ViRMA_TimelineChild>().fileName;
-                StartCoroutine(ViRMA_CompetitionController.SubmitToLSC(submissionId, (result) => {
+                StartCoroutine(ViRMA_CompetitionController.SubmitToVBS(submissionId, (result) => {
                     StartCoroutine(SubmissionFeedback(btnOption.targetTimelineChild, result));
                 }));
+            }
+
+            if (btnOption.btnType.ToLower() == "data")
+            {
+                targetTimelineChild.LoadTimelineChildTooltip();
             }
         }
     }

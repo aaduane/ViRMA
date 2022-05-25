@@ -145,13 +145,13 @@ public class ViRMA_VizController : MonoBehaviour
                                 if (ViRMA_APIController.localMediaType == "DDS")
                                 {
                                     imageNameFormatted = newCell.ImageName.Substring(0, newCell.ImageName.Length - 3) + "dds";
-                                    byte[] imageBytes = File.ReadAllBytes(ViRMA_APIController.imagesDirectory + imageNameFormatted);
+                                    byte[] imageBytes = File.ReadAllBytes(ViRMA_APIController.localMediaDirectory + imageNameFormatted);
                                     newCell.ImageTexture = ViRMA_APIController.FormatDDSTexture(imageBytes);
                                 }
                                 else if(ViRMA_APIController.localMediaType == "JPG")
                                 {
                                     imageNameFormatted = newCell.ImageName;
-                                    byte[] imageBytes = File.ReadAllBytes(ViRMA_APIController.imagesDirectory + imageNameFormatted);
+                                    byte[] imageBytes = File.ReadAllBytes(ViRMA_APIController.localMediaDirectory + imageNameFormatted);
                                     newCell.ImageTexture = ViRMA_APIController.FormatJPGTexture(imageBytes);
                                 }
                                 else
@@ -173,7 +173,7 @@ public class ViRMA_VizController : MonoBehaviour
                             // use for remote .jpg copy of images
                             if (newCell.ImageName.Length > 0)
                             {
-                                UnityWebRequest www = UnityWebRequest.Get(ViRMA_APIController.remoteImageDirectory + newCell.ImageName);
+                                UnityWebRequest www = UnityWebRequest.Get(ViRMA_APIController.remoteMediaDirectory + newCell.ImageName);
                                 yield return www.SendWebRequest();
                                 if (www.result == UnityWebRequest.Result.Success)
                                 {

@@ -25,15 +25,20 @@ public class ViRMA_TimelineContextMenu : MonoBehaviour
     {
         GameObject contextMenuBtnPrefab = Resources.Load("Prefabs/TimelineContextMenuBtn") as GameObject;
 
+        GameObject submitBtn = Instantiate(contextMenuBtnPrefab, transform);
+        submitBtn.transform.localPosition = new Vector3(0, 0.05f, -0.025f);
+        submitBtn.transform.localScale = submitBtn.transform.localScale * 0.75f;
+        submitBtn.GetComponent<ViRMA_TimeLineContextMenuBtn>().LoadTimelineContextMenuBtn("Submit", targetTimelineChild);
+
         GameObject contextBtn = Instantiate(contextMenuBtnPrefab, transform);
-        contextBtn.transform.localPosition = new Vector3(-0.12f, 0, -0.025f);
+        contextBtn.transform.localPosition = new Vector3(-0.12f, -0.05f, -0.025f);
         contextBtn.transform.localScale = contextBtn.transform.localScale * 0.75f;
         contextBtn.GetComponent<ViRMA_TimeLineContextMenuBtn>().LoadTimelineContextMenuBtn("Context", targetTimelineChild);
 
-        GameObject submitBtn = Instantiate(contextMenuBtnPrefab, transform);
-        submitBtn.transform.localPosition = new Vector3(0.12f, 0, -0.025f);
-        submitBtn.transform.localScale = submitBtn.transform.localScale * 0.75f;
-        submitBtn.GetComponent<ViRMA_TimeLineContextMenuBtn>().LoadTimelineContextMenuBtn("Submit", targetTimelineChild);
+        GameObject metadataBtn = Instantiate(contextMenuBtnPrefab, transform);
+        metadataBtn.transform.localPosition = new Vector3(0.12f, -0.05f, -0.025f);
+        metadataBtn.transform.localScale = metadataBtn.transform.localScale * 0.75f;
+        metadataBtn.GetComponent<ViRMA_TimeLineContextMenuBtn>().LoadTimelineContextMenuBtn("Data", targetTimelineChild);
     }
 
     private void OnTriggerExit(Collider triggeredCol)
