@@ -8,21 +8,13 @@ public class ViRMA_UIScrollable : MonoBehaviour
     private ViRMA_GlobalsAndActions globals;
     private ScrollRect scrollRect;  
     private Transform scrollContent;
-    private RectTransform rectTransform;
-    private Rect rect;
     private bool allowScrolling;
-    private Canvas canvas;
-
-    private BoxCollider[] scrollingCols;
 
     private void Awake()
     {
         globals = Player.instance.gameObject.GetComponent<ViRMA_GlobalsAndActions>();
         scrollRect = GetComponent<ScrollRect>();
         scrollContent = scrollRect.content.transform;
-        rectTransform = GetComponent<RectTransform>();
-        rect = rectTransform.rect;
-        canvas = GetComponentInParent<Canvas>();
     }
 
     private void Start()
@@ -32,6 +24,7 @@ public class ViRMA_UIScrollable : MonoBehaviour
 
     private void Update()
     {
+
         ScrollableColliderController();
 
         EnableJoystickTouchScrolling();
@@ -58,20 +51,24 @@ public class ViRMA_UIScrollable : MonoBehaviour
         for (int i = 0; i < scrollContent.childCount; i++)
         {
             Transform child = scrollContent.GetChild(i);
-            Transform grandParent = child.transform.parent.parent;
+            BoxCollider childCol = child.GetComponent<BoxCollider>();
 
-            Vector3 positionRelativeToCenter = grandParent.InverseTransformPoint(child.position);
-            float maxScrollingDist = grandParent.GetComponent<RectTransform>().sizeDelta.y / 2;
-            float yDist = positionRelativeToCenter.y;
+            if (childCol)
+            {
+                Transform grandParent = child.transform.parent.parent;
+                Vector3 positionRelativeToCenter = grandParent.InverseTransformPoint(child.position);
+                float maxScrollingDist = grandParent.GetComponent<RectTransform>().sizeDelta.y / 2;
+                float yDist = positionRelativeToCenter.y;
 
-            if (yDist > maxScrollingDist || yDist < (maxScrollingDist * -1))
-            {
-                scrollContent.GetChild(i).GetComponent<BoxCollider>().enabled = false;
-            }
-            else
-            {
-                scrollContent.GetChild(i).GetComponent<BoxCollider>().enabled = true;
-            }
+                if (yDist > maxScrollingDist || yDist < (maxScrollingDist * -1))
+                {
+                    childCol.enabled = false;
+                }
+                else
+                {
+                    childCol.enabled = true;
+                }
+            }       
         }
     }
     private void EnableJoystickTouchScrolling()

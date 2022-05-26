@@ -301,16 +301,23 @@ public class ViRMA_TimelineChild : MonoBehaviour
     public void LoadTimelineChildTooltip()
     {
         Debug.Log("ID: " + id);
-
         foreach (Tag tagsetData in tagsData)
         {
-            Debug.Log(" * * * * * * * * " + tagsetData.Label + " * * * * * * * * ");
+            Debug.Log(" * * * * * * * * * * * * " + tagsetData.Label + " * * * * * * * * * * * * ");
             foreach (Tag tagData in tagsetData.Children)
             {
                 Debug.Log(tagData.Label);
             }
         }
 
+
+        GameObject timelineChildTooltipPrefab = Resources.Load("Prefabs/TimelineChildTooltip") as GameObject;
+        GameObject timelineChildTooltip = Instantiate(timelineChildTooltipPrefab);
+        timelineChildTooltip.transform.localScale = Vector3.one * 0.5f;
+        timelineChildTooltip.transform.rotation = transform.rotation;
+        timelineChildTooltip.transform.position = transform.position + transform.forward * -0.1f;
+
+        //Canvas.ForceUpdateCanvases();
     }
 
 }
