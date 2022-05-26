@@ -6,6 +6,7 @@ using Valve.VR.InteractionSystem;
 using TMPro;
 using UnityEngine.Networking;
 using System.Collections;
+using UnityEngine.UI;
 
 public class ViRMA_TimelineChild : MonoBehaviour
 {
@@ -300,16 +301,13 @@ public class ViRMA_TimelineChild : MonoBehaviour
     }
     public void LoadTimelineChildTooltip()
     {
-        Debug.Log("ID: " + id);
-        foreach (Tag tagsetData in tagsData)
+        if (globals.timeline.metadataTooltip)
         {
-            Debug.Log(" * * * * * * * * * * * * " + tagsetData.Label + " * * * * * * * * * * * * ");
-            foreach (Tag tagData in tagsetData.Children)
-            {
-                Debug.Log(tagData.Label);
-            }
+            Destroy(globals.timeline.metadataTooltip);
+            globals.timeline.metadataTooltip = null;
         }
 
+        // Debug.Log("ID: " + id);
 
         GameObject timelineChildTooltipPrefab = Resources.Load("Prefabs/TimelineChildTooltip") as GameObject;
         GameObject timelineChildTooltip = Instantiate(timelineChildTooltipPrefab);
@@ -317,7 +315,36 @@ public class ViRMA_TimelineChild : MonoBehaviour
         timelineChildTooltip.transform.rotation = transform.rotation;
         timelineChildTooltip.transform.position = transform.position + transform.forward * -0.1f;
 
-        //Canvas.ForceUpdateCanvases();
+        // add all the tagset sections
+        GameObject tagsetWrapperTemplate = timelineChildTooltip.GetComponentInChildren<GridLayoutGroup>().gameObject;
+        List<GameObject> tagsetWrappers = new List<GameObject>();
+        for (int i = 0; i < tagsData.Count; i++)
+        {
+            GameObject newTagset = Instantiate(tagsetWrapperTemplate, tagsetWrapperTemplate.transform.parent);
+            GameObject firstTag = newTagset.transform.GetChild(0).gameObject;
+            firstTag.GetComponentInChildren<TMP_Text>().text = tagsData[i].Label;
+            newTagset.name = tagsData[i].Label;
+            tagsetWrappers.Add(newTagset);
+        }
+        Destroy(tagsetWrapperTemplate);
+
+        // add and style all the tags within the tagset sections
+        for (int i = 0; i < tagsetWrappers.Count; i++)
+        {
+            GameObject firstTag = tagsetWrappers[i].transform.GetChild(0).gameObject;
+
+            for (int j = 0; j < tagsData[i].Children.Count; j++)
+            {
+                GameObject newTag = Instantiate(firstTag, firstTag.transform.parent);
+                newTag.GetComponentInChildren<TMP_Text>().text = tagsData[i].Children[j].Label;
+                newTag.GetComponentInChildren<TMP_Text>().enableAutoSizing = true;
+            }
+
+            firstTag.GetComponent<Image>().color = ViRMA_Colors.darkBlue;
+            firstTag.GetComponentInChildren<TMP_Text>().color = Color.white;
+        }
+
+        globals.timeline.metadataTooltip = timelineChildTooltip;
     }
 
 }

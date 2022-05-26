@@ -53,6 +53,7 @@ public class ViRMA_Timeline : MonoBehaviour
     public bool isContextTimeline;
 
     private GameObject feedback;
+    public GameObject metadataTooltip;
 
     private void Awake()
     {
@@ -111,6 +112,16 @@ public class ViRMA_Timeline : MonoBehaviour
         if (timelineRb.velocity.magnitude < 0.2f)
         {
             timelineRb.velocity = Vector3.zero;
+        }
+
+        if (timelineRb.velocity != Vector3.zero)
+        {
+            // if a metadata tooltip is present, remove it
+            if (metadataTooltip)
+            {
+                Destroy(globals.timeline.metadataTooltip);
+                metadataTooltip = null;
+            }
         }
     }
     private void TimelineMovementLimiter()
@@ -178,6 +189,13 @@ public class ViRMA_Timeline : MonoBehaviour
     {        
         // flad as timeline as unloaded
         timelineLoaded = false;
+
+        // if a metadata tooltip is present, remove it
+        if (metadataTooltip)
+        {
+            Destroy(globals.timeline.metadataTooltip);
+            metadataTooltip = null;
+        }
 
         // clear list of active children
         timelineSectionChildren.Clear();

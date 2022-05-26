@@ -49,7 +49,7 @@ public class ViRMA_TimelineContextMenu : MonoBehaviour
         }
     }
 
-    private void DestroyContextMenu()
+    public void DestroyContextMenu()
     {
         targetTimelineChild.GetComponent<ViRMA_TimelineChild>().ToggleBorder(false);
         targetTimelineChild.GetComponent<ViRMA_TimelineChild>().contextMenuActiveOnChild = false;
