@@ -646,17 +646,20 @@ public class ViRMA_Timeline : MonoBehaviour
                 LoadContextTimelineData(targetTimelineChild);
             }
 
-            if (btnOption.btnType.ToLower() == "submit")
-            {
-                string submissionId = btnOption.targetTimelineChild.GetComponent<ViRMA_TimelineChild>().fileName;
-                StartCoroutine(ViRMA_CompetitionController.SubmitToVBS(submissionId, (result) => {
-                    StartCoroutine(SubmissionFeedback(btnOption.targetTimelineChild, result));
-                }));
-            }
-
             if (btnOption.btnType.ToLower() == "data")
             {
                 targetTimelineChild.LoadTimelineChildTooltip();
+            }
+
+            if (btnOption.btnType.ToLower() == "submit")
+            {
+                string submissionId = btnOption.targetTimelineChild.GetComponent<ViRMA_TimelineChild>().fileName;
+
+                ViRMA_CompetitionController compController = GameObject.Find("CompetitionController").GetComponent<ViRMA_CompetitionController>();
+
+                StartCoroutine(compController.SubmitToVBS(submissionId, (result) => {
+                    StartCoroutine(SubmissionFeedback(btnOption.targetTimelineChild, result));
+                }));
             }
         }
     }
