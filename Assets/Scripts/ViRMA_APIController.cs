@@ -348,7 +348,7 @@ public class ViRMA_APIController : MonoBehaviour
     public static IEnumerator GetRequest(string paramsURL, Action<JSONNode> onSuccess)
     {
         // set correct database settings
-        SetVBS2022(); 
+        SetLSC2022(); 
 
         string getRequest = restAPI + paramsURL;
         float beforeWebRequest = 0, afterWebRequest = 0, beforeJsonParse = 0, afterJsonParse = 0;

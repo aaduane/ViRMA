@@ -307,13 +307,30 @@ public class ViRMA_TimelineChild : MonoBehaviour
             globals.timeline.metadataTooltip = null;
         }
 
-        // Debug.Log("ID: " + id);
+        Debug.Log("ID: " + id);
 
         GameObject timelineChildTooltipPrefab = Resources.Load("Prefabs/TimelineChildTooltip") as GameObject;
         GameObject timelineChildTooltip = Instantiate(timelineChildTooltipPrefab);
         timelineChildTooltip.transform.localScale = Vector3.one * 0.5f;
         timelineChildTooltip.transform.rotation = transform.rotation;
-        timelineChildTooltip.transform.position = transform.position + transform.forward * -0.1f;
+        timelineChildTooltip.transform.position = transform.position;
+        timelineChildTooltip.transform.Translate(Vector3.forward * - 0.15f);
+        timelineChildTooltip.transform.Translate(Vector3.down * 0.35f);
+        timelineChildTooltip.transform.Rotate(45.0f, 0, 0);
+
+        // remove useless tagsets
+        Debug.Log("BEFORE: " + tagsData.Count);
+        List<string> toBeRemoved = new List<string> { "Day within month", "Day of week (number)", "Day of week (string)", "Month (string)", "Month (number)", "Year", "Hour", "Day within month", "Minute", "Time", "Day within year", "Date" };
+        for (int i = tagsData.Count - 1; i > 0; i--)
+        {
+            if (toBeRemoved.Contains(tagsData[i].Label))
+            {
+                Debug.Log("REMOVE: " + tagsData[i].Label);
+
+                tagsData.RemoveAt(i);
+            }
+        }
+        Debug.Log("AFTER: " + tagsData.Count);
 
         // add all the tagset sections
         GameObject tagsetWrapperTemplate = timelineChildTooltip.GetComponentInChildren<GridLayoutGroup>().gameObject;
