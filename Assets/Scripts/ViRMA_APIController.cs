@@ -324,7 +324,7 @@ public class ViRMA_APIController : MonoBehaviour
             fileType = "JPG";
         }
         localMediaType = fileType;
-        localMediaDirectory = "D:/Datasets/LSC2022/";
+        localMediaDirectory = "C:/Users/aaron/Documents/LSC2022/";
         remoteMediaDirectory = "http://bjth.itu.dk:5007/";
         remoteThumbnailMediaDirectory = "http://bjth.itu.dk:5007/";
         database = "LSC";
@@ -348,7 +348,7 @@ public class ViRMA_APIController : MonoBehaviour
     public static IEnumerator GetRequest(string paramsURL, Action<JSONNode> onSuccess)
     {
         // set correct database settings
-        SetLSC2022(); 
+        SetLSC2022(true, "DDS"); 
 
         string getRequest = restAPI + paramsURL;
         float beforeWebRequest = 0, afterWebRequest = 0, beforeJsonParse = 0, afterJsonParse = 0;

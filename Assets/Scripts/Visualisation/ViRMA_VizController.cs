@@ -91,7 +91,7 @@ public class ViRMA_VizController : MonoBehaviour
         }));
 
         // generate textures and texture arrays from local image storage
-        //yield return StartCoroutine(GenerateTexturesAndTextureArrays(cellData)); // comment out if do not want to pre-load images 
+        yield return StartCoroutine(GenerateTexturesAndTextureArrays(cellData)); // comment out if do not want to pre-load images 
 
         // generate axes with axis labels
         yield return StartCoroutine(GenerateAxesFromLabels(submittedQuery)); 
