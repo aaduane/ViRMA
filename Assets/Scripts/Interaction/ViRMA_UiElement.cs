@@ -15,7 +15,7 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 	protected Hand currentHand;
 	private BoxCollider col;
 
-	public Hand handINteractingWithUi;
+	public Hand handInteractingWithUi;
 
 	// used for custom UI interaction button states
 	private Image btnBackground;
@@ -82,7 +82,7 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
 	private void Update()
     {
-		handINteractingWithUi = currentHand;
+		handInteractingWithUi = currentHand;
 
 		// override all button stats when button is faded
 		BtnFadeController();
@@ -136,7 +136,14 @@ public class ViRMA_UiElement : MonoBehaviour, IPointerEnterHandler, IPointerExit
 			{
 				SetBtnNormalState();
 			}
-		}	
+		}
+
+		// highlight drumstick when it collides with the UI element
+		ViRMA_Drumstick drumstick = hand.GetComponentInChildren<ViRMA_Drumstick>();
+		if (drumstick)
+        {
+			drumstick.StartHighlight();
+        }
 	}
 	protected virtual void OnButtonClick()
 	{

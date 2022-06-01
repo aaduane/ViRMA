@@ -282,7 +282,7 @@ public class ViRMA_Keyboard : MonoBehaviour
         }
         else if (buttonName == "MOVE")
         {
-            handInteractingWithKeyboard = key.GetComponent<ViRMA_UiElement>().handINteractingWithUi;
+            handInteractingWithKeyboard = key.GetComponent<ViRMA_UiElement>().handInteractingWithUi;
             keyboardMoving = true;
         }
         else if (buttonName == "SPACE")

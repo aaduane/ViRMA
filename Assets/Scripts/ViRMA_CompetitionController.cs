@@ -19,14 +19,24 @@ public class ViRMA_CompetitionController : MonoBehaviour
     private IEnumerator LoadConversionTable()
     {
         Thread thread = new Thread(() => {
-            convertVBS = File.ReadLines("D:/Datasets/VBS2022/VBS-id-converter.csv").Select(line => line.Split(',')).ToDictionary(line => line[0], line => line[1]);
+            try
+            {
+                // C:/Users/aaron/OneDrive - ITU/ViRMA/PhotoCube SQL Resources/
+
+                convertVBS = File.ReadLines("C:/Users/aaron/OneDrive - ITU/ViRMA/PhotoCube SQL Resources/VBS-id-converter.csv").Select(line => line.Split(',')).ToDictionary(line => line[0], line => line[1]);
+                vbsConversionReady = true;
+            }
+            catch
+            {
+                Debug.LogWarning("VBS conversion CSV not availabke!");
+                vbsConversionReady = false;
+            }            
         });
         thread.Start();
         while (thread.IsAlive)
         {
             yield return null;
         }
-        vbsConversionReady = true;
     }
     public IEnumerator SubmitToVBS(string fileName, Action<bool> onSuccess)
     {

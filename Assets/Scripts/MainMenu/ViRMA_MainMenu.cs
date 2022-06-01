@@ -987,7 +987,7 @@ public class ViRMA_MainMenu : MonoBehaviour
     {
         if (customMenuBtn.name == "RepositionBtn")
         {
-            handInteractingWithMainMenu = customMenuBtn.GetComponent<ViRMA_UiElement>().handINteractingWithUi;
+            handInteractingWithMainMenu = customMenuBtn.GetComponent<ViRMA_UiElement>().handInteractingWithUi;
             mainMenuMoving = true;
         }
         if (customMenuBtn.name == "TimeBackBtn")

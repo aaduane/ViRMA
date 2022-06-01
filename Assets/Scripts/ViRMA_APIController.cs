@@ -348,7 +348,7 @@ public class ViRMA_APIController : MonoBehaviour
     public static IEnumerator GetRequest(string paramsURL, Action<JSONNode> onSuccess)
     {
         // set correct database settings
-        SetLSC2022(); 
+        SetVBS2022(); 
 
         string getRequest = restAPI + paramsURL;
         float beforeWebRequest = 0, afterWebRequest = 0, beforeJsonParse = 0, afterJsonParse = 0;
@@ -563,16 +563,9 @@ public class ViRMA_APIController : MonoBehaviour
             jsonData = response;
         });
 
-        int limitCounter = 0;
-        List<Tag> nodes = new List<Tag>();
+        List<Tag> unorderedNodes = new List<Tag>();
         foreach (var obj in jsonData)
         {
-            if (limitCounter > 30)
-            {
-                Debug.Log("Too many results. Limiting to top 30.");
-                break;
-            }
-
             Tag newTag = new Tag();
 
             // tag id
@@ -596,11 +589,16 @@ public class ViRMA_APIController : MonoBehaviour
                 newTag.Parent = parentNode;
             }
 
-            nodes.Add(newTag);
-
-            limitCounter++;
+            unorderedNodes.Add(newTag);
         }
 
+        List<Tag> nodes = unorderedNodes.OrderBy(s => s.Label).ToList();
+        if (nodes.Count > 30)
+        {
+            nodes = nodes.GetRange(0, 30);
+        }
+
+        // get rest of node data
         foreach (var node in nodes)
         {
             // get children         
@@ -660,8 +658,7 @@ public class ViRMA_APIController : MonoBehaviour
 
         // Debug.Log(nodes.Count + " dimension results found!"); // testing
 
-        List<Tag> orderedNodes = nodes.OrderBy(s => s.Label).ToList();
-        onSuccess(orderedNodes);
+        onSuccess(nodes);
     }
     public static IEnumerator GetHierarchyTag(int targetId, Action<Tag> onSuccess)
     {

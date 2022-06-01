@@ -284,7 +284,12 @@ public class ViRMA_TimelineChild : MonoBehaviour
 
         if (ViRMA_APIController.database == "VBS")
         {
+            
             int firstSlash = fileName.IndexOf("/");
+
+            string imageType = fileName.Substring(0, firstSlash);
+            imageType= imageType.Substring(0, imageType.Length - 1);
+
             string remainingSlash = fileName.Substring(firstSlash + 1);
             int secondSlash = remainingSlash.IndexOf("/");
             string videoId = fileName.Substring(firstSlash + 1, secondSlash);
@@ -293,8 +298,13 @@ public class ViRMA_TimelineChild : MonoBehaviour
             string keyframeCount = fileName.Substring(underScore + 1);
             keyframeCount = keyframeCount.Substring(0, keyframeCount.Length - 4);
 
-            timelineChildLabel.name = videoId;
-            textMesh.text = videoId + " | " + keyframeCount;        
+            timelineChildLabel.name = imageType + " | " + videoId + " | " + keyframeCount;
+            textMesh.text = imageType + " | " + videoId + " | " + keyframeCount;
+
+            if (imageType == "sample")
+            {
+                transform.Translate(Vector3.down * 0.05f);
+            }
         }
 
         metadataLoaded = true;
@@ -324,8 +334,6 @@ public class ViRMA_TimelineChild : MonoBehaviour
         {
             if (toBeRemoved.Contains(tagsData[i].Label))
             {
-                Debug.Log("REMOVE: " + tagsData[i].Label);
-
                 tagsData.RemoveAt(i);
             }
         }
@@ -350,9 +358,17 @@ public class ViRMA_TimelineChild : MonoBehaviour
 
             for (int j = 0; j < tagsData[i].Children.Count; j++)
             {
-                GameObject newTag = Instantiate(firstTag, firstTag.transform.parent);
-                newTag.GetComponentInChildren<TMP_Text>().text = tagsData[i].Children[j].Label;
-                newTag.GetComponentInChildren<TMP_Text>().enableAutoSizing = true;
+
+                GameObject newTagBtn = Resources.Load("Prefabs/ViRMA_Button_Template") as GameObject;
+                GameObject newTag = Instantiate(newTagBtn, firstTag.transform.parent);
+                //GameObject newTag = Instantiate(firstTag, firstTag.transform.parent);
+
+                newTag.GetComponentInChildren<Text>().text = tagsData[i].Children[j].Label;
+                //newTag.GetComponentInChildren<TMP_Text>().enableAutoSizing = true;
+
+                int tagId = tagsData[i].Children[j].Id;
+                newTag.GetComponent<ViRMA_UiElement>().GenerateBtnDefaults(Color.white, Color.black);
+                newTag.GetComponent<Button>().onClick.AddListener(() => Test(tagId));
             }
 
             firstTag.GetComponent<Image>().color = ViRMA_Colors.darkBlue;
@@ -362,4 +378,11 @@ public class ViRMA_TimelineChild : MonoBehaviour
         globals.timeline.metadataTooltip = timelineChildTooltip;
     }
 
+    private void Test(int testString)
+    {
+        Debug.Log(testString);
+        globals.vizController.HideViz(false);
+        globals.queryController.buildingQuery.AddFilter(9816, "node");
+
+    }
 }
