@@ -175,7 +175,32 @@ public class ViRMA_DirectFilterOption : MonoBehaviour
             // remove target filter from the filter list
             if (filterType == "node")
             {
-                globals.queryController.buildingQuery.RemoveFilter(directFilterData.Id, "node");
+                // OLD: globals.queryController.buildingQuery.RemoveFilter(directFilterData.Id, "node");
+
+                // detect what type of node needs to be removed as a node filter can be added 3 different ways
+                for (int i = globals.queryController.buildingQuery.Filters.Count; i-- > 0;)
+                {
+                    Query.Filter filter = globals.queryController.buildingQuery.Filters[i];
+
+                    for (int j = filter.Ids.Count; j-- > 0;)
+                    {
+                        int id = filter.Ids[j];
+
+                        if (id == directFilterData.Id)
+                        {
+                            if (filter.FilterId == "null_0")
+                            {
+                                globals.queryController.buildingQuery.RemoveFilter(directFilterData.Id, "node");
+                            }
+                            else
+                            {
+                                int underscoreIndex = filter.FilterId.IndexOf("_");
+                                int parentId = int.Parse(filter.FilterId.Substring(underscoreIndex + 1));
+                                globals.queryController.buildingQuery.RemoveFilter(directFilterData.Id, "node", parentId);
+                            }
+                        }
+                    }
+                }
             }
             else if (filterType == "tag")
             {

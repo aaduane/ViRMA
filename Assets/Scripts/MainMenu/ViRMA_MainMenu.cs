@@ -441,6 +441,17 @@ public class ViRMA_MainMenu : MonoBehaviour
         {
             if (activeFilter.Type == "node")
             {
+                foreach (int targetId in activeFilter.Ids)
+                {
+                    StartCoroutine(ViRMA_APIController.GetHierarchyTag(targetId, (tagData) => {
+                        GameObject directFilterObj = Instantiate(directFilterPrefab, directFilterParent);
+                        directFilterObj.GetComponent<ViRMA_DirectFilterOption>().directFilterData = tagData;
+                        directFilterObj.GetComponent<ViRMA_DirectFilterOption>().labelText.text = tagData.Label;
+                        directFilterObj.GetComponent<ViRMA_DirectFilterOption>().filterType = "node";
+                    }));
+                }
+
+                /*
                 int targetId = activeFilter.Ids[0];
                 StartCoroutine(ViRMA_APIController.GetHierarchyTag(targetId, (tagData) => {
                     GameObject directFilterObj = Instantiate(directFilterPrefab, directFilterParent);
@@ -448,6 +459,7 @@ public class ViRMA_MainMenu : MonoBehaviour
                     directFilterObj.GetComponent<ViRMA_DirectFilterOption>().labelText.text = tagData.Label;
                     directFilterObj.GetComponent<ViRMA_DirectFilterOption>().filterType = "node";
                 })); 
+                */
             }
             else if (activeFilter.Type == "tag")
             {

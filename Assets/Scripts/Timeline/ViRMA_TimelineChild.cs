@@ -358,7 +358,6 @@ public class ViRMA_TimelineChild : MonoBehaviour
 
             for (int j = 0; j < tagsData[i].Children.Count; j++)
             {
-
                 GameObject newTagBtn = Resources.Load("Prefabs/ViRMA_Button_Template") as GameObject;
                 GameObject newTag = Instantiate(newTagBtn, firstTag.transform.parent);
                 //GameObject newTag = Instantiate(firstTag, firstTag.transform.parent);
@@ -367,8 +366,8 @@ public class ViRMA_TimelineChild : MonoBehaviour
                 //newTag.GetComponentInChildren<TMP_Text>().enableAutoSizing = true;
 
                 int tagId = tagsData[i].Children[j].Id;
-                newTag.GetComponent<ViRMA_UiElement>().GenerateBtnDefaults(Color.white, Color.black);
-                newTag.GetComponent<Button>().onClick.AddListener(() => Test(tagId));
+                newTag.GetComponent<ViRMA_UiElement>().GenerateBtnDefaults(Color.white, ViRMA_Colors.darkGrey);
+                newTag.GetComponent<Button>().onClick.AddListener(() => StartCoroutine(ApplyMetaDataAsDirectFilter(tagId)));
             }
 
             firstTag.GetComponent<Image>().color = ViRMA_Colors.darkBlue;
@@ -377,12 +376,29 @@ public class ViRMA_TimelineChild : MonoBehaviour
 
         globals.timeline.metadataTooltip = timelineChildTooltip;
     }
-
-    private void Test(int testString)
+    private IEnumerator ApplyMetaDataAsDirectFilter(int tagId)
     {
-        Debug.Log(testString);
-        globals.vizController.HideViz(false);
-        globals.queryController.buildingQuery.AddFilter(9816, "node");
+        //Debug.Log("Getting node IDs for: " + tagId); // debugging
 
+        // viz needs to be 'unhidden' to update it without bugs
+        globals.vizController.HideViz(false);
+
+        yield return StartCoroutine(ViRMA_APIController.GetTagNodes(tagId, (nodes) => {
+
+            //Debug.Log(nodes.Count + " nodes found!"); // debugging
+
+            foreach (int nodeId in nodes)
+            {
+                //Debug.Log("Filtering node ID: " + nodeId); // debugging
+
+                globals.queryController.buildingQuery.AddFilter(nodeId, "node", 0);
+            }
+
+        }));
+
+        // wait 1 second to 're-hide' the viz after it has been updated
+        yield return new WaitForSeconds(1);
+        globals.vizController.HideViz(true);
     }
+
 }

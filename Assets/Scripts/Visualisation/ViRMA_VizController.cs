@@ -116,7 +116,7 @@ public class ViRMA_VizController : MonoBehaviour
         globals.mainMenu.FetchDirectFilterMetadata();
 
         // set loading flags to true and unfade controllers
-        vizFullyLoaded = true; //////////////////////////////////////////////////////////////////// THIS IS RESETTING THE DEFAULT POSITION
+        vizFullyLoaded = true; 
         globals.queryController.vizQueryLoading = false;
         globals.ToggleControllerFade(Player.instance.leftHand, false);
         globals.ToggleControllerFade(Player.instance.rightHand, false);

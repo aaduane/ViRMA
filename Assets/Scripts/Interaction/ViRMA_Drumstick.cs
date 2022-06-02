@@ -13,8 +13,6 @@ public class ViRMA_Drumstick : MonoBehaviour
     private Color32 normal = new Color32(0, 0, 0, 200);
     private bool toHiglight;
 
-    private float scale = 0.05f;
-
     Coroutine highlightTimeout;
 
     private void Awake()

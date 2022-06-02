@@ -901,20 +901,6 @@ public class ViRMA_APIController : MonoBehaviour
                     };
                     checkIfTagsetExists.Children.Add(newTag);
                 }
-
-                /*
-                Tag newTag = new Tag
-                {
-                    Id = tagData.Value["id"],
-                    Label = tagData.Value["name"]
-                };
-                newTag.Parent = new Tag
-                {
-                    Id = tagData.Value["tagsetId"],
-                    Label = tagData.Value["tagsetName"]
-                };
-                results.Add(newTag);
-                */
             }
         });
 
@@ -942,7 +928,26 @@ public class ViRMA_APIController : MonoBehaviour
 
         onSuccess(results);
     }
+    public static IEnumerator GetTagNodes(int targetId, Action<List<int>> onSuccess)
+    {
+        // /api/tag/37/nodes
 
+        string url = "tag/" + targetId + "/nodes";
+
+        yield return GetRequest(url, (response) =>
+        {
+            jsonData = response;
+        });
+
+        List<int> nodeIDs = new List<int>();
+        foreach (var obj in jsonData)
+        {
+            int id = obj.Value["id"];
+            nodeIDs.Add(id);
+        }
+
+        onSuccess(nodeIDs);
+    }
 
     // static helper methods
     public static Texture2D FormatDDSTexture(byte[] ddsBytes)
@@ -1034,5 +1039,22 @@ public class ViRMA_APIController : MonoBehaviour
         }
 
         onSuccess(results);
+    }
+}
+public class WaitForFrames : CustomYieldInstruction
+{
+    private int _targetFrameCount;
+
+    public WaitForFrames(int numberOfFrames)
+    {
+        _targetFrameCount = Time.frameCount + numberOfFrames;
+    }
+
+    public override bool keepWaiting
+    {
+        get
+        {
+            return Time.frameCount < _targetFrameCount;
+        }
     }
 }
