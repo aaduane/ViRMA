@@ -3,6 +3,7 @@ using UnityEngine;
 using Valve.VR.InteractionSystem;
 using UnityEngine.Networking;
 using System.Collections;
+using System.IO;
 
 public class ViRMA_Cell : MonoBehaviour
 {
@@ -36,12 +37,20 @@ public class ViRMA_Cell : MonoBehaviour
         {
             if (ViRMA_APIController.useLocalMedia)
             {
-                // use id to only show relevant image on the mesh from the material texture array
-                SetTextureFromArray(thisCellData.TextureArrayId); // fetch texture from array (local method)
+                if (thisCellData.TextureArraySize != 0)
+                {
+                    // use id to only show relevant image on the mesh from the material texture array
+                    SetTextureFromArray(thisCellData.TextureArrayId); 
+                }
+                else
+                {
+                    // read local file directly and apply it as texture
+                    ReadLocalTexture();
+                }
             }
             else
             {
-                // download image from server and convert it to a texture concurrently with other cells
+                // download image from server and convert it to a texture 
                 StartCoroutine(DownloadTexture()); // fetch texture from server (online method)
             }
         }
@@ -222,15 +231,41 @@ public class ViRMA_Cell : MonoBehaviour
         if (texture.result == UnityWebRequest.Result.Success)
         {
             Texture2D imageTexture = DownloadHandlerTexture.GetContent(texture);
-            Material timelineChildMaterial = new Material(Resources.Load("Materials/BasicTransparent") as Material);
-            timelineChildMaterial.mainTexture = imageTexture;
-            thisCellRend.material = timelineChildMaterial;
-            thisCellRend.material.SetTextureScale("_MainTex", new Vector2(-1, -1));
+            thisCellData.ImageTexture = imageTexture;
+            Material cellMaterial = new Material(Resources.Load("Materials/BasicTransparent") as Material);
+            cellMaterial.mainTexture = thisCellData.ImageTexture;
+            thisCellRend.material = cellMaterial;
+            thisCellMesh.uv = ViRMA_APIController.SetTextureUVs(thisCellMesh, thisCellData.ImageTexture.format);
         }
         else
         {
             Debug.LogError(texture.error + " | " + thisCellData.ImageName);
         }
+    }
+    private void ReadLocalTexture()
+    {
+        string imageNameFormatted;
+        if (ViRMA_APIController.localMediaType == "DDS")
+        {
+            imageNameFormatted = thisCellData.ImageName.Substring(0, thisCellData.ImageName.Length - 3) + "dds";
+            byte[] imageBytes = File.ReadAllBytes(ViRMA_APIController.localMediaDirectory + imageNameFormatted);
+            thisCellData.ImageTexture = ViRMA_APIController.FormatDDSTexture(imageBytes);
+        }
+        else if (ViRMA_APIController.localMediaType == "JPG")
+        {
+            imageNameFormatted = thisCellData.ImageName;
+            byte[] imageBytes = File.ReadAllBytes(ViRMA_APIController.localMediaDirectory + imageNameFormatted);
+            thisCellData.ImageTexture = ViRMA_APIController.FormatJPGTexture(imageBytes);
+        }
+        else
+        {
+            Debug.LogError(gameObject.name + " | Invalid media file extension!");
+        }
+
+        Material cellMaterial = new Material(Resources.Load("Materials/BasicTransparent") as Material);
+        cellMaterial.mainTexture = thisCellData.ImageTexture;
+        thisCellRend.material = cellMaterial;
+        thisCellMesh.uv = ViRMA_APIController.SetTextureUVs(thisCellMesh, thisCellData.ImageTexture.format);
     }
     public void ToggleFade(bool toFade)
     {

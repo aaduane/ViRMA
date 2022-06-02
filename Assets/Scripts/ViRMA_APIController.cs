@@ -348,7 +348,7 @@ public class ViRMA_APIController : MonoBehaviour
     public static IEnumerator GetRequest(string paramsURL, Action<JSONNode> onSuccess)
     {
         // set correct database settings
-        SetVBS2022(); 
+        SetLSC2022(); 
 
         string getRequest = restAPI + paramsURL;
         float beforeWebRequest = 0, afterWebRequest = 0, beforeJsonParse = 0, afterJsonParse = 0;
@@ -975,6 +975,99 @@ public class ViRMA_APIController : MonoBehaviour
         tex.LoadImage(jpgBytes);
         TextureScale.Bilinear(tex, 1024, 768);
         return (tex);
+    }
+    public static Vector2[] SetTextureUVs(Mesh mesh, TextureFormat format)
+    {
+        Vector2[] UVs = new Vector2[mesh.vertices.Length];
+        Vector2 bottomLeftOfTexture = new Vector2(0, 0);
+        Vector2 bottomRightOfTexture = new Vector2(1, 0);
+        Vector2 topLeftOfTexture = new Vector2(0, 1);
+        Vector2 topRightOfTexture = new Vector2(1, 1);
+
+        // adjust location of UVs depending on texture format (if wrong, textures will appear upside down)
+        if (format == TextureFormat.DXT1)
+        {
+            /* - - - - - - - DDS Format UVs - - - - - - - -*/
+
+            // front of cube
+            UVs[2] = bottomLeftOfTexture;
+            UVs[3] = bottomRightOfTexture;
+            UVs[0] = topLeftOfTexture;
+            UVs[1] = topRightOfTexture;
+
+            // top of cube
+            UVs[8] = topLeftOfTexture;
+            UVs[9] = topRightOfTexture;
+            UVs[4] = bottomLeftOfTexture;
+            UVs[5] = bottomRightOfTexture;
+
+            // back of cube
+            UVs[10] = bottomRightOfTexture;
+            UVs[11] = bottomLeftOfTexture;
+            UVs[6] = topRightOfTexture;
+            UVs[7] = topLeftOfTexture;
+
+            // bottom of cube
+            UVs[14] = bottomLeftOfTexture;
+            UVs[15] = topLeftOfTexture;
+            UVs[12] = topRightOfTexture;
+            UVs[13] = bottomRightOfTexture;
+
+            // left of cube
+            UVs[18] = bottomLeftOfTexture;
+            UVs[19] = topLeftOfTexture;
+            UVs[16] = topRightOfTexture;
+            UVs[17] = bottomRightOfTexture;
+
+            // right of cube
+            UVs[22] = bottomLeftOfTexture;
+            UVs[23] = topLeftOfTexture;
+            UVs[20] = topRightOfTexture;
+            UVs[21] = bottomRightOfTexture;
+
+        }
+        else
+        {
+            /* - - - - - - - JPG Texture UVs - - - - - - - -*/
+
+            // front of cube
+            UVs[0] = bottomLeftOfTexture;
+            UVs[1] = bottomRightOfTexture;
+            UVs[2] = topLeftOfTexture;
+            UVs[3] = topRightOfTexture;
+
+            // top of cube
+            UVs[4] = topLeftOfTexture;
+            UVs[5] = topRightOfTexture;
+            UVs[8] = bottomLeftOfTexture;
+            UVs[9] = bottomRightOfTexture;
+
+            // back of cube
+            UVs[6] = bottomRightOfTexture;
+            UVs[7] = bottomLeftOfTexture;
+            UVs[10] = topRightOfTexture;
+            UVs[11] = topLeftOfTexture;
+
+            // bottom of cube
+            UVs[12] = bottomLeftOfTexture;
+            UVs[13] = topLeftOfTexture;
+            UVs[14] = topRightOfTexture;
+            UVs[15] = bottomRightOfTexture;
+
+            // left of cube
+            UVs[16] = bottomLeftOfTexture;
+            UVs[17] = topLeftOfTexture;
+            UVs[18] = topRightOfTexture;
+            UVs[19] = bottomRightOfTexture;
+
+            // right of cube
+            UVs[20] = bottomLeftOfTexture;
+            UVs[21] = topLeftOfTexture;
+            UVs[22] = topRightOfTexture;
+            UVs[23] = bottomRightOfTexture;
+        }
+
+        return UVs;
     }
 
     // deprecated

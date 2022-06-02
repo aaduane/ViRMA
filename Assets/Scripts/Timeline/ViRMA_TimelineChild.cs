@@ -13,6 +13,8 @@ public class ViRMA_TimelineChild : MonoBehaviour
     // globals
     private ViRMA_GlobalsAndActions globals;
     private Renderer childRend;
+    private Mesh childMesh;
+    private Texture2D childTexture;
     private GameObject timelineChildLabel;
 
     // target timeline child paramters
@@ -38,6 +40,7 @@ public class ViRMA_TimelineChild : MonoBehaviour
     {
         globals = Player.instance.gameObject.GetComponent<ViRMA_GlobalsAndActions>();
         childRend = GetComponent<Renderer>();
+        childMesh = GetComponent<MeshFilter>().mesh;
     }
     private void Update()
     {
@@ -105,37 +108,28 @@ public class ViRMA_TimelineChild : MonoBehaviour
         {
             if (ViRMA_APIController.useLocalMedia)
             {
-                try
+                Material timelineChildMaterial = new Material(Resources.Load("Materials/UnlitCell") as Material);
+                string imageNameFormatted;
+                if (ViRMA_APIController.localMediaType == "DDS")
                 {
-                    byte[] imageBytes = new byte[0];
-
-                    Material timelineChildMaterial = new Material(Resources.Load("Materials/UnlitCell") as Material);
-
-                    string imageNameFormatted;
-                    if (ViRMA_APIController.localMediaType == "DDS")
-                    {
-                        imageNameFormatted = fileName.Substring(0, fileName.Length - 3) + "dds";
-                        imageBytes = File.ReadAllBytes(ViRMA_APIController.localMediaDirectory + imageNameFormatted);
-                        timelineChildMaterial.mainTexture = ViRMA_APIController.FormatDDSTexture(imageBytes);
-                        childRend.material = timelineChildMaterial;
-                    }
-                    else if (ViRMA_APIController.localMediaType == "JPG")
-                    {
-                        imageNameFormatted = fileName;
-                        imageBytes = File.ReadAllBytes(ViRMA_APIController.localMediaDirectory + imageNameFormatted);
-                        timelineChildMaterial.mainTexture = ViRMA_APIController.FormatJPGTexture(imageBytes);
-                        childRend.material = timelineChildMaterial;
-                        childRend.material.SetTextureScale("_MainTex", new Vector2(1, -1));
-                    }
-                    else
-                    {
-                        Debug.LogError(gameObject.name +  " | Invalid media file extension!");
-                    }
+                    imageNameFormatted = fileName.Substring(0, fileName.Length - 3) + "dds";
+                    byte[] imageBytes = File.ReadAllBytes(ViRMA_APIController.localMediaDirectory + imageNameFormatted);
+                    childTexture = ViRMA_APIController.FormatDDSTexture(imageBytes);
                 }
-                catch (FileNotFoundException e)
+                else if (ViRMA_APIController.localMediaType == "JPG")
                 {
-                    Debug.LogError(e.Message);
+                    imageNameFormatted = fileName;
+                    byte[] imageBytes = File.ReadAllBytes(ViRMA_APIController.localMediaDirectory + imageNameFormatted);
+                    childTexture = ViRMA_APIController.FormatJPGTexture(imageBytes);              
                 }
+                else
+                {
+                    Debug.LogError(gameObject.name + " | Invalid media file extension!");
+                }
+
+                timelineChildMaterial.mainTexture = childTexture;
+                childRend.material = timelineChildMaterial;
+                childMesh.uv = ViRMA_APIController.SetTextureUVs(childMesh, childTexture.format);
             }
             else
             {
@@ -153,7 +147,7 @@ public class ViRMA_TimelineChild : MonoBehaviour
             Material timelineChildMaterial = new Material(Resources.Load("Materials/UnlitCell") as Material);
             timelineChildMaterial.mainTexture = imageTexture;
             childRend.material = timelineChildMaterial;
-            childRend.material.SetTextureScale("_MainTex", new Vector2(-1, -1));
+            childMesh.uv = ViRMA_APIController.SetTextureUVs(childMesh, imageTexture.format);
         }
         else
         {
