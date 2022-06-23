@@ -21,6 +21,8 @@ public class ViRMA_VizController : MonoBehaviour
 
     /*--- private --- */
 
+    LineRenderer tempAxisXLine;
+
     // general
     private ViRMA_GlobalsAndActions globals;
     public Rigidbody rigidBody;
@@ -71,6 +73,103 @@ public class ViRMA_VizController : MonoBehaviour
 
         // draw axes line renderers 
         DrawAxesLines();
+
+        
+        if (focusedCell != null)
+        {
+            Vector3 focusedCellCoordinates = focusedCell.GetComponent<ViRMA_Cell>().thisCellData.Coordinates;
+
+            float minX = 999;
+            float maxX = -999;
+            GameObject minXObj = focusedCell;
+            GameObject maxXObj = focusedCell;
+
+            foreach (GameObject cellObj in cellObjs)
+            {
+                Vector3 cellCoordinate = cellObj.GetComponent<ViRMA_Cell>().thisCellData.Coordinates;
+                cellObj.GetComponent<ViRMA_Cell>().ToggleFade(true);
+
+                if (cellCoordinate.x != focusedCellCoordinates.x)
+                {
+                    if (cellCoordinate.y == focusedCellCoordinates.y && cellCoordinate.z == focusedCellCoordinates.z)
+                    {
+                        cellObj.GetComponent<ViRMA_Cell>().ToggleFade(false);
+
+                        if (cellObj.GetComponent<ViRMA_Cell>().thisCellData.Coordinates.x < minX)
+                        {
+                            minX = cellObj.GetComponent<ViRMA_Cell>().thisCellData.Coordinates.x;
+                            minXObj = cellObj;
+
+                            if (minX > focusedCellCoordinates.x)
+                            {
+                                minX = focusedCell.GetComponent<ViRMA_Cell>().thisCellData.Coordinates.x;
+                                minXObj = focusedCell;
+                            }
+                        }
+
+                        if (cellObj.GetComponent<ViRMA_Cell>().thisCellData.Coordinates.x > maxX)
+                        {
+                            maxX = cellObj.GetComponent<ViRMA_Cell>().thisCellData.Coordinates.x;
+                            maxXObj = cellObj;
+
+                            if (maxX < focusedCellCoordinates.x)
+                            {
+                                maxX = focusedCell.GetComponent<ViRMA_Cell>().thisCellData.Coordinates.x;
+                                maxXObj = focusedCell;
+                            }
+                        }
+
+                    }
+                }
+
+                /*
+                if (cellCoordinate.y != focusedCellCoordinates.y)
+                {
+                    if (cellCoordinate.x == focusedCellCoordinates.x && cellCoordinate.z == focusedCellCoordinates.z)
+                    {
+                        cellObj.GetComponent<ViRMA_Cell>().ToggleFade(false);
+                    }
+                }
+
+                if (cellCoordinate.z != focusedCellCoordinates.z)
+                {
+                    if (cellCoordinate.x == focusedCellCoordinates.x && cellCoordinate.y == focusedCellCoordinates.y)
+                    {
+                        cellObj.GetComponent<ViRMA_Cell>().ToggleFade(false);
+                    }
+                }
+                */
+
+            }
+
+
+            if (tempAxisXLine == null)
+            {
+                Material transparentMaterial = Resources.Load("Materials/BasicTransparent") as Material;
+                MaterialPropertyBlock materialProperties = new MaterialPropertyBlock();
+                materialProperties.SetColor("_Color", ViRMA_Colors.axisFadeRed);
+                tempAxisXLine = Instantiate(axisXLine, axisXLine.transform.parent);
+                tempAxisXLine.GetComponent<Renderer>().material = transparentMaterial;
+                tempAxisXLine.GetComponent<Renderer>().SetPropertyBlock(materialProperties);
+            }
+            tempAxisXLine.SetPosition(0, minXObj.transform.position);
+            tempAxisXLine.SetPosition(1, maxXObj.transform.position);
+
+
+
+
+        }
+        else
+        {
+            foreach (GameObject cellObj in cellObjs)
+            {
+                cellObj.GetComponent<ViRMA_Cell>().ToggleFade(false);
+            }
+        }
+
+
+
+
     }
 
     // cell and axes generation

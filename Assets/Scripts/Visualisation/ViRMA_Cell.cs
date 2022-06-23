@@ -96,6 +96,7 @@ public class ViRMA_Cell : MonoBehaviour
     // update
     private void CellStateController()
     {
+
         if (globals.vizController.focusedCell == null)
         {
             ToggleFade(false);
@@ -110,10 +111,11 @@ public class ViRMA_Cell : MonoBehaviour
             }
             else
             {
-                ToggleFade(true);
+                //ToggleFade(true);
                 ToggleAxesLabels(false);
             }
         }
+
     }
 
     // general

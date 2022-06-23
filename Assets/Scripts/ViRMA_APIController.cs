@@ -592,7 +592,8 @@ public class ViRMA_APIController : MonoBehaviour
             unorderedNodes.Add(newTag);
         }
 
-        List<Tag> nodes = unorderedNodes.OrderBy(s => s.Label).ToList();
+        //List<Tag> nodes = unorderedNodes.OrderBy(s => s.Label).ToList();
+        List<Tag> nodes = unorderedNodes;
         if (nodes.Count > 30)
         {
             nodes = nodes.GetRange(0, 30);
