@@ -49,7 +49,11 @@ public class ViRMA_QueryController : MonoBehaviour
     private void Start()
     { 
         queryModeOrSetting = false; // switch from default 'AND' queries to 'OR' style queries
-        
+
+        buildingQuery.SetAxis("X", 18034, "node");
+        buildingQuery.SetAxis("Y", 18495, "node");
+        buildingQuery.SetAxis("Z", 37, "node");
+
         //StartCoroutine(LateStart()); // debugging
     }
 

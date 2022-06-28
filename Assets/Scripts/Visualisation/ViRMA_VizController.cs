@@ -19,6 +19,12 @@ public class ViRMA_VizController : MonoBehaviour
     public GameObject focusedCell;
     public GameObject focusedAxisPoint;
 
+    // context axes objects
+    private LineRenderer contextAxisXLine, contextAxisYLine, contextAxisZLine;
+    private GameObject minXObj, maxXObj, minYObj, maxYObj, minZObj, maxZObj;
+    private bool contextAxesSet;
+    private GameObject lastFocusedCell;
+
     /*--- private --- */
 
     // general
@@ -28,6 +34,7 @@ public class ViRMA_VizController : MonoBehaviour
     private Bounds cellsAndAxesBounds;
     public Query activeQuery;
     public bool vizFullyLoaded;
+    public Material basicTransparent;
 
     [HideInInspector] public bool activeBrowsingState;
     [HideInInspector] public Vector3 activeVizPosition;
@@ -39,7 +46,6 @@ public class ViRMA_VizController : MonoBehaviour
     private float minParentScale = 0.015f;
     private float defaultParentSize;
     private float defaultCellSpacingRatio = 1.5f;
-    private string cellMaterial = "Materials/BasicTransparent";
 
     private void Awake()
     {
@@ -56,6 +62,9 @@ public class ViRMA_VizController : MonoBehaviour
         rigidBody.useGravity = false;
         rigidBody.drag = 0.1f;
         rigidBody.angularDrag = 0.5f;
+
+        // load materials
+        basicTransparent = Resources.Load("Materials/BasicTransparent") as Material; 
     }
     
     private void Update()
@@ -69,8 +78,11 @@ public class ViRMA_VizController : MonoBehaviour
             CellNavigationLimiter();
         }
 
-        // draw axes line renderers 
+        // draw axes line renderers when they exist
         DrawAxesLines();
+
+        // draw contexual axes line renders when they exist
+        DrawContextualAxesLines();
     }
 
     // cell and axes generation
@@ -210,7 +222,7 @@ public class ViRMA_VizController : MonoBehaviour
 
                 if (i != totalTextureArrays - 1)
                 {
-                    Material newtextureArrayMaterial = new Material(Resources.Load(cellMaterial) as Material);
+                    Material newtextureArrayMaterial = new Material(basicTransparent);
 
                     // load correct texture format container
                     Texture2D newTextureArray;
@@ -250,7 +262,7 @@ public class ViRMA_VizController : MonoBehaviour
                 }
                 else
                 {
-                    Material newtextureArrayMaterial = new Material(Resources.Load(cellMaterial) as Material);
+                    Material newtextureArrayMaterial = new Material(basicTransparent);
                     int lastTextureArraySize = uniqueTextures.Count - (maxTexturesPerArray * (totalTextureArrays - 1));
 
                     Texture2D newTextureArray;
@@ -430,7 +442,7 @@ public class ViRMA_VizController : MonoBehaviour
         }    
 
         // // global style for propety blocks
-        Material transparentMaterial = Resources.Load("Materials/BasicTransparent") as Material;
+        Material transparentMaterial = basicTransparent;
         MaterialPropertyBlock materialProperties = new MaterialPropertyBlock();
         float axisLineWidth = 0.005f;
 
@@ -738,6 +750,25 @@ public class ViRMA_VizController : MonoBehaviour
             }
         }
     }
+    private void DrawContextualAxesLines()
+    {
+        // draw context axes lines
+        if (contextAxisXLine != null && minXObj != null && maxXObj != null)
+        {
+            contextAxisXLine.SetPosition(0, minXObj.transform.position);
+            contextAxisXLine.SetPosition(1, maxXObj.transform.position);
+        }
+        if (contextAxisYLine != null && minYObj != null && maxYObj != null)
+        {
+            contextAxisYLine.SetPosition(0, minYObj.transform.position);
+            contextAxisYLine.SetPosition(1, maxYObj.transform.position);
+        }
+        if (contextAxisZLine != null && minZObj != null && maxZObj != null)
+        {
+            contextAxisZLine.SetPosition(0, minZObj.transform.position);
+            contextAxisZLine.SetPosition(1, maxZObj.transform.position);
+        }
+    }
     public void ClearViz()
     {
         cellObjs.Clear();
@@ -1029,7 +1060,230 @@ public class ViRMA_VizController : MonoBehaviour
             globals.timeline.LoadCellContentTimelineData(focusedCell);
         }      
     }
+    public void ToggleContextAxes(bool toToggle)
+    {
+        if (toToggle)
+        {
+            if (focusedCell != null)
+            {
+                if (focusedCell != lastFocusedCell)
+                {
+                    // destroy context axes if they exist
+                    if (contextAxisXLine != null)
+                    {
+                        Destroy(contextAxisXLine);
+                        contextAxisXLine = null;
+                    }
+                    if (contextAxisYLine != null)
+                    {
+                        Destroy(contextAxisYLine);
+                        contextAxisYLine = null;
+                    }
+                    if (contextAxisZLine != null)
+                    {
+                        Destroy(contextAxisZLine);
+                        contextAxisZLine = null;
+                    }
 
+                    // x 
+                    float minX = 999;
+                    float maxX = -999;
+                    minXObj = null;
+                    maxXObj = null;
+
+                    // y
+                    float minY = 999;
+                    float maxY = -999;
+                    minYObj = null;
+                    maxYObj = null;
+
+                    // z
+                    float minZ = 999;
+                    float maxZ = -999;
+                    minZObj = null;
+                    maxZObj = null;
+
+                    Vector3 focusedCellCoordinates = focusedCell.GetComponent<ViRMA_Cell>().thisCellData.Coordinates;
+                    foreach (GameObject cellObj in cellObjs)
+                    {
+                        Vector3 cellCoordinate = cellObj.GetComponent<ViRMA_Cell>().thisCellData.Coordinates;
+                        cellObj.GetComponent<ViRMA_Cell>().ToggleFade(true);
+
+                        // get min and max objects for X context axis
+                        if (cellCoordinate.x != focusedCellCoordinates.x)
+                        {
+                            if (cellCoordinate.y == focusedCellCoordinates.y && cellCoordinate.z == focusedCellCoordinates.z)
+                            {
+                                // disable faded state
+                                cellObj.GetComponent<ViRMA_Cell>().ToggleFade(false);
+
+                                // find cell closest to origin
+                                if (cellObj.GetComponent<ViRMA_Cell>().thisCellData.Coordinates.x < minX)
+                                {
+                                    minX = cellObj.GetComponent<ViRMA_Cell>().thisCellData.Coordinates.x;
+                                    minXObj = cellObj;
+
+                                    if (minX > focusedCellCoordinates.x)
+                                    {
+                                        minX = focusedCell.GetComponent<ViRMA_Cell>().thisCellData.Coordinates.x;
+                                        minXObj = focusedCell;
+                                    }
+                                }
+
+                                // find cell furthest from origin
+                                if (cellObj.GetComponent<ViRMA_Cell>().thisCellData.Coordinates.x > maxX)
+                                {
+                                    maxX = cellObj.GetComponent<ViRMA_Cell>().thisCellData.Coordinates.x;
+                                    maxXObj = cellObj;
+
+                                    if (maxX < focusedCellCoordinates.x)
+                                    {
+                                        maxX = focusedCell.GetComponent<ViRMA_Cell>().thisCellData.Coordinates.x;
+                                        maxXObj = focusedCell;
+                                    }
+                                }
+                            }
+                        }
+
+                        
+                         // get min and max objects for Y context axis
+                        if (cellCoordinate.y != focusedCellCoordinates.y)
+                        {
+                            if (cellCoordinate.x == focusedCellCoordinates.x && cellCoordinate.z == focusedCellCoordinates.z)
+                            {
+                                // disable faded state
+                                cellObj.GetComponent<ViRMA_Cell>().ToggleFade(false);
+
+                                // find cell closest to origin
+                                if (cellObj.GetComponent<ViRMA_Cell>().thisCellData.Coordinates.y < minY)
+                                {
+                                    minY = cellObj.GetComponent<ViRMA_Cell>().thisCellData.Coordinates.y;
+                                    minYObj = cellObj;
+
+                                    if (minY > focusedCellCoordinates.y)
+                                    {
+                                        minY = focusedCell.GetComponent<ViRMA_Cell>().thisCellData.Coordinates.y;
+                                        minYObj = focusedCell;
+                                    }
+                                }
+
+                                // find cell furthest from origin
+                                if (cellObj.GetComponent<ViRMA_Cell>().thisCellData.Coordinates.y > maxY)
+                                {
+                                    maxY = cellObj.GetComponent<ViRMA_Cell>().thisCellData.Coordinates.y;
+                                    maxYObj = cellObj;
+
+                                    if (maxY < focusedCellCoordinates.y)
+                                    {
+                                        maxY = focusedCell.GetComponent<ViRMA_Cell>().thisCellData.Coordinates.y;
+                                        maxYObj = focusedCell;
+                                    }
+                                }
+                            }
+                        }
+
+                        
+                         // get min and max objects for Z context axis
+                        if (cellCoordinate.z != focusedCellCoordinates.z)
+                        {
+                            if (cellCoordinate.x == focusedCellCoordinates.x && cellCoordinate.y == focusedCellCoordinates.y)
+                            {
+                                // disable faded state
+                                cellObj.GetComponent<ViRMA_Cell>().ToggleFade(false);
+
+                                // find cell closest to origin
+                                if (cellObj.GetComponent<ViRMA_Cell>().thisCellData.Coordinates.z < minZ)
+                                {
+                                    minZ = cellObj.GetComponent<ViRMA_Cell>().thisCellData.Coordinates.z;
+                                    minZObj = cellObj;
+
+                                    if (minZ > focusedCellCoordinates.z)
+                                    {
+                                        minZ = focusedCell.GetComponent<ViRMA_Cell>().thisCellData.Coordinates.z;
+                                        minZObj = focusedCell;
+                                    }
+                                }
+
+                                // find cell furthest from origin
+                                if (cellObj.GetComponent<ViRMA_Cell>().thisCellData.Coordinates.z > maxZ)
+                                {
+                                    maxZ = cellObj.GetComponent<ViRMA_Cell>().thisCellData.Coordinates.z;
+                                    maxZObj = cellObj;
+
+                                    if (maxZ < focusedCellCoordinates.z)
+                                    {
+                                        maxZ = focusedCell.GetComponent<ViRMA_Cell>().thisCellData.Coordinates.z;
+                                        maxZObj = focusedCell;
+                                    }
+                                }
+                            }
+                        }
+                        
+
+                    }
+                    focusedCell.GetComponent<ViRMA_Cell>().ToggleFade(false);
+
+                    // instantiate lines if it doesn't exist 
+                    MaterialPropertyBlock materialProperties = new MaterialPropertyBlock();
+                    if (contextAxisXLine == null)
+                    {           
+                        materialProperties.SetColor("_Color", ViRMA_Colors.axisFadeRed);
+                        contextAxisXLine = Instantiate(axisXLine, axisXLine.transform.parent);
+                        contextAxisXLine.GetComponent<Renderer>().material = basicTransparent;
+                        contextAxisXLine.GetComponent<Renderer>().SetPropertyBlock(materialProperties);
+                    }
+                    if (contextAxisYLine == null)
+                    {
+                        materialProperties.SetColor("_Color", ViRMA_Colors.axisFadeGreen);
+                        contextAxisYLine = Instantiate(axisYLine, axisYLine.transform.parent);
+                        contextAxisYLine.GetComponent<Renderer>().material = basicTransparent;
+                        contextAxisYLine.GetComponent<Renderer>().SetPropertyBlock(materialProperties);
+                    }
+                    if (contextAxisZLine == null)
+                    {
+                        materialProperties.SetColor("_Color", ViRMA_Colors.axisFadeBlue);
+                        contextAxisZLine = Instantiate(axisZLine, axisZLine.transform.parent);
+                        contextAxisZLine.GetComponent<Renderer>().material = basicTransparent;
+                        contextAxisZLine.GetComponent<Renderer>().SetPropertyBlock(materialProperties);
+                    }
+
+                    contextAxesSet = true;
+                    lastFocusedCell = focusedCell;
+                }              
+            }
+        }
+        else
+        {
+            if (contextAxesSet)
+            {
+                // destroy context axes if they exist
+                if (contextAxisXLine != null)
+                {
+                    Destroy(contextAxisXLine);
+                    contextAxisXLine = null;
+                }
+                if (contextAxisYLine != null)
+                {
+                    Destroy(contextAxisYLine);
+                    contextAxisYLine = null;
+                }
+                if (contextAxisZLine != null)
+                {
+                    Destroy(contextAxisZLine);
+                    contextAxisZLine = null;
+                }
+
+                // ensure all cells are unfaded
+                foreach (GameObject cellObj in cellObjs)
+                {
+                    cellObj.GetComponent<ViRMA_Cell>().ToggleFade(false);
+                }
+
+                contextAxesSet = false;
+                lastFocusedCell = null;
+            }       
+        }
+    }
 
     // testing and debugging
     private void ToggleDebuggingBounds()
@@ -1038,7 +1292,7 @@ public class ViRMA_VizController : MonoBehaviour
         GameObject debugBounds = GameObject.CreatePrimitive(PrimitiveType.Cube);
         debugBounds.name = "DebugBounds"; 
         Destroy(debugBounds.GetComponent<Collider>());
-        debugBounds.GetComponent<Renderer>().material = Resources.Load("Materials/BasicTransparent") as Material;
+        debugBounds.GetComponent<Renderer>().material = basicTransparent;
         debugBounds.GetComponent<Renderer>().material.color = new Color32(100, 100, 100, 130);
         debugBounds.transform.position = cellsAndAxesBounds.center;
         debugBounds.transform.localScale = cellsAndAxesBounds.size;
@@ -1049,7 +1303,7 @@ public class ViRMA_VizController : MonoBehaviour
         GameObject debugBoundsCenter = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         debugBoundsCenter.name = "DebugBoundsCenter";       
         Destroy(debugBoundsCenter.GetComponent<Collider>());
-        debugBoundsCenter.GetComponent<Renderer>().material = Resources.Load("Materials/BasicTransparent") as Material;
+        debugBoundsCenter.GetComponent<Renderer>().material = basicTransparent;
         debugBoundsCenter.GetComponent<Renderer>().material.color = new Color32(0, 0, 0, 255);
         debugBoundsCenter.transform.position = cellsAndAxesBounds.center;
         debugBoundsCenter.transform.rotation = cellsandAxesWrapper.transform.rotation;

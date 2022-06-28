@@ -98,19 +98,22 @@ public class ViRMA_Cell : MonoBehaviour
     {
         if (globals.vizController.focusedCell == null)
         {
-            ToggleFade(false);
+            //ToggleFade(false);
             ToggleAxesLabels(false);
+            globals.vizController.ToggleContextAxes(false);
         }
         else
         {
             if (globals.vizController.focusedCell == gameObject)
             {
-                ToggleFade(false);
+                //ToggleFade(false);
                 ToggleAxesLabels(true);
+                globals.vizController.ToggleContextAxes(true);
+                
             }
             else
             {
-                ToggleFade(true);
+                //ToggleFade(true); 
                 ToggleAxesLabels(false);
             }
         }
@@ -293,8 +296,13 @@ public class ViRMA_Cell : MonoBehaviour
                 axesLabels = Instantiate(Resources.Load("Prefabs/AxesLabels")) as GameObject;
                 axesLabels.transform.SetParent(transform.parent.transform);
                 axesLabels.transform.localScale = Vector3.one * 0.3f;
-                axesLabels.transform.localPosition = new Vector3(transform.localPosition.x, transform.localPosition.y + 3f, transform.localPosition.z);
+                axesLabels.transform.localPosition = transform.localPosition;
                 axesLabels.transform.LookAt(2 * axesLabels.transform.position - Player.instance.hmdTransform.position);
+
+                // adjust relative location of labels
+                axesLabels.transform.Translate(Vector3.up * 0.07f);               
+                axesLabels.transform.Translate(Vector3.left * -0.07f);
+                //axesLabels.transform.Translate(Vector3.forward * -0.025f);  
 
                 // count part
                 string countLabel = thisCellData.imageCount.ToString("n0") + " items";
