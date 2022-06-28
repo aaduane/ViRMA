@@ -273,7 +273,7 @@ public class ViRMA_TimelineChild : MonoBehaviour
         if (ViRMA_APIController.database == "LSC")
         {
             timelineChildLabel.name = timestampLOC.ToString("ddd HH:mm:ss dd/MM/yyyy");
-            textMesh.text = timestampLOC.ToString("ddd HH:mm:ss dd/MM/yyyy");
+            textMesh.text = fileName + " | " + timestampLOC.ToString("ddd HH:mm:ss dd/MM/yyyy");
         }
 
         if (ViRMA_APIController.database == "VBS")

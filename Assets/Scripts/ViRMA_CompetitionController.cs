@@ -25,6 +25,8 @@ public class ViRMA_CompetitionController : MonoBehaviour
 
                 convertVBS = File.ReadLines("C:/Users/aaron/OneDrive - ITU/ViRMA/PhotoCube SQL Resources/VBS-id-converter.csv").Select(line => line.Split(',')).ToDictionary(line => line[0], line => line[1]);
                 vbsConversionReady = true;
+
+                Debug.LogWarning("VBS conversion CSV loaded successfully!");
             }
             catch
             {
@@ -42,6 +44,9 @@ public class ViRMA_CompetitionController : MonoBehaviour
     {
         if (vbsConversionReady)
         {
+
+            Debug.Log("CONVERTING ---> " + fileName);
+
             int firstSlash = fileName.IndexOf("/");
             string remainingSlash = fileName.Substring(firstSlash + 1);
             int secondSlash = remainingSlash.IndexOf("/");
@@ -52,6 +57,8 @@ public class ViRMA_CompetitionController : MonoBehaviour
             keyframeCount = keyframeCount.Substring(0, keyframeCount.Length - 4);
 
             KeyValuePair<string, string> convertedID = convertVBS.FirstOrDefault(t => t.Key == videoId + "_" + keyframeCount);
+
+            Debug.Log("CONVERTED: " + convertedID.Value);
 
             //Debug.Log("FILENAME: " + fileName);
             //Debug.Log("CONVERT: " + videoId + "_" + keyframeCount);
@@ -67,7 +74,10 @@ public class ViRMA_CompetitionController : MonoBehaviour
             // E.G. https://vbs.videobrowsing.org/api/v1/submit?session=node012yg7so0b123qxh488ftze7xp9&item=09220&frame=320
 
             string serverAddress = "https://vbs.videobrowsing.org:443/api/v1/";
-            string sessionId = "node012yg7so0b123qxh488ftze7xp9";
+            string sessionId = "node0c3uge4lsv9ep1wlm5v62717hh1627";
+
+            int underscore = convertedID.Value.IndexOf("_");
+            keyframeCount = convertedID.Value.Substring(underscore + 1);
 
             string submissionRequest = serverAddress + "submit?session=" + sessionId + "&item=" + videoId + "&frame=" + keyframeCount;
 

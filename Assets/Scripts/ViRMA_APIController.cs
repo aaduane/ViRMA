@@ -348,7 +348,8 @@ public class ViRMA_APIController : MonoBehaviour
     public static IEnumerator GetRequest(string paramsURL, Action<JSONNode> onSuccess)
     {
         // set correct database settings
-        SetLSC2022(); 
+        //SetVBS2022();
+        SetLSC2022(true, "DDS"); 
 
         string getRequest = restAPI + paramsURL;
         float beforeWebRequest = 0, afterWebRequest = 0, beforeJsonParse = 0, afterJsonParse = 0;
@@ -592,7 +593,8 @@ public class ViRMA_APIController : MonoBehaviour
             unorderedNodes.Add(newTag);
         }
 
-        List<Tag> nodes = unorderedNodes.OrderBy(s => s.Label).ToList();
+        //List<Tag> nodes = unorderedNodes.OrderBy(s => s.Label).ToList();
+        List<Tag> nodes = unorderedNodes;
         if (nodes.Count > 30)
         {
             nodes = nodes.GetRange(0, 30);
