@@ -324,7 +324,7 @@ public class ViRMA_APIController : MonoBehaviour
             fileType = "JPG";
         }
         localMediaType = fileType;
-        localMediaDirectory = "C:/Users/aaron/Documents/LSC2022/";
+        localMediaDirectory = "D:/Datasets/LSC2022/";
         remoteMediaDirectory = "http://bjth.itu.dk:5007/";
         remoteThumbnailMediaDirectory = "http://bjth.itu.dk:5007/";
         database = "LSC";
